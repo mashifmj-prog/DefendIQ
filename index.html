@@ -11,36 +11,16 @@
 <body>
     <section id="landing" style="display: block;">
         <div class="landing-container">
-            <div class="landing-left">
-                <label for="company-select-landing">Company</label>
-                <select id="company-select-landing" onchange="updateCompany(this.value)">
-                    <option value="" disabled selected>Select your company</option>
-                    <option value="Openserve">Openserve</option>
-                    <option value="FiberLink">FiberLink</option>
-                    <option value="Gyro">Gyro</option>
-                </select>
-            </div>
             <div class="landing-right">
                 <h1 id="landing-title">🛡️ DefendIQ</h1>
                 <p>Your trusted platform for cybersecurity training and awareness. Stay vigilant, earn points, and protect your organization!</p>
-                <button onclick="showLogin()">Get Started</button>
+                <button onclick="startApp()">Start Testing</button>
             </div>
         </div>
     </section>
-    <section id="login" hidden>
-        <h2>Login to DefendIQ</h2>
-        <select id="company-select-login" onchange="updateCompany(this.value)">
-            <option value="Openserve">Openserve</option>
-            <option value="FiberLink">FiberLink</option>
-            <option value="Gyro">Gyro</option>
-        </select>
-        <input type="text" id="username" placeholder="Enter your name (e.g., Alice Smith)">
-        <label><input type="checkbox" id="developer-mode"> Developer Mode</label>
-        <button onclick="login()">Login</button>
-    </section>
     <header hidden>
-        <img id="logo" src="logos/default-logo.png" alt="Company Logo" width="40">
-        <h1 id="app-title">🛡️ DefendIQ</h1>
+        <img id="logo" src="logos/openserve-logo.png" alt="Company Logo" width="40">
+        <h1 id="app-title">🛡️ DefendIQ — Openserve</h1>
         <select id="company-select" onchange="changeCompany(this.value)">
             <option value="Openserve">Openserve</option>
             <option value="FiberLink">FiberLink</option>
@@ -55,6 +35,7 @@
         <button onclick="showSection('tips')">Security Tips</button>
         <button onclick="showSection('analytics')">Analytics</button>
         <button onclick="showSection('profile')">Profile</button>
+        <button onclick="logout()">Logout</button>
     </nav>
     <main hidden>
         <section id="dashboard">
