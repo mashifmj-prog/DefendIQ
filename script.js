@@ -1,4 +1,4 @@
-// --- Company-specific settings ---
+// --- Companies ---
 const companies = {
   openserve: {
     name: "Openserve",
@@ -35,12 +35,11 @@ const companies = {
   },
 };
 
-// --- User / quiz data ---
-const users = [
+// --- Users & Quizzes ---
+let users = [
   { name: "Alice Smith", dept: "Infra", completion: 100, points: 50 },
   { name: "Bob Moyo", dept: "Support", completion: 80, points: 30 },
   { name: "Carol Jones", dept: "Sales", completion: 60, points: 20 },
-  { name: "Dan Khumalo", dept: "Ops", completion: 40, points: 10 },
 ];
 
 const quizzes = [
@@ -66,55 +65,72 @@ const quizzes = [
   },
 ];
 
-// --- Utility functions ---
+let currentQuiz = 0;
+let currentCompany = companies.default;
+
+// --- Company Selector ---
+function changeCompany() {
+  const select = document.getElementById("companySelect");
+  const org = select.value;
+  currentCompany = companies[org] || companies.default;
+  applyCompanyTheme();
+}
+
+// --- Apply Theme ---
+function applyCompanyTheme() {
+  document.documentElement.style.setProperty("--primary-color", currentCompany.primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", currentCompany.secondaryColor);
+
+  const logo = document.getElementById("companyLogo");
+  logo.src = currentCompany.logo;
+  logo.alt = currentCompany.name + " Logo";
+
+  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Used by ${currentCompany.name} (customized)`;
+
+  loadTips();
+  loadLeaderboard();
+  loadQuiz();
+}
+
+// --- Navigation ---
 function showSection(id) {
   document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-function getCompanyFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const org = params.get("org");
-  return companies[org] || companies.default;
-}
-
 // --- Leaderboard ---
 function loadLeaderboard() {
-  const tbody = document.querySelector("#leaderboardTable tbody");
-  tbody.innerHTML = "";
-  const sorted = users.sort((a, b) => b.completion + b.points - (a.completion + a.points));
-  sorted.forEach((u, i) => {
-    const row = `<tr>
-      <td>${i + 1}</td>
-      <td>${u.name}</td>
-      <td>${u.dept}</td>
-      <td>${u.completion}%</td>
-      <td>${u.points}</td>
-    </tr>`;
-    tbody.insertAdjacentHTML("beforeend", row);
+  const container = document.getElementById("leaderboardCards");
+  container.innerHTML = "";
+  users.sort((a,b)=> b.completion + b.points - (a.completion + a.points))
+       .forEach((u, i) => {
+    container.insertAdjacentHTML(
+      "beforeend",
+      `<div class="card">
+        <h3>${i+1}. ${u.name}</h3>
+        <p><strong>Dept:</strong> ${u.dept}</p>
+        <p><strong>Completion:</strong> ${u.completion}%</p>
+        <p><strong>Points:</strong> ${u.points}</p>
+      </div>`
+    );
   });
 }
 
 // --- Quiz ---
-let currentQuiz = 0;
 function loadQuiz() {
-  const q = quizzes[currentQuiz];
   const container = document.getElementById("quizContainer");
+  const q = quizzes[currentQuiz];
   if (!q) {
-    container.innerHTML = "<p>🎉 You've completed all quizzes!</p>";
+    container.innerHTML = "<div class='card'><p>🎉 You've completed all quizzes!</p></div>";
     return;
   }
-  container.innerHTML = `
+
+  container.innerHTML = `<div class="card">
     <p><strong>${q.question}</strong></p>
-    ${q.options
-      .map(
-        (opt, i) =>
-          `<div><input type='radio' name='answer' value='${i}' id='opt${i}'>
-           <label for='opt${i}'>${opt}</label></div>`
-      )
-      .join("")}
-    <button onclick='submitQuiz(${q.correct})'>Submit</button>
-  `;
+    ${q.options.map((opt,i)=>`<div><input type='radio' name='answer' value='${i}' id='opt${i}'>
+      <label for='opt${i}'>${opt}</label></div>`).join("")}
+    <button onclick="submitQuiz(${q.correct})">Submit</button>
+  </div>`;
 }
 
 function submitQuiz(correctIndex) {
@@ -123,7 +139,7 @@ function submitQuiz(correctIndex) {
   const answer = parseInt(selected.value);
   if (answer === correctIndex) {
     alert("✅ Correct! Well done.");
-    users[0].points += 10; // demo: reward Alice
+    users[0].points += 10;
   } else {
     alert("❌ Incorrect. Keep learning!");
   }
@@ -133,36 +149,21 @@ function submitQuiz(correctIndex) {
 }
 
 // --- Tips ---
-function loadTips(tips) {
+function loadTips() {
   const list = document.getElementById("tipsList");
   list.innerHTML = "";
-  tips.forEach((t) => {
+  currentCompany.tips.forEach(t=>{
     list.insertAdjacentHTML("beforeend", `<li>${t}</li>`);
   });
 }
 
-// --- Initialize App ---
+// --- Init ---
 document.addEventListener("DOMContentLoaded", () => {
-  const company = getCompanyFromURL();
-
-  // Update header colors
-  document.documentElement.style.setProperty("--primary-color", company.primaryColor);
-  document.documentElement.style.setProperty("--secondary-color", company.secondaryColor);
-
-  // Update header logo
-  const header = document.querySelector("header");
-  const logoImg = document.createElement("img");
-  logoImg.src = company.logo;
-  logoImg.alt = company.name + " Logo";
-  header.prepend(logoImg);
-
-  // Update footer
-  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Used by ${company.name} (customized)`;
-
-  // Load company-specific tips
-  loadTips(company.tips);
-
-  // Load app features
-  loadLeaderboard();
-  loadQuiz();
+  const urlParams = new URLSearchParams(window.location.search);
+  const org = urlParams.get("org");
+  if(org && companies[org]) {
+    currentCompany = companies[org];
+    document.getElementById("companySelect").value = org;
+  }
+  applyCompanyTheme();
 });
