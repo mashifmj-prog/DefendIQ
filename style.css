@@ -53,7 +53,7 @@ body {
 }
 
 .landing-left select {
-    padding: 10px;
+    padding: 10px 30px 10px 10px;
     width: 200px;
     background-color: rgba(255, 255, 255, 0.9);
     color: #333;
@@ -61,6 +61,7 @@ body {
     border-radius: 8px;
     font-size: 1rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    appearance: none;
 }
 
 .landing-left select:hover {
@@ -70,25 +71,27 @@ body {
 
 #close-dropdown {
     position: absolute;
-    right: 5px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%);
     background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 16px;
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 #close-dropdown:hover {
     background-color: var(--secondary-color);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .landing-right {
@@ -387,7 +390,13 @@ footer {
     }
     select {
         font-size: 0.8rem;
-        padding: 4px;
+        padding: 4px 24px 4px 8px;
+    }
+    #close-dropdown {
+        right: 6px;
+        width: 18px;
+        height: 18px;
+        font-size: 12px;
     }
     .quiz-submit {
         margin-bottom: 140px;
