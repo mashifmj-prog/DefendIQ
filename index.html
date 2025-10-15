@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Openserve Security Buddy</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🔒 Openserve Security Buddy</h1>
+    <nav>
+      <button onclick="showSection('leaderboard')">Leaderboard</button>
+      <button onclick="showSection('quiz')">Quiz</button>
+      <button onclick="showSection('tips')">Tips</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Leaderboard -->
+    <section id="leaderboard" class="active">
+      <h2>🏆 Awareness Leaderboard</h2>
+      <table id="leaderboardTable">
+        <thead>
+          <tr><th>Rank</th><th>Name</th><th>Department</th><th>Completion %</th><th>Points</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Quiz -->
+    <section id="quiz" class="hidden">
+      <h2>🧠 Quick Phishing Awareness Quiz</h2>
+      <div id="quizContainer"></div>
+      <button id="nextQuiz" onclick="loadQuiz()">Next Question</button>
+    </section>
+
+    <!-- Tips -->
+    <section id="tips" class="hidden">
+      <h2>💡 Security Tips</h2>
+      <ul id="tipsList"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Made by Openserve Cyber Awareness Team © 2025</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
