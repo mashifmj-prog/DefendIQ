@@ -306,15 +306,27 @@ let deptPointsChart = null;
 const encouragementPhrases = ['Great job! 🚀', 'Awesome! 🌟', 'Well done! 👏', 'Keep it up! 💪', 'Nice catch! 🕵️'];
 
 function updateCompany(companyName) {
+    if (companyName === "Exit") {
+        resetDropdown();
+        return;
+    }
     if (companyName) {
         currentCompany = companies[companyName];
         applyCompanyTheme();
     }
 }
 
+function resetDropdown() {
+    const dropdown = document.getElementById('company-select-landing');
+    dropdown.value = '';
+}
+
 function startApp() {
     if (!document.getElementById('company-select-landing').value) {
         return alert('Please select a company.');
+    }
+    if (document.getElementById('company-select-landing').value === "Exit") {
+        return;
     }
     document.getElementById('landing').hidden = true;
     document.querySelector('header').hidden = false;
@@ -568,4 +580,146 @@ function submitPhishing(isSafe) {
     const correct = email.correct === isSafe;
     const feedback = document.getElementById('phishing-feedback');
     const yourAction = isSafe ? "Safe" : "Phishing";
-    const randomPhrase = encouragementPhrases[Math.floor(Math.random
+    const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
+    const correctAction = email.correct ? "Safe" : "Phishing";
+    if (correct) {
+        feedback.textContent = `${randomPhrase} Correct! Marked as ${yourAction}. Tip: Check sender domain. +10 points, +5% completion.`;
+        currentCompany.employees[currentUserIndex].points += 10;
+        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
+        currentCompany.employees[currentUserIndex].phishingCompleted = Math.min(phishingEmails.length, currentCompany.employees[currentUserIndex].phishingCompleted + 1);
+        currentCompany.streak += 1;
+        currentCompany.streakHistory.push(currentCompany.streak);
+    } else {
+        feedback.textContent = `Whoops! Incorrect. Marked as ${yourAction}, but it's ${correctAction}. Tip: Watch for urgent language. Streak reset. Keep practicing!`;
+        currentCompany.streak = 0;
+    }
+    phishingIndex++;
+    loadPhishingQuiz();
+    loadDashboard();
+    loadLeaderboard();
+}
+
+function loadTips() {
+    const list = document.getElementById('tips-list');
+    list.innerHTML = '';
+    currentCompany.tips.forEach(tip => {
+        const li = document.createElement('li');
+        li.textContent = tip;
+        list.appendChild(li);
+    });
+}
+
+function loadAnalytics() {
+    const totalQuizzes = currentCompany.employees.reduce((sum, e) => sum + Object.values(e.quizCompleted).reduce((s, c) => s + c, 0), 0);
+    document.getElementById('total-quizzes').textContent = totalQuizzes;
+
+    const totalPhishing = currentCompany.employees.reduce((sum, e) => sum + e.phishingCompleted, 0);
+    document.getElementById('total-phishing').textContent = totalPhishing;
+
+    if (streakChart) streakChart.destroy();
+    const streakCtx = document.getElementById('streak-trend').getContext('2d');
+    streakChart = new Chart(streakCtx, {
+        type: 'line',
+        data: {
+            labels: currentCompany.streakHistory.map((_, i) => `Session ${i + 1}`),
+            datasets: [{
+                label: 'Streak Trend',
+                data: currentCompany.streakHistory,
+                borderColor: currentCompany.primaryColor,
+                fill: false
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    if (deptPointsChart) deptPointsChart.destroy();
+    const depts = {};
+    currentCompany.employees.forEach(e => {
+        if (!depts[e.dept]) depts[e.dept] = 0;
+        depts[e.dept] += e.points / currentCompany.employees.filter(emp => emp.dept === e.dept).length;
+    });
+    const deptLabels = Object.keys(depts);
+    const avgDeptPoints = deptLabels.map(d => depts[d]);
+    const deptPointsCtx = document.getElementById('dept-points-bar').getContext('2d');
+    deptPointsChart = new Chart(deptPointsCtx, {
+        type: 'bar',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'Avg Points per Dept',
+                data: avgDeptPoints,
+                backgroundColor: currentCompany.secondaryColor
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function loadProfile() {
+    const user = currentCompany.employees[currentUserIndex];
+    document.getElementById('profile-name').textContent = `Name: ${user.name}`;
+    document.getElementById('profile-dept').textContent = `Department: ${user.dept}`;
+    document.getElementById('profile-completion').textContent = `Completion: ${user.completion}%`;
+    document.getElementById('profile-points').textContent = `Points: ${user.points}`;
+    document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
+
+    const badgesList = document.getElementById('badges-list');
+    badgesList.innerHTML = '';
+    const badges = getBadges(user);
+    if (badges.length === 0) {
+        badgesList.innerHTML = '<li>No badges yet—keep training!</li>';
+    } else {
+        badges.forEach(badge => {
+            const li = document.createElement('li');
+            li.textContent = badge;
+            badgesList.appendChild(li);
+        });
+    }
+
+    const certificateButtons = document.getElementById('certificate-buttons');
+    certificateButtons.innerHTML = '';
+    const completedTests = Object.keys(user.quizCompleted).filter(test => user.quizCompleted[test] >= questions[test].length);
+    document.getElementById('certificate-card').hidden = completedTests.length === 0;
+    completedTests.forEach(test => {
+        const button = document.createElement('button');
+        button.textContent = `Download ${test} Certificate`;
+        button.onclick = () => downloadCertificate(test);
+        certificateButtons.appendChild(button);
+    });
+}
+
+function getBadges(user) {
+    const badges = [];
+    if (user.quizCompleted["Deepfake Awareness"] === questions["Deepfake Awareness"].length) badges.push('🎥 Deepfake Defender: Completed Deepfake Awareness!');
+    if (user.quizCompleted["Reporting Security Incidents"] === questions["Reporting Security Incidents"].length) badges.push('🚨 Incident Reporter: Completed Reporting Security Incidents!');
+    if (user.quizCompleted["Culture Survey"] === questions["Culture Survey"].length) badges.push('🏛️ Culture Champion: Completed Culture Survey!');
+    if (user.quizCompleted["Social Engineering"] === questions["Social Engineering"].length) badges.push('🕵️ Social Shield: Completed Social Engineering!');
+    if (user.quizCompleted["General Cybersecurity"] === questions["General Cybersecurity"].length) badges.push('🔒 Cyber Guardian: Completed General Cybersecurity!');
+    if (user.phishingCompleted === phishingEmails.length) badges.push('🎣 Phishing Pro: Mastered all simulations!');
+    if (currentCompany.streak >= 5) badges.push('🔥 Streak King: Achieved a streak of 5+!');
+    if (user.completion === 100) badges.push('🌟 Cyber Hero: 100% completion!');
+    return badges;
+}
+
+function downloadCertificate(testName) {
+    const user = currentCompany.employees[currentUserIndex];
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const latexContent = `
+\\documentclass[a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\geometry{margin=0.75in}
+\\usepackage{mathpazo}
+\\usepackage{fancyhdr}
+\\usepackage{tikz}
+\\usepackage{xcolor}
+\\definecolor{primarycolor}{RGB}{0,77,64}
+\\definecolor{secondarycolor}{RGB}{38,166,154}
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyhead[C]{\\color{primarycolor}\\textbf{DefendIQ Cybersecurity Training}}
+\\fancyfoot[C]{\\color{primarycolor}\\small Issued by DefendIQ}
+\\begin{document}
+\\begin{center}
+\\begin{tikzpicture}
+\\draw[line width=2pt
