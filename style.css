@@ -1,118 +1,106 @@
-:root {
-  --primary-color: #004d40;
-  --secondary-color: #26a69a;
-  --card-bg: #fff;
-  --card-shadow: rgba(0,0,0,0.1);
+const companies = {
+  openserve: {
+    name: "Openserve",
+    description: "Infrastructure wholesale company of Telkom SA SOC",
+    primaryColor: "#004d40",
+    secondaryColor: "#26a69a",
+    logo: "logos/openserve-logo.png",
+    tips: [
+      "Secure all infrastructure devices with strong passwords.",
+      "Verify any network change requests.",
+      "Always report unusual system behavior.",
+    ],
+  },
+  gyro: {
+    name: "Gyro",
+    description: "Manages all Telkom SA SOC buildings",
+    primaryColor: "#6a1b9a",
+    secondaryColor: "#ba68c8",
+    logo: "logos/gyro-logo.png",
+    tips: [
+      "Always verify visitor identity.",
+      "Report suspicious physical or digital activity.",
+      "Do not leave sensitive access cards unattended.",
+    ],
+  },
+  telkom: {
+    name: "Telkom Mobile/Consumer",
+    description: "Sells devices like phones and data services",
+    primaryColor: "#f57c00",
+    secondaryColor: "#ffb74d",
+    logo: "logos/telkom-mobile-logo.png",
+    tips: [
+      "Protect customer data at all times.",
+      "Beware of phishing attempts targeting mobile users.",
+      "Encourage users to use strong passwords and MFA.",
+    ],
+  },
+  default: {
+    name: "DefendIQ",
+    description: "Generic cybersecurity awareness platform",
+    primaryColor: "#222",
+    secondaryColor: "#555",
+    logo: "logos/default-logo.png",
+    tips: [
+      "Stay aware of phishing threats.",
+      "Use strong passwords.",
+      "Think before you click!",
+    ],
+  },
+};
+
+// Global state
+let currentCompany = companies.default;
+
+// --- Get company from dropdown or URL ---
+function changeCompany() {
+  const select = document.getElementById("companySelect");
+  const org = select.value;
+  currentCompany = companies[org] || companies.default;
+  applyCompanyTheme();
 }
 
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f5f8fa;
-  margin: 0;
-  padding: 0;
-  color: #222;
+function applyCompanyTheme() {
+  // Update CSS theme colors
+  document.documentElement.style.setProperty("--primary-color", currentCompany.primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", currentCompany.secondaryColor);
+
+  // Update logo and header
+  const logo = document.getElementById("companyLogo");
+  logo.src = currentCompany.logo;
+  logo.alt = currentCompany.name + " Logo";
+
+  // Update app title and description
+  const appTitle = document.getElementById("appTitle");
+  appTitle.innerHTML = `🛡️ DefendIQ — ${currentCompany.name}`;
+  appTitle.title = currentCompany.description;
+
+  // Update footer
+  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Customized for ${currentCompany.name}`;
+
+  // Update tips and features
+  loadTips();
+  loadLeaderboard();
+  loadQuiz();
 }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--primary-color);
-  color: white;
-  padding: 1rem 2rem;
+// --- Leaderboard, Quiz, Tips (same as previous) ---
+function showSection(id) {
+  document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-header h1 {
-  margin: 0;
-}
+let users = [
+  { name: "Alice Smith", dept: "Infra", completion: 100, points: 50 },
+  { name: "Bob Moyo", dept: "Support", completion: 80, points: 30 },
+  { name: "Carol Jones", dept: "Sales", completion: 60, points: 20 },
+];
 
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.header-left img {
-  height: 50px;
-  margin-right: 1rem;
-}
-
-header select {
-  padding: 0.3rem;
-  border-radius: 4px;
-  border: none;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  background: var(--secondary-color);
-  padding: 0.5rem 0;
-}
-
-nav button {
-  background: var(--primary-color);
-  border: none;
-  margin: 0 0.5rem;
-  padding: 0.5rem 1rem;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-nav button:hover {
-  opacity: 0.85;
-}
-
-main {
-  padding: 2rem;
-  max-width: 1000px;
-  margin: auto;
-}
-
-section {
-  display: none;
-}
-
-section.active {
-  display: block;
-}
-
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.card {
-  background: var(--card-bg);
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px var(--card-shadow);
-}
-
-.card h3 {
-  margin-top: 0;
-}
-
-.tips-list {
-  list-style: none;
-  padding: 0;
-}
-
-.tips-list li {
-  background: var(--card-bg);
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px var(--card-shadow);
-}
-
-footer {
-  text-align: center;
-  padding: 1rem;
-  font-size: 0.9em;
-  background: var(--primary-color);
-  color: white;
-  margin-top: 2rem;
-}
+const quizzes = [
+  {
+    question: "Which of the following is a phishing red flag?",
+    options: [
+      "Sender domain mismatch",
+      "Unusual urgency",
+      "Poor grammar",
+      "All
