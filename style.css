@@ -12,12 +12,34 @@ body {
     font-size: 16px;
 }
 
+#landing {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#landing h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+#landing p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+#landing button {
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
 #login {
     padding: 20px;
     text-align: center;
 }
 
-#login input {
+#login input, #login select {
     padding: 10px;
     width: 200px;
     margin: 10px;
@@ -164,7 +186,7 @@ footer {
     width: 100%;
 }
 
-#quiz-progress {
+#quiz-progress, #phishing-progress {
     margin-bottom: 10px;
     font-weight: bold;
 }
