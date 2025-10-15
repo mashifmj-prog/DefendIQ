@@ -1,45 +1,72 @@
 :root {
-  --primary-color: #004d40; /* default Openserve green */
+  --primary-color: #004d40;
   --secondary-color: #26a69a;
+  --card-bg: #fff;
+  --card-shadow: rgba(0,0,0,0.1);
 }
 
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #f5f8fa;
-  color: #222;
   margin: 0;
   padding: 0;
+  color: #222;
 }
 
 header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background: var(--primary-color);
   color: white;
-  padding: 1rem;
-  text-align: center;
+  padding: 1rem 2rem;
 }
 
-header img {
+header h1 {
+  margin: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-left img {
   height: 50px;
-  vertical-align: middle;
-  margin-right: 0.5rem;
+  margin-right: 1rem;
+}
+
+header select {
+  padding: 0.3rem;
+  border-radius: 4px;
+  border: none;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  background: var(--secondary-color);
+  padding: 0.5rem 0;
 }
 
 nav button {
-  background: var(--secondary-color);
+  background: var(--primary-color);
   border: none;
+  margin: 0 0.5rem;
   padding: 0.5rem 1rem;
-  margin: 0.2rem;
   color: white;
   border-radius: 4px;
   cursor: pointer;
 }
 
 nav button:hover {
-  background: var(--primary-color);
+  opacity: 0.85;
 }
 
 main {
-  padding: 1.5rem;
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
 }
 
 section {
@@ -50,23 +77,35 @@ section.active {
   display: block;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
   margin-top: 1rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  text-align: left;
+.card {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px var(--card-shadow);
 }
 
-th {
-  background: var(--secondary-color);
-  color: white;
+.card h3 {
+  margin-top: 0;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+}
+
+.tips-list li {
+  background: var(--card-bg);
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px var(--card-shadow);
 }
 
 footer {
@@ -75,4 +114,5 @@ footer {
   font-size: 0.9em;
   background: var(--primary-color);
   color: white;
+  margin-top: 2rem;
 }
