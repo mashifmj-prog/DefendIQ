@@ -21,29 +21,16 @@ body {
 
 .landing-container {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    justify-content: center;
     max-width: 1200px;
     margin: 0 auto;
     flex-wrap: wrap;
     gap: 20px;
 }
 
-.landing-left {
-    text-align: left;
-    flex: 1;
-    min-width: 200px;
-}
-
-.landing-left label {
-    display: block;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
-}
-
 .landing-right {
-    text-align: right;
-    flex: 2;
+    text-align: center;
+    flex: 1;
     min-width: 200px;
 }
 
@@ -60,17 +47,6 @@ body {
 .landing-right button {
     padding: 12px 24px;
     font-size: 1rem;
-}
-
-#login {
-    padding: 20px;
-    text-align: center;
-}
-
-#login input, #login select {
-    padding: 10px;
-    width: 200px;
-    margin: 10px;
 }
 
 header {
@@ -242,7 +218,7 @@ footer {
         flex-direction: column;
         align-items: center;
     }
-    .landing-left, .landing-right {
+    .landing-right {
         text-align: center;
         width: 100%;
     }
@@ -269,13 +245,13 @@ footer {
         padding: 10px;
     }
     canvas {
-        height: 120px; /* Smaller on mobile */
+        height: 120px;
     }
 }
 
 @media (min-width: 601px) {
     canvas {
-        height: 400px; /* Very big on desktop */
+        height: 400px;
     }
 }
 
