@@ -9,7 +9,7 @@
 </head>
 <body>
     <header>
-        <img id="logo" src="logos/default-logo.png" alt="Company Logo" width="50">
+        <img id="logo" src="logos/default-logo.png" alt="Company Logo" width="40">
         <h1 id="app-title">🛡️ DefendIQ</h1>
         <select id="company-select" onchange="changeCompany(this.value)">
             <option value="Openserve">Openserve</option>
@@ -46,8 +46,8 @@
                 <h3>Top 3 Performers</h3>
                 <ul id="top3"></ul>
             </div>
-            <canvas id="dept-chart" width="400" height="200"></canvas>
-            <canvas id="points-pie" width="400" height="200"></canvas>
+            <canvas id="dept-chart" width="300" height="150"></canvas>
+            <canvas id="points-pie" width="300" height="150"></canvas>
             <button onclick="exportCSV()">Export Report (CSV)</button>
         </section>
         <section id="leaderboard" hidden>
