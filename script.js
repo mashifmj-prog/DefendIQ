@@ -197,7 +197,7 @@ function loadCharts() {
                 backgroundColor: currentCompany.secondaryColor
             }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
     });
 
     const pieCtx = document.getElementById('points-pie').getContext('2d');
@@ -209,7 +209,8 @@ function loadCharts() {
                 data: deptPoints,
                 backgroundColor: [currentCompany.primaryColor, currentCompany.secondaryColor, '#ccc']
             }]
-        }
+        },
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
@@ -217,9 +218,11 @@ function loadLeaderboard() {
     const sorted = [...currentCompany.employees].sort((a, b) => (b.completion + b.points) - (a.completion + a.points));
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
+    const badges = ['🥇', '🥈', '🥉'];
     sorted.forEach((e, index) => {
         const li = document.createElement('li');
-        li.textContent = `#${index + 1} ${e.name} (${e.dept}): ${e.completion}% completion, ${e.points} points`;
+        const badge = index < 3 ? badges[index] + ' ' : '';
+        li.textContent = `#${index + 1} ${badge}${e.name} (${e.dept}): ${e.completion}% completion, ${e.points} points`;
         if (index < 3) li.style.fontWeight = 'bold';
         list.appendChild(li);
     });
@@ -250,6 +253,7 @@ function submitQuiz() {
     if (correct) {
         alert("✅ Correct!");
         currentCompany.employees[0].points += 10;
+        currentCompany.employees[0].completion = Math.min(100, currentCompany.employees[0].completion + 5);
         currentCompany.streak += 1;
     } else {
         alert("❌ Incorrect. Streak reset.");
@@ -277,6 +281,7 @@ function submitPhishing(isSafe) {
     if (correct) {
         alert("✅ Correct!");
         currentCompany.employees[0].points += 10;
+        currentCompany.employees[0].completion = Math.min(100, currentCompany.employees[0].completion + 5);
         currentCompany.streak += 1;
     } else {
         alert("❌ Incorrect. Streak reset.");
