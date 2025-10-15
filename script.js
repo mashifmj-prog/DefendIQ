@@ -1,4 +1,41 @@
-// --- Fake data ---
+// --- Company-specific settings ---
+const companies = {
+  openserve: {
+    name: "Openserve",
+    primaryColor: "#004d40",
+    secondaryColor: "#26a69a",
+    logo: "logos/openserve-logo.png",
+    tips: [
+      "Always hover over links before clicking.",
+      "Check sender addresses carefully.",
+      "Never share your password — IT will never ask for it.",
+    ],
+  },
+  fiberlink: {
+    name: "FiberLink",
+    primaryColor: "#0d47a1",
+    secondaryColor: "#42a5f5",
+    logo: "logos/fiberlink-logo.png",
+    tips: [
+      "Use multi-factor authentication everywhere.",
+      "Report suspicious emails immediately.",
+      "Keep your software up-to-date.",
+    ],
+  },
+  default: {
+    name: "DefendIQ",
+    primaryColor: "#222",
+    secondaryColor: "#555",
+    logo: "logos/default-logo.png",
+    tips: [
+      "Stay aware of phishing threats.",
+      "Use strong passwords.",
+      "Think before you click!",
+    ],
+  },
+};
+
+// --- User / quiz data ---
 const users = [
   { name: "Alice Smith", dept: "Infra", completion: 100, points: 50 },
   { name: "Bob Moyo", dept: "Support", completion: 80, points: 30 },
@@ -29,17 +66,16 @@ const quizzes = [
   },
 ];
 
-const tips = [
-  "Always hover over links before clicking.",
-  "Check sender addresses carefully.",
-  "Never share your password — IT will never ask for it.",
-  "Use multi-factor authentication (MFA) everywhere.",
-];
-
-// --- UI functions ---
+// --- Utility functions ---
 function showSection(id) {
   document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+}
+
+function getCompanyFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const org = params.get("org");
+  return companies[org] || companies.default;
 }
 
 // --- Leaderboard ---
@@ -97,7 +133,7 @@ function submitQuiz(correctIndex) {
 }
 
 // --- Tips ---
-function loadTips() {
+function loadTips(tips) {
   const list = document.getElementById("tipsList");
   list.innerHTML = "";
   tips.forEach((t) => {
@@ -105,9 +141,28 @@ function loadTips() {
   });
 }
 
-// --- Initialize ---
+// --- Initialize App ---
 document.addEventListener("DOMContentLoaded", () => {
+  const company = getCompanyFromURL();
+
+  // Update header colors
+  document.documentElement.style.setProperty("--primary-color", company.primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", company.secondaryColor);
+
+  // Update header logo
+  const header = document.querySelector("header");
+  const logoImg = document.createElement("img");
+  logoImg.src = company.logo;
+  logoImg.alt = company.name + " Logo";
+  header.prepend(logoImg);
+
+  // Update footer
+  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Used by ${company.name} (customized)`;
+
+  // Load company-specific tips
+  loadTips(company.tips);
+
+  // Load app features
   loadLeaderboard();
   loadQuiz();
-  loadTips();
 });
