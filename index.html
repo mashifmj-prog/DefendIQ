@@ -28,6 +28,7 @@
         <button onclick="showSection('quiz')">Quiz</button>
         <button onclick="showSection('phishing')">Phishing Simulation</button>
         <button onclick="showSection('tips')">Security Tips</button>
+        <button onclick="showSection('profile')">Profile</button>
     </nav>
     <main hidden>
         <section id="dashboard">
@@ -61,6 +62,7 @@
         </section>
         <section id="quiz" hidden>
             <h2>Quiz</h2>
+            <div id="quiz-progress">Progress: 0%</div>
             <div id="quiz-question"></div>
             <div id="quiz-options"></div>
             <button onclick="submitQuiz()">Submit Answer</button>
@@ -76,6 +78,17 @@
         <section id="tips" hidden>
             <h2>Security Tips</h2>
             <ul id="tips-list"></ul>
+        </section>
+        <section id="profile" hidden>
+            <h2>User Profile</h2>
+            <div class="card">
+                <h3>Your Stats</h3>
+                <p id="profile-name"></p>
+                <p id="profile-dept"></p>
+                <p id="profile-completion"></p>
+                <p id="profile-points"></p>
+                <p id="profile-streak"></p>
+            </div>
         </section>
     </main>
     <footer hidden>
