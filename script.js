@@ -1,29 +1,43 @@
-// --- Companies ---
 const companies = {
   openserve: {
     name: "Openserve",
+    description: "Infrastructure wholesale company of Telkom SA SOC",
     primaryColor: "#004d40",
     secondaryColor: "#26a69a",
     logo: "logos/openserve-logo.png",
     tips: [
-      "Always hover over links before clicking.",
-      "Check sender addresses carefully.",
-      "Never share your password — IT will never ask for it.",
+      "Secure all infrastructure devices with strong passwords.",
+      "Verify any network change requests.",
+      "Always report unusual system behavior.",
     ],
   },
-  fiberlink: {
-    name: "FiberLink",
-    primaryColor: "#0d47a1",
-    secondaryColor: "#42a5f5",
-    logo: "logos/fiberlink-logo.png",
+  gyro: {
+    name: "Gyro",
+    description: "Manages all Telkom SA SOC buildings",
+    primaryColor: "#6a1b9a",
+    secondaryColor: "#ba68c8",
+    logo: "logos/gyro-logo.png",
     tips: [
-      "Use multi-factor authentication everywhere.",
-      "Report suspicious emails immediately.",
-      "Keep your software up-to-date.",
+      "Always verify visitor identity.",
+      "Report suspicious physical or digital activity.",
+      "Do not leave sensitive access cards unattended.",
+    ],
+  },
+  telkom: {
+    name: "Telkom Mobile/Consumer",
+    description: "Sells devices like phones and data services",
+    primaryColor: "#f57c00",
+    secondaryColor: "#ffb74d",
+    logo: "logos/telkom-mobile-logo.png",
+    tips: [
+      "Protect customer data at all times.",
+      "Beware of phishing attempts targeting mobile users.",
+      "Encourage users to use strong passwords and MFA.",
     ],
   },
   default: {
     name: "DefendIQ",
+    description: "Generic cybersecurity awareness platform",
     primaryColor: "#222",
     secondaryColor: "#555",
     logo: "logos/default-logo.png",
@@ -35,7 +49,47 @@ const companies = {
   },
 };
 
-// --- Users & Quizzes ---
+// Global state
+let currentCompany = companies.default;
+
+// --- Get company from dropdown or URL ---
+function changeCompany() {
+  const select = document.getElementById("companySelect");
+  const org = select.value;
+  currentCompany = companies[org] || companies.default;
+  applyCompanyTheme();
+}
+
+function applyCompanyTheme() {
+  // Update CSS theme colors
+  document.documentElement.style.setProperty("--primary-color", currentCompany.primaryColor);
+  document.documentElement.style.setProperty("--secondary-color", currentCompany.secondaryColor);
+
+  // Update logo and header
+  const logo = document.getElementById("companyLogo");
+  logo.src = currentCompany.logo;
+  logo.alt = currentCompany.name + " Logo";
+
+  // Update app title and description
+  const appTitle = document.getElementById("appTitle");
+  appTitle.innerHTML = `🛡️ DefendIQ — ${currentCompany.name}`;
+  appTitle.title = currentCompany.description;
+
+  // Update footer
+  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Customized for ${currentCompany.name}`;
+
+  // Update tips and features
+  loadTips();
+  loadLeaderboard();
+  loadQuiz();
+}
+
+// --- Leaderboard, Quiz, Tips (same as previous) ---
+function showSection(id) {
+  document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
 let users = [
   { name: "Alice Smith", dept: "Infra", completion: 100, points: 50 },
   { name: "Bob Moyo", dept: "Support", completion: 80, points: 30 },
@@ -66,39 +120,7 @@ const quizzes = [
 ];
 
 let currentQuiz = 0;
-let currentCompany = companies.default;
 
-// --- Company Selector ---
-function changeCompany() {
-  const select = document.getElementById("companySelect");
-  const org = select.value;
-  currentCompany = companies[org] || companies.default;
-  applyCompanyTheme();
-}
-
-// --- Apply Theme ---
-function applyCompanyTheme() {
-  document.documentElement.style.setProperty("--primary-color", currentCompany.primaryColor);
-  document.documentElement.style.setProperty("--secondary-color", currentCompany.secondaryColor);
-
-  const logo = document.getElementById("companyLogo");
-  logo.src = currentCompany.logo;
-  logo.alt = currentCompany.name + " Logo";
-
-  document.getElementById("footerText").innerText = `© 2025 DefendIQ — Used by ${currentCompany.name} (customized)`;
-
-  loadTips();
-  loadLeaderboard();
-  loadQuiz();
-}
-
-// --- Navigation ---
-function showSection(id) {
-  document.querySelectorAll("section").forEach((s) => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-// --- Leaderboard ---
 function loadLeaderboard() {
   const container = document.getElementById("leaderboardCards");
   container.innerHTML = "";
@@ -116,7 +138,6 @@ function loadLeaderboard() {
   });
 }
 
-// --- Quiz ---
 function loadQuiz() {
   const container = document.getElementById("quizContainer");
   const q = quizzes[currentQuiz];
@@ -124,7 +145,6 @@ function loadQuiz() {
     container.innerHTML = "<div class='card'><p>🎉 You've completed all quizzes!</p></div>";
     return;
   }
-
   container.innerHTML = `<div class="card">
     <p><strong>${q.question}</strong></p>
     ${q.options.map((opt,i)=>`<div><input type='radio' name='answer' value='${i}' id='opt${i}'>
@@ -148,7 +168,6 @@ function submitQuiz(correctIndex) {
   loadQuiz();
 }
 
-// --- Tips ---
 function loadTips() {
   const list = document.getElementById("tipsList");
   list.innerHTML = "";
@@ -157,7 +176,7 @@ function loadTips() {
   });
 }
 
-// --- Init ---
+// --- Initialize ---
 document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const org = urlParams.get("org");
