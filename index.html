@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DefendIQ</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <div class="header-left">
-      <img id="companyLogo" src="logos/default-logo.png" alt="DefendIQ Logo" />
+      <img id="companyLogo" src="logos/default-logo.png" alt="DefendIQ Logo">
       <h1 id="appTitle">🛡️ DefendIQ</h1>
     </div>
     <div class="header-right">
       <label for="companySelect">Switch Company:</label>
       <select id="companySelect" onchange="changeCompany()">
-        <option value="">DefendIQ</option>
+        <option value="defendiq">DefendIQ</option>
         <option value="openserve">Openserve</option>
         <option value="fiberlink">FiberLink</option>
+        <option value="gyro">Gyro</option>
       </select>
     </div>
   </header>
@@ -49,7 +50,7 @@
   </main>
 
   <footer>
-    <p id="footerText">© 2025 DefendIQ — Empowering Secure Awareness</p>
+    <p id="footerText">DefendIQ – Trusted by Openserve, FiberLink & Gyro</p>
   </footer>
 
   <script src="script.js"></script>
