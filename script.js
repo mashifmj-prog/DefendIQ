@@ -1,4 +1,3 @@
-// Data Model
 const companies = {
     "Openserve": {
         name: "Openserve",
@@ -20,7 +19,7 @@ const companies = {
             {name: "Evan Patel", dept: "HR", completion: 60, points: 120, quizCompleted: 0, phishingCompleted: 0}
         ],
         streak: 0,
-        streakHistory: [0, 1, 2] // Simulated for analytics
+        streakHistory: [0, 1, 2]
     },
     "FiberLink": {
         name: "FiberLink",
@@ -224,7 +223,7 @@ const questions = [
     }
 ];
 
-let currentCompany = companies["Openserve"];
+let currentCompany = null;
 let currentUserIndex = -1;
 let phishingIndex = 0;
 let quizIndex = 0;
@@ -237,13 +236,20 @@ let isDeveloperMode = false;
 const encouragementPhrases = ['Great job! 🚀', 'Awesome! 🌟', 'Well done! 👏', 'Keep it up! 💪', 'Nice catch! 🕵️'];
 
 function showLogin() {
+    if (!document.getElementById('company-select-landing').value) {
+        return alert('Please select a company.');
+    }
     document.getElementById('landing').hidden = true;
     document.getElementById('login').hidden = false;
+    document.getElementById('company-select-login').value = currentCompany.name;
 }
 
 function updateCompany(companyName) {
-    currentCompany = companies[companyName];
-    applyCompanyTheme();
+    if (companyName) {
+        currentCompany = companies[companyName];
+        document.getElementById('landing-title').textContent = `🛡️ DefendIQ${isDeveloperMode ? ' (Developer Mode)' : ''}`;
+        applyCompanyTheme();
+    }
 }
 
 function login() {
@@ -258,7 +264,7 @@ function login() {
         currentUserIndex = employeeIndex;
         localStorage.setItem('currentUser', JSON.stringify({company: currentCompany.name, index: currentUserIndex}));
     } else {
-        currentUserIndex = 0; // Default to first employee for developer mode
+        currentUserIndex = 0;
         localStorage.setItem('currentUser', JSON.stringify({company: currentCompany.name, index: currentUserIndex, developer: true}));
     }
     
@@ -289,6 +295,7 @@ function changeCompany(companyName) {
 }
 
 function applyCompanyTheme() {
+    if (!currentCompany) return;
     document.documentElement.style.setProperty('--primary-color', currentCompany.primaryColor);
     document.documentElement.style.setProperty('--secondary-color', currentCompany.secondaryColor);
     document.getElementById('logo').src = currentCompany.logo;
@@ -407,6 +414,12 @@ function loadLeaderboard() {
 }
 
 function loadQuiz() {
+    if (!isDeveloperMode && currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+        document.getElementById('quiz-question').textContent = 'Quiz Completed!';
+        document.getElementById('quiz-options').innerHTML = '';
+        document.getElementById('quiz-feedback').textContent = '🎉 Congratulations! You’ve mastered all quizzes! Check your Profile for your certificate and Quiz Master badge.';
+        return;
+    }
     const q = questions[quizIndex % questions.length];
     document.getElementById('quiz-question').textContent = q.question;
     const optionsDiv = document.getElementById('quiz-options');
@@ -427,15 +440,21 @@ function loadQuiz() {
 
 function updateQuizProgress() {
     if (isDeveloperMode) {
-        document.getElementById('quiz-progress').textContent = 'Progress: N/A (Developer Mode)';
+        document.getElementById('quiz-progress-text').textContent = 'N/A (Developer Mode)';
+        document.getElementById('quiz-progress-bar').style.width = '0%';
         return;
     }
     const user = currentCompany.employees[currentUserIndex];
     const progress = (user.quizCompleted / questions.length) * 100;
-    document.getElementById('quiz-progress').textContent = `Progress: ${progress.toFixed(0)}% (${user.quizCompleted}/${questions.length} completed)`;
+    document.getElementById('quiz-progress-text').textContent = `${progress.toFixed(0)}% (${user.quizCompleted}/${questions.length})`;
+    document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
 }
 
 function submitQuiz() {
+    if (!isDeveloperMode && currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+        showSection('profile');
+        return;
+    }
     const selected = document.querySelector('input[name="quiz-answer"]:checked');
     if (!selected) return alert("Select an answer!");
     const q = questions[quizIndex % questions.length];
@@ -450,7 +469,13 @@ function submitQuiz() {
             currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
             currentCompany.employees[currentUserIndex].quizCompleted = Math.min(questions.length, currentCompany.employees[currentUserIndex].quizCompleted + 1);
             currentCompany.streak += 1;
-            currentCompany.streakHistory.push(currentCompany.streak); // Update history for analytics
+            currentCompany.streakHistory.push(currentCompany.streak);
+            if (currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+                feedback.textContent = '🎉 Congratulations! You’ve mastered all quizzes! Check your Profile for your certificate and Quiz Master badge.';
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                showSection('profile');
+                return;
+            }
         }
     } else {
         feedback.textContent = `Oops! Incorrect. You chose "${yourAnswer}", but it's "${q.options[q.correct]}". ${q.explanation} Streak reset. Try again!`;
@@ -489,8 +514,8 @@ function submitPhishing(isSafe) {
     const correct = email.correct === isSafe;
     const feedback = document.getElementById('phishing-feedback');
     const yourAction = isSafe ? "Safe" : "Phishing";
-    const correctAction = email.correct ? "Safe" : "Phishing";
     const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
+    const correctAction = email.correct ? "Safe" : "Phishing";
     if (correct) {
         feedback.textContent = `${randomPhrase} Correct! Marked as ${yourAction}. Tip: Check sender domain. +10 points, +5% completion.`;
         if (!isDeveloperMode) {
@@ -527,7 +552,6 @@ function loadAnalytics() {
     const totalPhishing = currentCompany.employees.reduce((sum, e) => sum + e.phishingCompleted, 0);
     document.getElementById('total-phishing').textContent = totalPhishing;
 
-    // Streak Trend Line Chart
     if (streakChart) streakChart.destroy();
     const streakCtx = document.getElementById('streak-trend').getContext('2d');
     streakChart = new Chart(streakCtx, {
@@ -544,7 +568,6 @@ function loadAnalytics() {
         options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Dept Points Bar Chart
     if (deptPointsChart) deptPointsChart.destroy();
     const depts = {};
     currentCompany.employees.forEach(e => {
@@ -576,6 +599,7 @@ function loadProfile() {
         document.getElementById('profile-points').textContent = 'Points: N/A';
         document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
         document.getElementById('badges-list').innerHTML = '<li>N/A in Developer Mode</li>';
+        document.getElementById('certificate-card').hidden = true;
     } else {
         const user = currentCompany.employees[currentUserIndex];
         document.getElementById('profile-name').textContent = `Name: ${user.name}`;
@@ -596,6 +620,7 @@ function loadProfile() {
                 badgesList.appendChild(li);
             });
         }
+        document.getElementById('certificate-card').hidden = user.quizCompleted < questions.length;
     }
 }
 
@@ -606,6 +631,42 @@ function getBadges(user) {
     if (currentCompany.streak >= 5) badges.push('🔥 Streak King: Achieved a streak of 5+!');
     if (user.completion === 100) badges.push('🌟 Cyber Hero: 100% completion!');
     return badges;
+}
+
+function downloadCertificate() {
+    const user = currentCompany.employees[currentUserIndex];
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const latexContent = `
+\\documentclass[a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\geometry{margin=1in}
+\\usepackage{times}
+\\begin{document}
+\\begin{center}
+{\\LARGE \\textbf{Certificate of Completion}}\\\\
+\\vspace{1cm}
+This certifies that\\\\
+{\\Huge ${user.name}}\\\\
+has successfully completed the\\\\
+{\\Large Cybersecurity Awareness Quiz}\\\\
+at ${currentCompany.name} on ${date}.\\\\
+\\vspace{1cm}
+{\\large Congratulations on your achievement!}\\\\
+\\vspace{0.5cm}
+{\\small Issued by DefendIQ}
+\\end{center}
+\\end{document}
+`;
+    const blob = new Blob([latexContent], { type: 'text/latex' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${user.name}_Quiz_Certificate.tex`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 function exportCSV() {
