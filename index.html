@@ -11,10 +11,20 @@
 <body>
     <section id="landing" style="display: block;">
         <div class="landing-container">
+            <div class="landing-left">
+                <label for="company-select-landing">Company</label>
+                <select id="company-select-landing" onchange="updateCompany(this.value)">
+                    <option value="" disabled selected>Select your company</option>
+                    <option value="Openserve">Openserve</option>
+                    <option value="FiberLink">FiberLink</option>
+                    <option value="Gyro">Gyro</option>
+                </select>
+            </div>
             <div class="landing-right">
-                <h1 id="landing-title">🛡️ DefendIQ</h1>
-                <p>Your trusted platform for cybersecurity training and awareness. Stay vigilant, earn points, and protect your organization!</p>
-                <button onclick="startApp()">Start Testing</button>
+                <img src="logos/defendiq-logo.png" alt="DefendIQ Logo" class="landing-logo">
+                <h1 id="landing-title" class="animate-text">🛡️ DefendIQ</h1>
+                <p class="animate-text">Your trusted platform for cybersecurity training. Stay vigilant, earn badges, and protect your organization with confidence!</p>
+                <button onclick="startApp()" class="start-button">Start Training</button>
             </div>
         </div>
     </section>
@@ -69,6 +79,14 @@
         </section>
         <section id="quiz" hidden>
             <h2>Quiz</h2>
+            <label for="test-select">Select Test</label>
+            <select id="test-select" onchange="changeTest(this.value)">
+                <option value="Deepfake Awareness">Deepfake Awareness</option>
+                <option value="Reporting Security Incidents">Reporting Security Incidents</option>
+                <option value="Culture Survey">Culture Survey</option>
+                <option value="Social Engineering">Social Engineering</option>
+                <option value="General Cybersecurity">General Cybersecurity</option>
+            </select>
             <div id="quiz-progress">
                 <div>Quiz Progress: <span id="quiz-progress-text">0%</span></div>
                 <div class="progress-bar">
@@ -77,12 +95,17 @@
             </div>
             <div id="quiz-question"></div>
             <div id="quiz-options"></div>
-            <button onclick="submitQuiz()">Submit Answer</button>
-            <div id="quiz-feedback" style="margin-top: 10px; font-weight: bold;"></div>
+            <button onclick="submitQuiz()" class="quiz-submit">Submit Answer</button>
+            <div id="quiz-feedback"></div>
         </section>
         <section id="phishing" hidden>
             <h2>Phishing Simulation</h2>
-            <div id="phishing-progress">Progress: 0%</div>
+            <div id="phishing-progress">
+                <div>Phishing Progress: <span id="phishing-progress-text">0%</span></div>
+                <div class="progress-bar">
+                    <div id="phishing-progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
             <div id="phishingContainer"></div>
             <button onclick="submitPhishing(true)">Mark as Safe</button>
             <button onclick="submitPhishing(false)">Mark as Phishing</button>
@@ -120,9 +143,9 @@
                 <ul id="badges-list"></ul>
             </div>
             <div class="card" id="certificate-card" hidden>
-                <h3>Quiz Completion Certificate</h3>
-                <p>Congratulations on completing the quiz! Download your certificate below.</p>
-                <button onclick="downloadCertificate()">Download Certificate (PDF)</button>
+                <h3>Quiz Completion Certificates</h3>
+                <p>Congratulations on completing a quiz! Download your certificate below.</p>
+                <div id="certificate-buttons"></div>
             </div>
         </section>
     </main>
