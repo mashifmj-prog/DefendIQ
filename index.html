@@ -1,80 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DefendIQ</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ DefendIQ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <img id="companyLogo" src="logos/default-logo.png" alt="DefendIQ Logo">
-      <h1 id="appTitle">🛡️ DefendIQ</h1>
-    </div>
-    <div class="header-right">
-      <label for="companySelect">Switch Company:</label>
-      <select id="companySelect" onchange="changeCompany()">
-        <option value="defendiq">DefendIQ</option>
-        <option value="openserve">Openserve</option>
-        <option value="fiberlink">FiberLink</option>
-        <option value="gyro">Gyro</option>
-      </select>
-    </div>
-  </header>
-
-  <nav>
-    <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="showSection('leaderboard')">Leaderboard</button>
-    <button onclick="showSection('quiz')">Quiz</button>
-    <button onclick="showSection('phishing')">Phishing Simulation</button>
-    <button onclick="showSection('tips')">Tips</button>
-  </nav>
-
-  <main>
-    <!-- Dashboard -->
-    <section id="dashboard" class="active">
-      <h2>📊 Company Dashboard</h2>
-      <div id="dashboardStats" class="cards-container"></div>
-      <button onclick="exportCSV()">📥 Download Report</button>
-      <div class="chart-container">
-        <canvas id="deptCompletionChart"></canvas>
-      </div>
-      <div class="chart-container">
-        <canvas id="pointsDistributionChart"></canvas>
-      </div>
-    </section>
-
-    <!-- Leaderboard -->
-    <section id="leaderboard" class="hidden">
-      <h2>🏆 Awareness Leaderboard</h2>
-      <div id="leaderboardCards" class="cards-container"></div>
-    </section>
-
-    <!-- Quiz -->
-    <section id="quiz" class="hidden">
-      <h2>🧠 Quick Phishing Awareness Quiz</h2>
-      <div id="quizContainer" class="cards-container"></div>
-    </section>
-
-    <!-- Phishing Simulation -->
-    <section id="phishing" class="hidden">
-      <h2>📧 Phishing Email Simulation</h2>
-      <div id="phishingContainer" class="cards-container"></div>
-    </section>
-
-    <!-- Tips -->
-    <section id="tips" class="hidden">
-      <h2>💡 Security Tips</h2>
-      <ul id="tipsList" class="tips-list"></ul>
-    </section>
-  </main>
-
-  <footer>
-    <p id="footerText">DefendIQ – Trusted by Openserve, FiberLink & Gyro</p>
-  </footer>
-
-  <script src="script.js"></script>
+    <header>
+        <img id="logo" src="logos/default-logo.png" alt="Company Logo" width="50">
+        <h1 id="app-title">🛡️ DefendIQ</h1>
+        <select id="company-select" onchange="changeCompany(this.value)">
+            <option value="Openserve">Openserve</option>
+            <option value="FiberLink">FiberLink</option>
+            <option value="Gyro">Gyro</option>
+        </select>
+    </header>
+    <nav>
+        <button onclick="showSection('dashboard')">Dashboard</button>
+        <button onclick="showSection('leaderboard')">Leaderboard</button>
+        <button onclick="showSection('quiz')">Quiz</button>
+        <button onclick="showSection('phishing')">Phishing Simulation</button>
+        <button onclick="showSection('tips')">Security Tips</button>
+    </nav>
+    <main>
+        <section id="dashboard">
+            <div class="card">
+                <h3>Streak</h3>
+                <span id="streak" class="streak">0</span>
+            </div>
+            <div class="card" id="alerts">
+                <h3>Low Completion Alerts</h3>
+                <ul id="low-performers"></ul>
+            </div>
+            <div class="card">
+                <h3>Avg Completion</h3>
+                <span id="avg-completion">0%</span>
+            </div>
+            <div class="card">
+                <h3>Avg Points</h3>
+                <span id="avg-points">0</span>
+            </div>
+            <div class="card">
+                <h3>Top 3 Performers</h3>
+                <ul id="top3"></ul>
+            </div>
+            <canvas id="dept-chart" width="400" height="200"></canvas>
+            <canvas id="points-pie" width="400" height="200"></canvas>
+            <button onclick="exportCSV()">Export Report (CSV)</button>
+        </section>
+        <section id="leaderboard" hidden>
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-list"></ul>
+        </section>
+        <section id="quiz" hidden>
+            <h2>Quiz</h2>
+            <div id="quiz-question"></div>
+            <div id="quiz-options"></div>
+            <button onclick="submitQuiz()">Submit Answer</button>
+        </section>
+        <section id="phishing" hidden>
+            <h2>Phishing Simulation</h2>
+            <div id="phishingContainer"></div>
+            <button onclick="submitPhishing(true)">Mark as Safe</button>
+            <button onclick="submitPhishing(false)">Mark as Phishing</button>
+        </section>
+        <section id="tips" hidden>
+            <h2>Security Tips</h2>
+            <ul id="tips-list"></ul>
+        </section>
+    </main>
+    <footer>
+        <p id="footer-text">DefendIQ – Trusted by Openserve, FiberLink & Gyro</p>
+    </footer>
+    <script src="script.js"></script>
 </body>
 </html>
