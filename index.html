@@ -28,14 +28,16 @@
     <button onclick="showSection('dashboard')">Dashboard</button>
     <button onclick="showSection('leaderboard')">Leaderboard</button>
     <button onclick="showSection('quiz')">Quiz</button>
+    <button onclick="showSection('phishing')">Phishing Simulation</button>
     <button onclick="showSection('tips')">Tips</button>
   </nav>
 
   <main>
     <!-- Dashboard -->
-    <section id="dashboard" class="hidden">
+    <section id="dashboard" class="active">
       <h2>📊 Company Dashboard</h2>
       <div id="dashboardStats" class="cards-container"></div>
+      <button onclick="exportCSV()">📥 Download Report</button>
       <div class="chart-container">
         <canvas id="deptCompletionChart"></canvas>
       </div>
@@ -45,7 +47,7 @@
     </section>
 
     <!-- Leaderboard -->
-    <section id="leaderboard" class="active">
+    <section id="leaderboard" class="hidden">
       <h2>🏆 Awareness Leaderboard</h2>
       <div id="leaderboardCards" class="cards-container"></div>
     </section>
@@ -54,6 +56,12 @@
     <section id="quiz" class="hidden">
       <h2>🧠 Quick Phishing Awareness Quiz</h2>
       <div id="quizContainer" class="cards-container"></div>
+    </section>
+
+    <!-- Phishing Simulation -->
+    <section id="phishing" class="hidden">
+      <h2>📧 Phishing Email Simulation</h2>
+      <div id="phishingContainer" class="cards-container"></div>
     </section>
 
     <!-- Tips -->
