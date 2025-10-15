@@ -1,10 +1,7 @@
-// --- Companies & Themes ---
+// ----------------- Companies & Themes -----------------
 const companies = {
   defendiq: {
-    name: "DefendIQ",
-    primaryColor: "#222",
-    secondaryColor: "#555",
-    logo: "logos/default-logo.png",
+    name: "DefendIQ", primaryColor: "#222", secondaryColor: "#555", logo: "logos/default-logo.png",
     tips: ["Stay aware of phishing threats.","Use strong passwords.","Think before you click!"],
     employees: [
       { name: "John Doe", dept: "IT", completion: 80, points: 25 },
@@ -13,10 +10,7 @@ const companies = {
     ],
   },
   openserve: {
-    name: "Openserve",
-    primaryColor: "#004d40",
-    secondaryColor: "#26a69a",
-    logo: "logos/openserve-logo.png",
+    name: "Openserve", primaryColor: "#004d40", secondaryColor: "#26a69a", logo: "logos/openserve-logo.png",
     tips: ["Secure infrastructure devices.","Verify network changes.","Report unusual activity."],
     employees: [
       { name: "Alice Smith", dept: "Infra", completion: 100, points: 50 },
@@ -25,10 +19,7 @@ const companies = {
     ],
   },
   fiberlink: {
-    name: "FiberLink",
-    primaryColor: "#0d47a1",
-    secondaryColor: "#42a5f5",
-    logo: "logos/fiberlink-logo.png",
+    name: "FiberLink", primaryColor: "#0d47a1", secondaryColor: "#42a5f5", logo: "logos/fiberlink-logo.png",
     tips: ["Use MFA.","Report suspicious emails.","Update software regularly."],
     employees: [
       { name: "David Green", dept: "Support", completion: 90, points: 45 },
@@ -37,10 +28,7 @@ const companies = {
     ],
   },
   gyro: {
-    name: "Gyro",
-    primaryColor: "#6a1b9a",
-    secondaryColor: "#ba68c8",
-    logo: "logos/gyro-logo.png",
+    name: "Gyro", primaryColor: "#6a1b9a", secondaryColor: "#ba68c8", logo: "logos/gyro-logo.png",
     tips: ["Verify visitor identity.","Report suspicious activity.","Do not leave access cards unattended."],
     employees: [
       { name: "George King", dept: "Facilities", completion: 95, points: 40 },
@@ -50,26 +38,32 @@ const companies = {
   },
 };
 
-// Global state
+// ----------------- Phishing Emails -----------------
+const phishingEmails = [
+  { subject: "Urgent: Update your password", sender: "it-support@fake.com", correct: false },
+  { subject: "Quarterly report attached", sender: "manager@company.com", correct: true },
+  { subject: "Confirm your account login", sender: "security@fake.com", correct: false },
+  { subject: "Meeting agenda", sender: "team@company.com", correct: true }
+];
+
+// ----------------- Global State -----------------
 let currentCompany = companies.defendiq;
 let currentQuiz = 0;
-let deptChart, pointsChart;
+let deptChart, pointsChart, phishingIndex = 0;
 
-// --- Dropdown Change ---
+// ----------------- Company Switch -----------------
 function changeCompany() {
   const org = document.getElementById("companySelect").value.toLowerCase();
   currentCompany = companies[org] || companies.defendiq;
   applyCompanyTheme();
 }
 
-// --- Apply Theme & Update UI ---
+// ----------------- Apply Theme & UI -----------------
 function applyCompanyTheme() {
   document.documentElement.style.setProperty("--primary-color", currentCompany.primaryColor);
   document.documentElement.style.setProperty("--secondary-color", currentCompany.secondaryColor);
-
   document.getElementById("companyLogo").src = currentCompany.logo;
   document.getElementById("companyLogo").alt = currentCompany.name + " Logo";
-
   document.getElementById("appTitle").innerHTML = `🛡️ DefendIQ — ${currentCompany.name}`;
   document.getElementById("footerText").innerText = "DefendIQ – Trusted by Openserve, FiberLink & Gyro";
 
@@ -78,19 +72,4 @@ function applyCompanyTheme() {
   loadQuiz();
   loadDashboard();
   loadCharts();
-}
-
-// --- Navigation ---
-function showSection(id) {
-  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-// --- Leaderboard ---
-function loadLeaderboard() {
-  const container = document.getElementById("leaderboardCards");
-  container.innerHTML = "";
-
-  const employees = [...currentCompany.employees].sort((a,b)=> (b.completion + b.points) - (a.completion + a.points));
-
-  employees.forEach((
+  loadPhishingQuiz();
