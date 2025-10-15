@@ -6,12 +6,26 @@
     <title>🛡️ DefendIQ</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <section id="landing" style="display: block;">
-        <h1>Welcome to DefendIQ</h1>
-        <p>Your trusted platform for cybersecurity training and awareness. Stay vigilant, earn points, and protect your organization!</p>
-        <button onclick="showLogin()">Get Started</button>
+        <div class="landing-container">
+            <div class="landing-left">
+                <label for="company-select-landing">Company</label>
+                <select id="company-select-landing" onchange="updateCompany(this.value)">
+                    <option value="" disabled selected>Select your company</option>
+                    <option value="Openserve">Openserve</option>
+                    <option value="FiberLink">FiberLink</option>
+                    <option value="Gyro">Gyro</option>
+                </select>
+            </div>
+            <div class="landing-right">
+                <h1 id="landing-title">🛡️ DefendIQ</h1>
+                <p>Your trusted platform for cybersecurity training and awareness. Stay vigilant, earn points, and protect your organization!</p>
+                <button onclick="showLogin()">Get Started</button>
+            </div>
+        </div>
     </section>
     <section id="login" hidden>
         <h2>Login to DefendIQ</h2>
@@ -74,7 +88,12 @@
         </section>
         <section id="quiz" hidden>
             <h2>Quiz</h2>
-            <div id="quiz-progress">Progress: 0%</div>
+            <div id="quiz-progress">
+                <div>Quiz Progress: <span id="quiz-progress-text">0%</span></div>
+                <div class="progress-bar">
+                    <div id="quiz-progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
             <div id="quiz-question"></div>
             <div id="quiz-options"></div>
             <button onclick="submitQuiz()">Submit Answer</button>
@@ -118,6 +137,11 @@
             <div class="card">
                 <h3>Achievements</h3>
                 <ul id="badges-list"></ul>
+            </div>
+            <div class="card" id="certificate-card" hidden>
+                <h3>Quiz Completion Certificate</h3>
+                <p>Congratulations on completing the quiz! Download your certificate below.</p>
+                <button onclick="downloadCertificate()">Download Certificate (PDF)</button>
             </div>
         </section>
     </main>
