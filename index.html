@@ -8,9 +8,20 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <section id="login" style="display: block;">
+    <section id="landing" style="display: block;">
+        <h1>Welcome to DefendIQ</h1>
+        <p>Your trusted platform for cybersecurity training and awareness. Stay vigilant, earn points, and protect your organization!</p>
+        <button onclick="showLogin()">Get Started</button>
+    </section>
+    <section id="login" hidden>
         <h2>Login to DefendIQ</h2>
+        <select id="company-select-login" onchange="updateCompany(this.value)">
+            <option value="Openserve">Openserve</option>
+            <option value="FiberLink">FiberLink</option>
+            <option value="Gyro">Gyro</option>
+        </select>
         <input type="text" id="username" placeholder="Enter your name (e.g., Alice Smith)">
+        <label><input type="checkbox" id="developer-mode"> Developer Mode</label>
         <button onclick="login()">Login</button>
     </section>
     <header hidden>
@@ -28,6 +39,7 @@
         <button onclick="showSection('quiz')">Quiz</button>
         <button onclick="showSection('phishing')">Phishing Simulation</button>
         <button onclick="showSection('tips')">Security Tips</button>
+        <button onclick="showSection('analytics')">Analytics</button>
         <button onclick="showSection('profile')">Profile</button>
     </nav>
     <main hidden>
@@ -70,6 +82,7 @@
         </section>
         <section id="phishing" hidden>
             <h2>Phishing Simulation</h2>
+            <div id="phishing-progress">Progress: 0%</div>
             <div id="phishingContainer"></div>
             <button onclick="submitPhishing(true)">Mark as Safe</button>
             <button onclick="submitPhishing(false)">Mark as Phishing</button>
@@ -78,6 +91,19 @@
         <section id="tips" hidden>
             <h2>Security Tips</h2>
             <ul id="tips-list"></ul>
+        </section>
+        <section id="analytics" hidden>
+            <h2>Advanced Analytics</h2>
+            <div class="card">
+                <h3>Total Quizzes Completed</h3>
+                <span id="total-quizzes">0</span>
+            </div>
+            <div class="card">
+                <h3>Total Phishing Simulations Completed</h3>
+                <span id="total-phishing">0</span>
+            </div>
+            <canvas id="streak-trend"></canvas>
+            <canvas id="dept-points-bar"></canvas>
         </section>
         <section id="profile" hidden>
             <h2>User Profile</h2>
@@ -88,6 +114,10 @@
                 <p id="profile-completion"></p>
                 <p id="profile-points"></p>
                 <p id="profile-streak"></p>
+            </div>
+            <div class="card">
+                <h3>Achievements</h3>
+                <ul id="badges-list"></ul>
             </div>
         </section>
     </main>
