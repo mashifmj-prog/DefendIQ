@@ -8,7 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <header>
+    <section id="login" style="display: block;">
+        <h2>Login to DefendIQ</h2>
+        <input type="text" id="username" placeholder="Enter your name (e.g., Alice Smith)">
+        <button onclick="login()">Login</button>
+    </section>
+    <header hidden>
         <img id="logo" src="logos/default-logo.png" alt="Company Logo" width="40">
         <h1 id="app-title">🛡️ DefendIQ</h1>
         <select id="company-select" onchange="changeCompany(this.value)">
@@ -17,14 +22,14 @@
             <option value="Gyro">Gyro</option>
         </select>
     </header>
-    <nav>
+    <nav hidden>
         <button onclick="showSection('dashboard')">Dashboard</button>
         <button onclick="showSection('leaderboard')">Leaderboard</button>
         <button onclick="showSection('quiz')">Quiz</button>
         <button onclick="showSection('phishing')">Phishing Simulation</button>
         <button onclick="showSection('tips')">Security Tips</button>
     </nav>
-    <main>
+    <main hidden>
         <section id="dashboard">
             <div class="card">
                 <h3>Streak</h3>
@@ -59,19 +64,21 @@
             <div id="quiz-question"></div>
             <div id="quiz-options"></div>
             <button onclick="submitQuiz()">Submit Answer</button>
+            <div id="quiz-feedback" style="margin-top: 10px; font-weight: bold;"></div>
         </section>
         <section id="phishing" hidden>
             <h2>Phishing Simulation</h2>
             <div id="phishingContainer"></div>
             <button onclick="submitPhishing(true)">Mark as Safe</button>
             <button onclick="submitPhishing(false)">Mark as Phishing</button>
+            <div id="phishing-feedback" style="margin-top: 10px; font-weight: bold;"></div>
         </section>
         <section id="tips" hidden>
             <h2>Security Tips</h2>
             <ul id="tips-list"></ul>
         </section>
     </main>
-    <footer>
+    <footer hidden>
         <p id="footer-text">DefendIQ – Trusted by Openserve, FiberLink & Gyro</p>
     </footer>
     <script src="script.js"></script>
