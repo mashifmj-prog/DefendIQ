@@ -13,11 +13,11 @@ const companies = {
             "Avoid public Wi-Fi for sensitive tasks."
         ],
         employees: [
-            {name: "Alice Smith", dept: "IT", completion: 90, points: 200},
-            {name: "Bob Johnson", dept: "HR", completion: 70, points: 150},
-            {name: "Charlie Lee", dept: "Finance", completion: 50, points: 100},
-            {name: "Dana Kim", dept: "IT", completion: 85, points: 180},
-            {name: "Evan Patel", dept: "HR", completion: 60, points: 120}
+            {name: "Alice Smith", dept: "IT", completion: 90, points: 200, quizCompleted: 0},
+            {name: "Bob Johnson", dept: "HR", completion: 70, points: 150, quizCompleted: 0},
+            {name: "Charlie Lee", dept: "Finance", completion: 50, points: 100, quizCompleted: 0},
+            {name: "Dana Kim", dept: "IT", completion: 85, points: 180, quizCompleted: 0},
+            {name: "Evan Patel", dept: "HR", completion: 60, points: 120, quizCompleted: 0}
         ],
         streak: 0
     },
@@ -34,11 +34,11 @@ const companies = {
             "Educate family on cyber threats."
         ],
         employees: [
-            {name: "Fiona Green", dept: "Sales", completion: 95, points: 220},
-            {name: "George Harris", dept: "Marketing", completion: 80, points: 160},
-            {name: "Hannah Ivy", dept: "Sales", completion: 55, points: 110},
-            {name: "Ian Jones", dept: "Marketing", completion: 75, points: 140},
-            {name: "Jill King", dept: "Operations", completion: 65, points: 130}
+            {name: "Fiona Green", dept: "Sales", completion: 95, points: 220, quizCompleted: 0},
+            {name: "George Harris", dept: "Marketing", completion: 80, points: 160, quizCompleted: 0},
+            {name: "Hannah Ivy", dept: "Sales", completion: 55, points: 110, quizCompleted: 0},
+            {name: "Ian Jones", dept: "Marketing", completion: 75, points: 140, quizCompleted: 0},
+            {name: "Jill King", dept: "Operations", completion: 65, points: 130, quizCompleted: 0}
         ],
         streak: 0
     },
@@ -55,11 +55,11 @@ const companies = {
             "Participate in regular training sessions."
         ],
         employees: [
-            {name: "Kyle Lane", dept: "Engineering", completion: 88, points: 190},
-            {name: "Laura Miles", dept: "Support", completion: 72, points: 155},
-            {name: "Mike Nolan", dept: "Engineering", completion: 45, points: 90},
-            {name: "Nina Olsen", dept: "Support", completion: 82, points: 170},
-            {name: "Oscar Pike", dept: "Admin", completion: 68, points: 135}
+            {name: "Kyle Lane", dept: "Engineering", completion: 88, points: 190, quizCompleted: 0},
+            {name: "Laura Miles", dept: "Support", completion: 72, points: 155, quizCompleted: 0},
+            {name: "Mike Nolan", dept: "Engineering", completion: 45, points: 90, quizCompleted: 0},
+            {name: "Nina Olsen", dept: "Support", completion: 82, points: 170, quizCompleted: 0},
+            {name: "Oscar Pike", dept: "Admin", completion: 68, points: 135, quizCompleted: 0}
         ],
         streak: 0
     }
@@ -191,6 +191,7 @@ function showSection(id) {
     if (id === 'quiz') loadQuiz();
     if (id === 'phishing') loadPhishingQuiz();
     if (id === 'tips') loadTips();
+    if (id === 'profile') loadProfile();
 }
 
 function loadDashboard() {
@@ -301,6 +302,13 @@ function loadQuiz() {
         optionsDiv.appendChild(label);
     });
     document.getElementById('quiz-feedback').textContent = '';
+    updateQuizProgress();
+}
+
+function updateQuizProgress() {
+    const user = currentCompany.employees[currentUserIndex];
+    const progress = (user.quizCompleted / questions.length) * 100;
+    document.getElementById('quiz-progress').textContent = `Progress: ${progress.toFixed(0)}% (${user.quizCompleted}/${questions.length} completed)`;
 }
 
 function submitQuiz() {
@@ -310,12 +318,13 @@ function submitQuiz() {
     const correct = parseInt(selected.value) === q.correct;
     const feedback = document.getElementById('quiz-feedback');
     if (correct) {
-        feedback.textContent = "✅ Well done! Answer correct. Keep up the good work!";
+        feedback.textContent = `✅ Correct! The right answer is "${q.options[q.correct]}". You've earned 10 points and increased your completion by 5%.`;
         currentCompany.employees[currentUserIndex].points += 10;
         currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
+        currentCompany.employees[currentUserIndex].quizCompleted = Math.min(questions.length, currentCompany.employees[currentUserIndex].quizCompleted + 1);
         currentCompany.streak += 1;
     } else {
-        feedback.textContent = "❌ Incorrect. Streak reset. Try again!";
+        feedback.textContent = `❌ Incorrect. The correct answer is "${q.options[q.correct]}". Your streak has been reset. Review the security tips for more details.`;
         currentCompany.streak = 0;
     }
     quizIndex++;
@@ -339,13 +348,15 @@ function submitPhishing(isSafe) {
     const email = phishingEmails[phishingIndex % phishingEmails.length];
     const correct = email.correct === isSafe;
     const feedback = document.getElementById('phishing-feedback');
+    const action = isSafe ? "Safe" : "Phishing";
+    const correctAction = email.correct ? "Safe" : "Phishing";
     if (correct) {
-        feedback.textContent = "✅ Well done! Correct identification. You're improving!";
+        feedback.textContent = `✅ Correct! This email is ${correctAction}. Great job identifying it correctly. You've earned 10 points and increased your completion by 5%.`;
         currentCompany.employees[currentUserIndex].points += 10;
         currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
         currentCompany.streak += 1;
     } else {
-        feedback.textContent = "❌ Incorrect. Streak reset. Review the tips!";
+        feedback.textContent = `❌ Incorrect. You marked it as ${action}, but it is actually ${correctAction}. Streak reset. Tip: Check sender and subject for suspicious signs.`;
         currentCompany.streak = 0;
     }
     phishingIndex++;
@@ -362,6 +373,15 @@ function loadTips() {
         li.textContent = tip;
         list.appendChild(li);
     });
+}
+
+function loadProfile() {
+    const user = currentCompany.employees[currentUserIndex];
+    document.getElementById('profile-name').textContent = `Name: ${user.name}`;
+    document.getElementById('profile-dept').textContent = `Department: ${user.dept}`;
+    document.getElementById('profile-completion').textContent = `Completion: ${user.completion}%`;
+    document.getElementById('profile-points').textContent = `Points: ${user.points}`;
+    document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
 }
 
 function exportCSV() {
