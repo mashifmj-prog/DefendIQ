@@ -8,37 +8,43 @@
 </head>
 <body>
   <header>
-    <h1 id="appTitle">🛡️ DefendIQ</h1>
-    <nav>
-      <button onclick="showSection('leaderboard')">Leaderboard</button>
-      <button onclick="showSection('quiz')">Quiz</button>
-      <button onclick="showSection('tips')">Tips</button>
-    </nav>
+    <div class="header-left">
+      <img id="companyLogo" src="logos/default-logo.png" alt="DefendIQ Logo" />
+      <h1 id="appTitle">🛡️ DefendIQ</h1>
+    </div>
+    <div class="header-right">
+      <label for="companySelect">Switch Company:</label>
+      <select id="companySelect" onchange="changeCompany()">
+        <option value="">DefendIQ</option>
+        <option value="openserve">Openserve</option>
+        <option value="fiberlink">FiberLink</option>
+      </select>
+    </div>
   </header>
+
+  <nav>
+    <button onclick="showSection('leaderboard')">Leaderboard</button>
+    <button onclick="showSection('quiz')">Quiz</button>
+    <button onclick="showSection('tips')">Tips</button>
+  </nav>
 
   <main>
     <!-- Leaderboard -->
     <section id="leaderboard" class="active">
       <h2>🏆 Awareness Leaderboard</h2>
-      <table id="leaderboardTable">
-        <thead>
-          <tr><th>Rank</th><th>Name</th><th>Department</th><th>Completion %</th><th>Points</th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div id="leaderboardCards" class="cards-container"></div>
     </section>
 
     <!-- Quiz -->
     <section id="quiz" class="hidden">
       <h2>🧠 Quick Phishing Awareness Quiz</h2>
-      <div id="quizContainer"></div>
-      <button id="nextQuiz" onclick="loadQuiz()">Next Question</button>
+      <div id="quizContainer" class="cards-container"></div>
     </section>
 
     <!-- Tips -->
     <section id="tips" class="hidden">
       <h2>💡 Security Tips</h2>
-      <ul id="tipsList"></ul>
+      <ul id="tipsList" class="tips-list"></ul>
     </section>
   </main>
 
