@@ -22,19 +22,10 @@ header {
   padding: 1rem 2rem;
 }
 
-header h1 {
-  margin: 0;
-}
+header h1 { margin: 0; }
 
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.header-left img {
-  height: 50px;
-  margin-right: 1rem;
-}
+.header-left { display: flex; align-items: center; }
+.header-left img { height: 50px; margin-right: 1rem; }
 
 header select {
   padding: 0.3rem;
@@ -59,23 +50,12 @@ nav button {
   cursor: pointer;
 }
 
-nav button:hover {
-  opacity: 0.85;
-}
+nav button:hover { opacity: 0.85; }
 
-main {
-  padding: 2rem;
-  max-width: 1000px;
-  margin: auto;
-}
+main { padding: 2rem; max-width: 1000px; margin: auto; }
 
-section {
-  display: none;
-}
-
-section.active {
-  display: block;
-}
+section { display: none; }
+section.active { display: block; }
 
 .cards-container {
   display: grid;
@@ -91,15 +71,9 @@ section.active {
   box-shadow: 0 2px 6px var(--card-shadow);
 }
 
-.card h3 {
-  margin-top: 0;
-}
+.card h3 { margin-top: 0; }
 
-.tips-list {
-  list-style: none;
-  padding: 0;
-}
-
+.tips-list { list-style: none; padding: 0; }
 .tips-list li {
   background: var(--card-bg);
   padding: 0.75rem 1rem;
@@ -147,10 +121,7 @@ footer {
   transition: all 0.3s ease-in-out;
 }
 
-.low-alert {
-  background: #ffebee;
-  color: #c62828;
-}
+.low-alert { background: #ffebee; color: #c62828; }
 
 .chart-container {
   background: var(--card-bg);
