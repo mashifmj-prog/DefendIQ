@@ -66,8 +66,8 @@ const companies = {
 };
 
 const phishingEmails = [
-    {subject: "Urgent: Account Suspension Notice", sender: "admin@yourbank.com", correct: false}, // Phishing
-    {subject: "Team Meeting Agenda", sender: "manager@company.com", correct: true}, // Safe
+    {subject: "Urgent: Account Suspension Notice", sender: "admin@yourbank.com", correct: false},
+    {subject: "Team Meeting Agenda", sender: "manager@company.com", correct: true},
     {subject: "Win a Free iPhone!", sender: "promotions@apple-giveaway.com", correct: false},
     {subject: "Expense Report Approval", sender: "finance@company.com", correct: true},
     {subject: "Reset Your Password Now", sender: "support@netflix.com", correct: false}
@@ -107,7 +107,6 @@ let quizIndex = 0;
 let deptChart = null;
 let pointsPie = null;
 
-// Key Functions
 function changeCompany(companyName) {
     currentCompany = companies[companyName];
     applyCompanyTheme();
@@ -138,24 +137,17 @@ function showSection(id) {
 }
 
 function loadDashboard() {
-    // Streak
     document.getElementById('streak').textContent = currentCompany.streak;
 
-    // Alerts
     const lowPerformers = currentCompany.employees.filter(e => e.completion < 60);
     const lowList = document.getElementById('low-performers');
-    lowList.innerHTML = '';
-    if (lowPerformers.length === 0) {
-        lowList.innerHTML = '<li>No low performers!</li>';
-    } else {
-        lowPerformers.forEach(e => {
-            const li = document.createElement('li');
-            li.textContent = `${e.name} (${e.dept}): ${e.completion}%`;
-            lowList.appendChild(li);
-        });
-    }
+    lowList.innerHTML = lowPerformers.length === 0 ? '<li>No low performers!</li>' : '';
+    lowPerformers.forEach(e => {
+        const li = document.createElement('li');
+        li.textContent = `${e.name} (${e.dept}): ${e.completion}%`;
+        lowList.appendChild(li);
+    });
 
-    // Averages
     const totalCompletion = currentCompany.employees.reduce((sum, e) => sum + e.completion, 0);
     const avgCompletion = (totalCompletion / currentCompany.employees.length).toFixed(0);
     document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
@@ -164,7 +156,6 @@ function loadDashboard() {
     const avgPoints = (totalPoints / currentCompany.employees.length).toFixed(0);
     document.getElementById('avg-points').textContent = avgPoints;
 
-    // Top 3
     const sorted = [...currentCompany.employees].sort((a, b) => b.points - a.points);
     const top3List = document.getElementById('top3');
     top3List.innerHTML = '';
@@ -174,16 +165,13 @@ function loadDashboard() {
         top3List.appendChild(li);
     });
 
-    // Charts
     loadCharts();
 }
 
 function loadCharts() {
-    // Destroy old charts if exist
     if (deptChart) deptChart.destroy();
     if (pointsPie) pointsPie.destroy();
 
-    // Group by dept
     const depts = {};
     currentCompany.employees.forEach(e => {
         if (!depts[e.dept]) depts[e.dept] = { completion: [], points: 0 };
@@ -198,7 +186,6 @@ function loadCharts() {
     });
     const deptPoints = deptLabels.map(d => depts[d].points);
 
-    // Bar Chart: Dept Completion
     const deptCtx = document.getElementById('dept-chart').getContext('2d');
     deptChart = new Chart(deptCtx, {
         type: 'bar',
@@ -213,7 +200,6 @@ function loadCharts() {
         options: { scales: { y: { beginAtZero: true } } }
     });
 
-    // Pie Chart: Points Distribution
     const pieCtx = document.getElementById('points-pie').getContext('2d');
     pointsPie = new Chart(pieCtx, {
         type: 'pie',
@@ -221,7 +207,7 @@ function loadCharts() {
             labels: deptLabels,
             datasets: [{
                 data: deptPoints,
-                backgroundColor: [currentCompany.primaryColor, currentCompany.secondaryColor, '#ccc'] // Extend if more depts
+                backgroundColor: [currentCompany.primaryColor, currentCompany.secondaryColor, '#ccc']
             }]
         }
     });
@@ -234,7 +220,7 @@ function loadLeaderboard() {
     sorted.forEach((e, index) => {
         const li = document.createElement('li');
         li.textContent = `#${index + 1} ${e.name} (${e.dept}): ${e.completion}% completion, ${e.points} points`;
-        if (index < 3) li.style.fontWeight = 'bold'; // Highlight top 3
+        if (index < 3) li.style.fontWeight = 'bold';
         list.appendChild(li);
     });
 }
@@ -263,7 +249,7 @@ function submitQuiz() {
     const correct = parseInt(selected.value) === q.correct;
     if (correct) {
         alert("✅ Correct!");
-        currentCompany.employees[0].points += 10; // Demo: update first employee
+        currentCompany.employees[0].points += 10;
         currentCompany.streak += 1;
     } else {
         alert("❌ Incorrect. Streak reset.");
@@ -290,7 +276,7 @@ function submitPhishing(isSafe) {
     const correct = email.correct === isSafe;
     if (correct) {
         alert("✅ Correct!");
-        currentCompany.employees[0].points += 10; // Demo: update first employee
+        currentCompany.employees[0].points += 10;
         currentCompany.streak += 1;
     } else {
         alert("❌ Incorrect. Streak reset.");
@@ -326,7 +312,6 @@ function exportCSV() {
     document.body.removeChild(link);
 }
 
-// Initialize
 window.onload = () => {
     changeCompany('Openserve');
     showSection('dashboard');
