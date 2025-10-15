@@ -70,7 +70,12 @@ const phishingEmails = [
     {subject: "Team Meeting Agenda", sender: "manager@company.com", correct: true},
     {subject: "Win a Free iPhone!", sender: "promotions@apple-giveaway.com", correct: false},
     {subject: "Expense Report Approval", sender: "finance@company.com", correct: true},
-    {subject: "Reset Your Password Now", sender: "support@netflix.com", correct: false}
+    {subject: "Reset Your Password Now", sender: "support@netflix.com", correct: false},
+    {subject: "Your Invoice is Ready", sender: "billing@amazon.com", correct: false},
+    {subject: "Weekly Newsletter", sender: "news@company.com", correct: true},
+    {subject: "Security Alert: Unusual Activity", sender: "security@google.com", correct: false},
+    {subject: "Project Update", sender: "teamlead@company.com", correct: true},
+    {subject: "Claim Your Prize", sender: "winners@lottery.com", correct: false}
 ];
 
 const questions = [
@@ -98,18 +103,70 @@ const questions = [
         question: "Best password practice?",
         options: ["Use 'password123'", "Short and simple", "Long, unique with symbols"],
         correct: 2
+    },
+    {
+        question: "What is malware?",
+        options: ["Malicious software", "A type of email", "A secure protocol"],
+        correct: 0
+    },
+    {
+        question: "How to spot a fake website?",
+        options: ["Look for HTTPS and padlock", "Click all links", "Ignore URL"],
+        correct: 0
+    },
+    {
+        question: "What is ransomware?",
+        options: ["Software that encrypts files for ransom", "A free software", "A game"],
+        correct: 0
+    },
+    {
+        question: "Importance of software updates?",
+        options: ["They fix security vulnerabilities", "They slow down the computer", "They are optional"],
+        correct: 0
+    },
+    {
+        question: "What is social engineering?",
+        options: ["Manipulating people to divulge info", "Building social networks", "Engineering society"],
+        correct: 0
     }
 ];
 
 let currentCompany = companies["Openserve"];
+let currentUserIndex = -1;
 let phishingIndex = 0;
 let quizIndex = 0;
 let deptChart = null;
 let pointsPie = null;
 
+function login() {
+    const username = document.getElementById('username').value.trim();
+    if (!username) return alert('Please enter your name.');
+    
+    const employeeIndex = currentCompany.employees.findIndex(e => e.name.toLowerCase() === username.toLowerCase());
+    if (employeeIndex === -1) return alert('User not found. Please try again.');
+    
+    currentUserIndex = employeeIndex;
+    localStorage.setItem('currentUser', JSON.stringify({company: currentCompany.name, index: currentUserIndex}));
+    
+    document.getElementById('login').style.display = 'none';
+    document.querySelector('header').hidden = false;
+    document.querySelector('nav').hidden = false;
+    document.querySelector('main').hidden = false;
+    document.querySelector('footer').hidden = false;
+    
+    applyCompanyTheme();
+    showSection('dashboard');
+}
+
 function changeCompany(companyName) {
     currentCompany = companies[companyName];
-    applyCompanyTheme();
+    currentUserIndex = -1; // Reset user on company change
+    localStorage.removeItem('currentUser');
+    document.getElementById('login').style.display = 'block';
+    document.querySelector('header').hidden = true;
+    document.querySelector('nav').hidden = true;
+    document.querySelector('main').hidden = true;
+    document.querySelector('footer').hidden = true;
 }
 
 function applyCompanyTheme() {
@@ -126,7 +183,7 @@ function applyCompanyTheme() {
 }
 
 function showSection(id) {
-    const sections = document.querySelectorAll('section');
+    const sections = document.querySelectorAll('main > section');
     sections.forEach(section => section.hidden = true);
     document.getElementById(id).hidden = false;
     if (id === 'dashboard') loadDashboard();
@@ -243,6 +300,7 @@ function loadQuiz() {
         label.appendChild(document.createTextNode(opt));
         optionsDiv.appendChild(label);
     });
+    document.getElementById('quiz-feedback').textContent = '';
 }
 
 function submitQuiz() {
@@ -250,13 +308,14 @@ function submitQuiz() {
     if (!selected) return alert("Select an answer!");
     const q = questions[quizIndex % questions.length];
     const correct = parseInt(selected.value) === q.correct;
+    const feedback = document.getElementById('quiz-feedback');
     if (correct) {
-        alert("✅ Correct!");
-        currentCompany.employees[0].points += 10;
-        currentCompany.employees[0].completion = Math.min(100, currentCompany.employees[0].completion + 5);
+        feedback.textContent = "✅ Well done! Answer correct. Keep up the good work!";
+        currentCompany.employees[currentUserIndex].points += 10;
+        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
         currentCompany.streak += 1;
     } else {
-        alert("❌ Incorrect. Streak reset.");
+        feedback.textContent = "❌ Incorrect. Streak reset. Try again!";
         currentCompany.streak = 0;
     }
     quizIndex++;
@@ -273,18 +332,20 @@ function loadPhishingQuiz() {
         <p><strong>Subject:</strong> ${email.subject}</p>
         <p>Body: [Simulated email content here]</p>
     `;
+    document.getElementById('phishing-feedback').textContent = '';
 }
 
 function submitPhishing(isSafe) {
     const email = phishingEmails[phishingIndex % phishingEmails.length];
     const correct = email.correct === isSafe;
+    const feedback = document.getElementById('phishing-feedback');
     if (correct) {
-        alert("✅ Correct!");
-        currentCompany.employees[0].points += 10;
-        currentCompany.employees[0].completion = Math.min(100, currentCompany.employees[0].completion + 5);
+        feedback.textContent = "✅ Well done! Correct identification. You're improving!";
+        currentCompany.employees[currentUserIndex].points += 10;
+        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
         currentCompany.streak += 1;
     } else {
-        alert("❌ Incorrect. Streak reset.");
+        feedback.textContent = "❌ Incorrect. Streak reset. Review the tips!";
         currentCompany.streak = 0;
     }
     phishingIndex++;
@@ -318,6 +379,19 @@ function exportCSV() {
 }
 
 window.onload = () => {
-    changeCompany('Openserve');
-    showSection('dashboard');
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        const {company, index} = JSON.parse(savedUser);
+        currentCompany = companies[company];
+        currentUserIndex = index;
+        document.getElementById('login').style.display = 'none';
+        document.querySelector('header').hidden = false;
+        document.querySelector('nav').hidden = false;
+        document.querySelector('main').hidden = false;
+        document.querySelector('footer').hidden = false;
+        applyCompanyTheme();
+        showSection('dashboard');
+    } else {
+        changeCompany('Openserve');
+    }
 };
