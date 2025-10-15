@@ -13,12 +13,16 @@
         <div class="landing-container">
             <div class="landing-left">
                 <label for="company-select-landing">Company</label>
-                <select id="company-select-landing" onchange="updateCompany(this.value)">
-                    <option value="" disabled selected>Select your company</option>
-                    <option value="Openserve">Openserve</option>
-                    <option value="FiberLink">FiberLink</option>
-                    <option value="Gyro">Gyro</option>
-                </select>
+                <div class="dropdown-container">
+                    <select id="company-select-landing" onchange="updateCompany(this.value)">
+                        <option value="" disabled selected>Select your company</option>
+                        <option value="Openserve">Openserve</option>
+                        <option value="FiberLink">FiberLink</option>
+                        <option value="Gyro">Gyro</option>
+                        <option value="Exit">Exit</option>
+                    </select>
+                    <button id="close-dropdown" onclick="resetDropdown()">×</button>
+                </div>
             </div>
             <div class="landing-right">
                 <img src="logos/defendiq-logo.png" alt="DefendIQ Logo" class="landing-logo">
