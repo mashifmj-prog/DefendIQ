@@ -9,7 +9,7 @@ body {
     padding: 0;
     background-color: #f4f4f4;
     color: #333;
-    font-size: 16px; /* Base for desktop */
+    font-size: 16px;
 }
 
 header {
@@ -28,7 +28,7 @@ header img {
 
 header h1 {
     margin: 0;
-    font-size: 1.2rem; /* Smaller for mobile */
+    font-size: 1.2rem;
     flex: 1;
 }
 
@@ -57,7 +57,7 @@ nav button {
     cursor: pointer;
     font-size: 0.9rem;
     padding: 10px;
-    min-width: 44px; /* Touch target */
+    min-width: 44px;
     min-height: 44px;
     border-radius: 4px;
 }
@@ -111,11 +111,19 @@ li {
     background: #eee;
     border-radius: 4px;
     font-size: 0.9rem;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 canvas {
     max-width: 100%;
-    height: auto;
+    height: 200px;
+    display: block;
+    margin: 0 auto;
 }
 
 button {
@@ -147,7 +155,7 @@ footer {
 
 @media (max-width: 600px) {
     body {
-        font-size: 14px; /* Smaller base for phones */
+        font-size: 14px;
     }
     header {
         flex-direction: column;
@@ -172,8 +180,13 @@ footer {
         padding: 10px;
     }
     canvas {
-        width: 100% !important;
-        height: 120px !important;
+        height: 150px;
+    }
+}
+
+@media (min-width: 601px) {
+    canvas {
+        height: 400px; /* Very big on desktop */
     }
 }
 
