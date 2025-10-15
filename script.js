@@ -223,84 +223,53 @@ const questions = [
     }
 ];
 
-let currentCompany = null;
-let currentUserIndex = -1;
+let currentCompany = companies["Openserve"];
+let currentUserIndex = 0;
 let phishingIndex = 0;
 let quizIndex = 0;
 let deptChart = null;
 let pointsPie = null;
 let streakChart = null;
 let deptPointsChart = null;
-let isDeveloperMode = false;
 
 const encouragementPhrases = ['Great job! 🚀', 'Awesome! 🌟', 'Well done! 👏', 'Keep it up! 💪', 'Nice catch! 🕵️'];
 
-function showLogin() {
-    if (!document.getElementById('company-select-landing').value) {
-        return alert('Please select a company.');
-    }
+function startApp() {
     document.getElementById('landing').hidden = true;
-    document.getElementById('login').hidden = false;
-    document.getElementById('company-select-login').value = currentCompany.name;
-}
-
-function updateCompany(companyName) {
-    if (companyName) {
-        currentCompany = companies[companyName];
-        document.getElementById('landing-title').textContent = `🛡️ DefendIQ${isDeveloperMode ? ' (Developer Mode)' : ''}`;
-        applyCompanyTheme();
-    }
-}
-
-function login() {
-    isDeveloperMode = document.getElementById('developer-mode').checked;
-    if (!isDeveloperMode) {
-        const username = document.getElementById('username').value.trim();
-        if (!username) return alert('Please enter your name.');
-        
-        const employeeIndex = currentCompany.employees.findIndex(e => e.name.toLowerCase() === username.toLowerCase());
-        if (employeeIndex === -1) return alert('User not found. Please try again.');
-        
-        currentUserIndex = employeeIndex;
-        localStorage.setItem('currentUser', JSON.stringify({company: currentCompany.name, index: currentUserIndex}));
-    } else {
-        currentUserIndex = 0;
-        localStorage.setItem('currentUser', JSON.stringify({company: currentCompany.name, index: currentUserIndex, developer: true}));
-    }
-    
-    document.getElementById('login').style.display = 'none';
     document.querySelector('header').hidden = false;
     document.querySelector('nav').hidden = false;
     document.querySelector('main').hidden = false;
     document.querySelector('footer').hidden = false;
-    
     applyCompanyTheme();
     showSection('dashboard');
 }
 
+function logout() {
+    currentCompany = companies["Openserve"];
+    currentUserIndex = 0;
+    phishingIndex = 0;
+    quizIndex = 0;
+    document.getElementById('landing').hidden = false;
+    document.querySelector('header').hidden = true;
+    document.querySelector('nav').hidden = true;
+    document.querySelector('main').hidden = true;
+    document.querySelector('footer').hidden = true;
+    applyCompanyTheme();
+}
+
 function changeCompany(companyName) {
     currentCompany = companies[companyName];
-    if (!isDeveloperMode) {
-        currentUserIndex = -1;
-        localStorage.removeItem('currentUser');
-        document.getElementById('login').style.display = 'block';
-        document.querySelector('header').hidden = true;
-        document.querySelector('nav').hidden = true;
-        document.querySelector('main').hidden = true;
-        document.querySelector('footer').hidden = true;
-    } else {
-        applyCompanyTheme();
-        loadProfile();
-    }
+    currentUserIndex = 0;
+    applyCompanyTheme();
 }
 
 function applyCompanyTheme() {
-    if (!currentCompany) return;
     document.documentElement.style.setProperty('--primary-color', currentCompany.primaryColor);
     document.documentElement.style.setProperty('--secondary-color', currentCompany.secondaryColor);
     document.getElementById('logo').src = currentCompany.logo;
-    document.getElementById('app-title').textContent = `🛡️ DefendIQ — ${currentCompany.name}${isDeveloperMode ? ' (Developer Mode)' : ''}`;
+    document.getElementById('app-title').textContent = `🛡️ DefendIQ — ${currentCompany.name}`;
     document.getElementById('footer-text').textContent = `DefendIQ – Trusted by Openserve, FiberLink & Gyro`;
+    document.getElementById('company-select').value = currentCompany.name;
     loadDashboard();
     loadLeaderboard();
     loadTips();
@@ -414,7 +383,7 @@ function loadLeaderboard() {
 }
 
 function loadQuiz() {
-    if (!isDeveloperMode && currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+    if (currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
         document.getElementById('quiz-question').textContent = 'Quiz Completed!';
         document.getElementById('quiz-options').innerHTML = '';
         document.getElementById('quiz-feedback').textContent = '🎉 Congratulations! You’ve mastered all quizzes! Check your Profile for your certificate and Quiz Master badge.';
@@ -439,11 +408,6 @@ function loadQuiz() {
 }
 
 function updateQuizProgress() {
-    if (isDeveloperMode) {
-        document.getElementById('quiz-progress-text').textContent = 'N/A (Developer Mode)';
-        document.getElementById('quiz-progress-bar').style.width = '0%';
-        return;
-    }
     const user = currentCompany.employees[currentUserIndex];
     const progress = (user.quizCompleted / questions.length) * 100;
     document.getElementById('quiz-progress-text').textContent = `${progress.toFixed(0)}% (${user.quizCompleted}/${questions.length})`;
@@ -451,7 +415,7 @@ function updateQuizProgress() {
 }
 
 function submitQuiz() {
-    if (!isDeveloperMode && currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+    if (currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
         showSection('profile');
         return;
     }
@@ -464,22 +428,20 @@ function submitQuiz() {
     const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
     if (correct) {
         feedback.textContent = `${randomPhrase} Correct! "${yourAnswer}" is right. ${q.explanation} +10 points, +5% completion.`;
-        if (!isDeveloperMode) {
-            currentCompany.employees[currentUserIndex].points += 10;
-            currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
-            currentCompany.employees[currentUserIndex].quizCompleted = Math.min(questions.length, currentCompany.employees[currentUserIndex].quizCompleted + 1);
-            currentCompany.streak += 1;
-            currentCompany.streakHistory.push(currentCompany.streak);
-            if (currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
-                feedback.textContent = '🎉 Congratulations! You’ve mastered all quizzes! Check your Profile for your certificate and Quiz Master badge.';
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                showSection('profile');
-                return;
-            }
+        currentCompany.employees[currentUserIndex].points += 10;
+        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
+        currentCompany.employees[currentUserIndex].quizCompleted = Math.min(questions.length, currentCompany.employees[currentUserIndex].quizCompleted + 1);
+        currentCompany.streak += 1;
+        currentCompany.streakHistory.push(currentCompany.streak);
+        if (currentCompany.employees[currentUserIndex].quizCompleted >= questions.length) {
+            feedback.textContent = '🎉 Congratulations! You’ve mastered all quizzes! Check your Profile for your certificate and Quiz Master badge.';
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            showSection('profile');
+            return;
         }
     } else {
         feedback.textContent = `Oops! Incorrect. You chose "${yourAnswer}", but it's "${q.options[q.correct]}". ${q.explanation} Streak reset. Try again!`;
-        if (!isDeveloperMode) currentCompany.streak = 0;
+        currentCompany.streak = 0;
     }
     quizIndex++;
     loadQuiz();
@@ -500,10 +462,6 @@ function loadPhishingQuiz() {
 }
 
 function updatePhishingProgress() {
-    if (isDeveloperMode) {
-        document.getElementById('phishing-progress').textContent = 'Progress: N/A (Developer Mode)';
-        return;
-    }
     const user = currentCompany.employees[currentUserIndex];
     const progress = (user.phishingCompleted / phishingEmails.length) * 100;
     document.getElementById('phishing-progress').textContent = `Progress: ${progress.toFixed(0)}% (${user.phishingCompleted}/${phishingEmails.length} completed)`;
@@ -518,16 +476,14 @@ function submitPhishing(isSafe) {
     const correctAction = email.correct ? "Safe" : "Phishing";
     if (correct) {
         feedback.textContent = `${randomPhrase} Correct! Marked as ${yourAction}. Tip: Check sender domain. +10 points, +5% completion.`;
-        if (!isDeveloperMode) {
-            currentCompany.employees[currentUserIndex].points += 10;
-            currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
-            currentCompany.employees[currentUserIndex].phishingCompleted = Math.min(phishingEmails.length, currentCompany.employees[currentUserIndex].phishingCompleted + 1);
-            currentCompany.streak += 1;
-            currentCompany.streakHistory.push(currentCompany.streak);
-        }
+        currentCompany.employees[currentUserIndex].points += 10;
+        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
+        currentCompany.employees[currentUserIndex].phishingCompleted = Math.min(phishingEmails.length, currentCompany.employees[currentUserIndex].phishingCompleted + 1);
+        currentCompany.streak += 1;
+        currentCompany.streakHistory.push(currentCompany.streak);
     } else {
         feedback.textContent = `Whoops! Incorrect. Marked as ${yourAction}, but it's ${correctAction}. Tip: Watch for urgent language. Streak reset. Keep practicing!`;
-        if (!isDeveloperMode) currentCompany.streak = 0;
+        currentCompany.streak = 0;
     }
     phishingIndex++;
     loadPhishingQuiz();
@@ -592,36 +548,26 @@ function loadAnalytics() {
 }
 
 function loadProfile() {
-    if (isDeveloperMode) {
-        document.getElementById('profile-name').textContent = 'Name: Developer Mode';
-        document.getElementById('profile-dept').textContent = 'Department: N/A';
-        document.getElementById('profile-completion').textContent = 'Completion: N/A';
-        document.getElementById('profile-points').textContent = 'Points: N/A';
-        document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
-        document.getElementById('badges-list').innerHTML = '<li>N/A in Developer Mode</li>';
-        document.getElementById('certificate-card').hidden = true;
-    } else {
-        const user = currentCompany.employees[currentUserIndex];
-        document.getElementById('profile-name').textContent = `Name: ${user.name}`;
-        document.getElementById('profile-dept').textContent = `Department: ${user.dept}`;
-        document.getElementById('profile-completion').textContent = `Completion: ${user.completion}%`;
-        document.getElementById('profile-points').textContent = `Points: ${user.points}`;
-        document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
+    const user = currentCompany.employees[currentUserIndex];
+    document.getElementById('profile-name').textContent = `Name: ${user.name}`;
+    document.getElementById('profile-dept').textContent = `Department: ${user.dept}`;
+    document.getElementById('profile-completion').textContent = `Completion: ${user.completion}%`;
+    document.getElementById('profile-points').textContent = `Points: ${user.points}`;
+    document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
 
-        const badgesList = document.getElementById('badges-list');
-        badgesList.innerHTML = '';
-        const badges = getBadges(user);
-        if (badges.length === 0) {
-            badgesList.innerHTML = '<li>No badges yet—keep training!</li>';
-        } else {
-            badges.forEach(badge => {
-                const li = document.createElement('li');
-                li.textContent = badge;
-                badgesList.appendChild(li);
-            });
-        }
-        document.getElementById('certificate-card').hidden = user.quizCompleted < questions.length;
+    const badgesList = document.getElementById('badges-list');
+    badgesList.innerHTML = '';
+    const badges = getBadges(user);
+    if (badges.length === 0) {
+        badgesList.innerHTML = '<li>No badges yet—keep training!</li>';
+    } else {
+        badges.forEach(badge => {
+            const li = document.createElement('li');
+            li.textContent = badge;
+            badgesList.appendChild(li);
+        });
     }
+    document.getElementById('certificate-card').hidden = user.quizCompleted < questions.length;
 }
 
 function getBadges(user) {
@@ -670,33 +616,4 @@ at ${currentCompany.name} on ${date}.\\\\
 }
 
 function exportCSV() {
-    let csvContent = "data:text/csv;charset=utf-8,Name,Dept,Completion,Points\n";
-    currentCompany.employees.forEach(e => {
-        csvContent += `${e.name},${e.dept},${e.completion},${e.points}\n`;
-    });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${currentCompany.name}_report.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-window.onload = () => {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        const {company, index, developer} = JSON.parse(savedUser);
-        currentCompany = companies[company];
-        currentUserIndex = index;
-        isDeveloperMode = developer || false;
-        document.getElementById('landing').hidden = true;
-        document.getElementById('login').style.display = 'none';
-        document.querySelector('header').hidden = false;
-        document.querySelector('nav').hidden = false;
-        document.querySelector('main').hidden = false;
-        document.querySelector('footer').hidden = false;
-        applyCompanyTheme();
-        showSection('dashboard');
-    }
-};
+    let csvContent = "data:text/csv;charset=utf-8,Name,Dept,Completion,Points\n
