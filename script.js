@@ -1,107 +1,158 @@
-// Modules Navigation
-const modules = document.querySelectorAll('.module');
+// Elements
+const startBtn = document.getElementById('start-training');
+const landingPage = document.getElementById('landing-page');
+const dashboard = document.getElementById('dashboard');
 const navButtons = document.querySelectorAll('.nav-btn');
+const moduleContent = document.getElementById('module-content');
 
-navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        modules.forEach(m => m.classList.remove('active'));
-        document.getElementById(btn.dataset.module).classList.add('active');
-    });
-});
-
-// Quiz Data
-const quizzes = {
-    keyMessage: [
-        { question: "What is the key message of security training?", options: ["Be alert", "Ignore emails", "Share passwords"], answer: 0 },
-        { question: "Why report incidents?", options: ["To get a reward", "To prevent damage", "It's optional"], answer: 1 },
-        // Add 8 more questions...
-    ],
-    deepfake: [
-        { question: "What is a deepfake?", options: ["A video manipulation", "A real video", "A password"], answer: 0 },
-        // Add 9 more questions...
-    ],
-    reporting: [],
-    culture: [],
-    social: []
-};
-
-// Local Storage
-let stats = JSON.parse(localStorage.getItem('defendiqStats')) || {
-    streak: 0,
-    points: 0,
-    completion: 0,
-    badges: []
-};
+// Stats
+let streak = localStorage.getItem('streak') || 0;
+let points = localStorage.getItem('points') || 0;
+let completion = localStorage.getItem('completion') || 0;
+let badges = JSON.parse(localStorage.getItem('badges')) || [];
 
 // Update Stats UI
 function updateStats() {
-    document.getElementById('streak').innerText = stats.streak;
-    document.getElementById('points').innerText = stats.points;
-    document.getElementById('completion').innerText = stats.completion + '%';
-    document.getElementById('badges').innerText = stats.badges.length ? stats.badges.join(', ') : 'None';
-    localStorage.setItem('defendiqStats', JSON.stringify(stats));
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('points').textContent = points;
+  document.getElementById('completion').textContent = completion + '%';
+  document.getElementById('badges').textContent = badges.length ? badges.join(', ') : 'None';
 }
-
 updateStats();
 
-// Quiz Handling
-const quizButtons = document.querySelectorAll('.quiz-btn');
-const quizContainer = document.getElementById('quiz-container');
-const completionModal = document.getElementById('completion-modal');
-const modalBadges = document.getElementById('modal-badges');
-const closeModal = document.getElementById('close-modal');
-
-let currentQuiz = [];
-let currentIndex = 0;
-
-quizButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const quizName = btn.dataset.quiz;
-        currentQuiz = quizzes[quizName];
-        currentIndex = 0;
-        loadQuestion();
-    });
+// Start Training
+startBtn.addEventListener('click', () => {
+  landingPage.classList.add('hidden');
+  dashboard.classList.remove('hidden');
 });
 
-function loadQuestion() {
-    if (currentIndex >= currentQuiz.length) {
-        // Quiz Complete
-        stats.streak += 1;
-        stats.points += 30;
-        stats.completion = Math.min(stats.completion + 20, 100);
-        stats.badges.push("Bronze"); // Simplified badge system
-        updateStats();
-        modalBadges.innerText = stats.badges.join(', ');
-        completionModal.style.display = "flex";
-        quizContainer.innerHTML = '';
-        return;
-    }
+// Modules Data
+const modules = {
+  quiz: { name: "Quiz", questions: generateDummyQuestions("Quiz") },
+  phishing: { name: "Phishing Simulation", questions: generateDummyQuestions("Phishing") },
+  password: { name: "Password Training", questions: generateDummyQuestions("Password Training") },
+  keymessage: { name: "Key Message", questions: generateDummyQuestions("Key Message") },
+  deepfake: { name: "Deepfake Awareness", questions: generateDummyQuestions("Deepfake Awareness") },
+  reporting: { name: "Reporting Security Incidents", questions: generateDummyQuestions("Reporting") },
+  culture: { name: "Culture Survey", questions: generateDummyQuestions("Culture Survey") },
+  social: { name: "Social Engineering", questions: generateDummyQuestions("Social Engineering") }
+};
 
-    const q = currentQuiz[currentIndex];
-    quizContainer.innerHTML = `
-        <h3>${q.question}</h3>
-        ${q.options.map((opt,i) => `<button class="answer-btn" data-index="${i}">${opt}</button>`).join('')}
-        <button id="next-question" style="display:none;">Next Question ➡️</button>
-    `;
-
-    document.querySelectorAll('.answer-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const selected = parseInt(btn.dataset.index);
-            if(selected === q.answer) {
-                btn.style.backgroundColor = '#00ffcc';
-            } else {
-                btn.style.backgroundColor = '#ff4444';
-            }
-            document.getElementById('next-question').style.display = 'block';
-        });
+function generateDummyQuestions(moduleName) {
+  let questions = [];
+  for (let i = 1; i <= 10; i++) {
+    questions.push({
+      question: `${moduleName} Question ${i}: What is the correct answer?`,
+      options: ["Option A", "Option B", "Option C", "Option D"],
+      answer: "Option A"
     });
+  }
+  return questions;
+}
 
-    document.getElementById('next-question').addEventListener('click', () => {
-        currentIndex++;
-        loadQuestion();
-    });
+// Navigation Buttons
+navButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const module = btn.getAttribute('data-module');
+    loadModule(module);
+  });
 });
 
-closeModal.addEventListener('click', () => {
-    completionModal.style.display = 'none';
-});
+// Load Module
+let currentModule = null;
+let currentQuestion = 0;
+
+function loadModule(module) {
+  if (module === 'dashboard') {
+    moduleContent.innerHTML = "<p>Select a module to start training.</p>";
+    return;
+  }
+
+  currentModule = modules[module];
+  currentQuestion = 0;
+  renderQuestion();
+}
+
+// Render Question
+function renderQuestion() {
+  if (!currentModule) return;
+  const q = currentModule.questions[currentQuestion];
+
+  let html = `
+    <div class="question-card">
+      <h3>${q.question}</h3>
+      <div class="options">
+        ${q.options.map(opt => `<button onclick="selectOption('${opt}')">${opt}</button>`).join('')}
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" style="width:${((currentQuestion+1)/currentModule.questions.length)*100}%"></div>
+      </div>
+    </div>
+  `;
+
+  if (currentQuestion < currentModule.questions.length - 1) {
+    html += `<button class="next-btn" onclick="nextQuestion()">Next Question</button>`;
+  } else {
+    html += `<button class="next-btn" onclick="finishModule()">Finish Module</button>`;
+  }
+
+  moduleContent.innerHTML = html;
+}
+
+// Option Selection
+function selectOption(option) {
+  points = parseInt(points) + 10;
+  streak = parseInt(streak) + 1;
+  updateCompletion();
+  saveStats();
+  updateStats();
+}
+
+// Next Question
+function nextQuestion() {
+  if (currentQuestion < currentModule.questions.length -1) {
+    currentQuestion++;
+    renderQuestion();
+  }
+}
+
+// Finish Module
+function finishModule() {
+  badges.push(currentModule.name);
+  alert(`🎄 Congratulations! You completed ${currentModule.name}! 🎄`);
+  updateCompletion();
+  saveStats();
+  updateStats();
+  moduleContent.innerHTML = `<p>Module Completed! Print your certificate below:</p>
+  <button onclick="printCertificate('${currentModule.name}')">Print Certificate</button>`;
+}
+
+// Update Completion
+function updateCompletion() {
+  const totalModules = Object.keys(modules).length;
+  const completed = badges.length;
+  completion = Math.round((completed/totalModules)*100);
+}
+
+// Save to localStorage
+function saveStats() {
+  localStorage.setItem('streak', streak);
+  localStorage.setItem('points', points);
+  localStorage.setItem('completion', completion);
+  localStorage.setItem('badges', JSON.stringify(badges));
+}
+
+// Print Certificate
+function printCertificate(moduleName) {
+  const certWindow = window.open('', '', 'width=600,height=400');
+  certWindow.document.write(`
+    <html><head><title>Certificate</title></head><body style="text-align:center;font-family:Arial;">
+      <h1>Certificate of Completion</h1>
+      <p>This certifies that you have completed the module:</p>
+      <h2>${moduleName}</h2>
+      <p>Congratulations!</p>
+      <button onclick="window.print()">Print</button>
+    </body></html>
+  `);
+  certWindow.document.close();
+}
