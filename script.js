@@ -1,103 +1,107 @@
-// DOM Elements
-const welcomeScreen = document.getElementById('welcome-screen');
-const startBtn = document.getElementById('start-btn');
-const dashboard = document.getElementById('dashboard');
-const moduleContent = document.getElementById('module-content');
-const moduleTabs = document.querySelectorAll('.modules li');
+// Modules Navigation
+const modules = document.querySelectorAll('.module');
+const navButtons = document.querySelectorAll('.nav-btn');
 
-// Stats
-let points = 0;
-let streak = 0;
-let completedModules = [];
-let badges = [];
-
-// Welcome screen → Dashboard
-startBtn.addEventListener('click', () => {
-  welcomeScreen.classList.add('hidden');
-  dashboard.classList.remove('hidden');
-  loadModule('dashboard');
+navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        modules.forEach(m => m.classList.remove('active'));
+        document.getElementById(btn.dataset.module).classList.add('active');
+    });
 });
 
-// Module tab click
-moduleTabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    moduleTabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    loadModule(tab.dataset.module);
-  });
-});
+// Quiz Data
+const quizzes = {
+    keyMessage: [
+        { question: "What is the key message of security training?", options: ["Be alert", "Ignore emails", "Share passwords"], answer: 0 },
+        { question: "Why report incidents?", options: ["To get a reward", "To prevent damage", "It's optional"], answer: 1 },
+        // Add 8 more questions...
+    ],
+    deepfake: [
+        { question: "What is a deepfake?", options: ["A video manipulation", "A real video", "A password"], answer: 0 },
+        // Add 9 more questions...
+    ],
+    reporting: [],
+    culture: [],
+    social: []
+};
 
-// Load module content dynamically
-function loadModule(module) {
-  switch(module) {
-    case 'dashboard':
-      moduleContent.innerHTML = `
-        <h2>Dashboard</h2>
-        <p>Welcome! Select a module to start training.</p>
-      `;
-      break;
+// Local Storage
+let stats = JSON.parse(localStorage.getItem('defendiqStats')) || {
+    streak: 0,
+    points: 0,
+    completion: 0,
+    badges: []
+};
 
-    case 'quiz':
-      moduleContent.innerHTML = `
-        <h2>Quiz Module</h2>
-        <div class="module-question">
-          <p>What is phishing?</p>
-          <button onclick="answerQuestion(true)">A cyber attack tricking users</button>
-          <button onclick="answerQuestion(false)">A new email service</button>
-        </div>
-      `;
-      break;
-
-    case 'phishing':
-      moduleContent.innerHTML = `
-        <h2>Phishing Simulation</h2>
-        <p>Click the suspicious link below to test your awareness:</p>
-        <button onclick="answerQuestion(false)">Safe link</button>
-        <button onclick="answerQuestion(true)">Suspicious link</button>
-      `;
-      break;
-
-    case 'password':
-      moduleContent.innerHTML = `
-        <h2>Password Training</h2>
-        <p>Choose the strongest password:</p>
-        <button onclick="answerQuestion(false)">123456</button>
-        <button onclick="answerQuestion(true)">G!7vQ#9kLp</button>
-      `;
-      break;
-  }
-}
-
-// Handle answers
-function answerQuestion(correct) {
-  if(correct) {
-    points += 10;
-    streak += 1;
-    alert("Correct! +10 points");
-  } else {
-    streak = 0;
-    alert("Incorrect!");
-  }
-
-  updateStats();
-}
-
-// Update dashboard stats
+// Update Stats UI
 function updateStats() {
-  document.getElementById('points').textContent = points;
-  document.getElementById('streak').textContent = streak;
-
-  // Completion %
-  let totalModules = 3;
-  let completed = Math.min(Math.floor(points / 10), totalModules);
-  completedModules = Array(completed).fill(true);
-  let completionPercent = Math.floor((completedModules.length / totalModules) * 100);
-  document.getElementById('completion').textContent = `${completionPercent}%`;
-
-  // Badges
-  badges = [];
-  if(completionPercent >= 33) badges.push("Bronze");
-  if(completionPercent >= 66) badges.push("Silver");
-  if(completionPercent === 100) badges.push("Gold");
-  document.getElementById('badges').textContent = badges.length ? badges.join(", ") : "None";
+    document.getElementById('streak').innerText = stats.streak;
+    document.getElementById('points').innerText = stats.points;
+    document.getElementById('completion').innerText = stats.completion + '%';
+    document.getElementById('badges').innerText = stats.badges.length ? stats.badges.join(', ') : 'None';
+    localStorage.setItem('defendiqStats', JSON.stringify(stats));
 }
+
+updateStats();
+
+// Quiz Handling
+const quizButtons = document.querySelectorAll('.quiz-btn');
+const quizContainer = document.getElementById('quiz-container');
+const completionModal = document.getElementById('completion-modal');
+const modalBadges = document.getElementById('modal-badges');
+const closeModal = document.getElementById('close-modal');
+
+let currentQuiz = [];
+let currentIndex = 0;
+
+quizButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const quizName = btn.dataset.quiz;
+        currentQuiz = quizzes[quizName];
+        currentIndex = 0;
+        loadQuestion();
+    });
+});
+
+function loadQuestion() {
+    if (currentIndex >= currentQuiz.length) {
+        // Quiz Complete
+        stats.streak += 1;
+        stats.points += 30;
+        stats.completion = Math.min(stats.completion + 20, 100);
+        stats.badges.push("Bronze"); // Simplified badge system
+        updateStats();
+        modalBadges.innerText = stats.badges.join(', ');
+        completionModal.style.display = "flex";
+        quizContainer.innerHTML = '';
+        return;
+    }
+
+    const q = currentQuiz[currentIndex];
+    quizContainer.innerHTML = `
+        <h3>${q.question}</h3>
+        ${q.options.map((opt,i) => `<button class="answer-btn" data-index="${i}">${opt}</button>`).join('')}
+        <button id="next-question" style="display:none;">Next Question ➡️</button>
+    `;
+
+    document.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const selected = parseInt(btn.dataset.index);
+            if(selected === q.answer) {
+                btn.style.backgroundColor = '#00ffcc';
+            } else {
+                btn.style.backgroundColor = '#ff4444';
+            }
+            document.getElementById('next-question').style.display = 'block';
+        });
+    });
+
+    document.getElementById('next-question').addEventListener('click', () => {
+        currentIndex++;
+        loadQuestion();
+    });
+});
+
+closeModal.addEventListener('click', () => {
+    completionModal.style.display = 'none';
+});
