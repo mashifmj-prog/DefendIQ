@@ -1,52 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DefendIQ Training Platform</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DefendIQ Training Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Welcome Screen -->
-  <div id="welcome-screen" class="screen">
-    <div class="welcome-content">
-      <h1>Welcome to DefendIQ Training!</h1>
-      <p>Boost your cybersecurity skills by completing interactive modules.</p>
-      <button id="start-btn">Start Training</button>
-    </div>
-  </div>
-
-  <!-- Main Dashboard -->
-  <div id="dashboard" class="screen hidden">
     <header>
-      <h1>DefendIQ</h1>
-      <nav>
-        <ul class="modules">
-          <li data-module="dashboard" class="active">Dashboard</li>
-          <li data-module="quiz">Quiz</li>
-          <li data-module="phishing">Phishing Simulation</li>
-          <li data-module="password">Password Training</li>
-        </ul>
-      </nav>
+        <div class="logo">DefendIQ</div>
+        <nav>
+            <button class="nav-btn" data-module="dashboard">Dashboard</button>
+            <button class="nav-btn" data-module="quiz">Quiz</button>
+            <button class="nav-btn" data-module="phishing">Phishing Simulation</button>
+            <button class="nav-btn" data-module="password">Password Training</button>
+        </nav>
     </header>
 
     <main>
-      <!-- Stats -->
-      <div class="stats">
-        <p>Streak: <span id="streak">0</span></p>
-        <p>Points: <span id="points">0</span></p>
-        <p>Completion: <span id="completion">0%</span></p>
-        <p>Badges Earned: <span id="badges">None</span></p>
-      </div>
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="module active">
+            <h2>Dashboard</h2>
+            <div class="stats">
+                <p>Streak: <span id="streak">0</span></p>
+                <p>Points: <span id="points">0</span></p>
+                <p>Completion: <span id="completion">0%</span></p>
+                <p>Badges Earned: <span id="badges">None</span></p>
+            </div>
+        </section>
 
-      <!-- Module Content -->
-      <div id="module-content">
-        <h2>Dashboard</h2>
-        <p>Welcome! Select a module to start training.</p>
-      </div>
+        <!-- Quiz Section -->
+        <section id="quiz" class="module">
+            <h2>Quiz Modules</h2>
+            <div class="quiz-selection">
+                <button class="quiz-btn" data-quiz="keyMessage">Key Message</button>
+                <button class="quiz-btn" data-quiz="deepfake">Deepfake Awareness</button>
+                <button class="quiz-btn" data-quiz="reporting">Reporting Security Incidents</button>
+                <button class="quiz-btn" data-quiz="culture">Culture Survey</button>
+                <button class="quiz-btn" data-quiz="social">Social Engineering</button>
+            </div>
+            <div id="quiz-container" class="quiz-container"></div>
+        </section>
+
+        <!-- Phishing Section -->
+        <section id="phishing" class="module">
+            <h2>Phishing Simulation</h2>
+            <p>Interactive phishing scenarios coming soon!</p>
+        </section>
+
+        <!-- Password Section -->
+        <section id="password" class="module">
+            <h2>Password Training</h2>
+            <p>Choose the strongest password:</p>
+            <ul>
+                <li>123456</li>
+                <li>G!7vQ#9kLp</li>
+                <li>password</li>
+            </ul>
+        </section>
+
+        <!-- Congratulations Modal -->
+        <div id="completion-modal" class="modal">
+            <div class="modal-content">
+                <h2>🎄 Congratulations! 🎄</h2>
+                <p>You have completed the quiz!</p>
+                <p>Badges Earned: <span id="modal-badges"></span></p>
+                <button id="close-modal">Close</button>
+            </div>
+        </div>
     </main>
-  </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
