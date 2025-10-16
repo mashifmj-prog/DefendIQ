@@ -23,15 +23,16 @@
         </div>
     </section>
     <header hidden>
-        <img id="logo" src="logos/defendiq-logo.png" alt="DefendIQ Logo" width="40">
+        <img id="logo" src="logos/defendiq-logo.png" alt="DefendIQ Logo" width="32">
         <h1 id="app-title">🛡️ DefendIQ</h1>
     </header>
     <nav hidden>
         <button onclick="showSection('dashboard')">Dashboard</button>
         <button onclick="showSection('leaderboard')">Leaderboard</button>
         <button onclick="showSection('quiz')">Quiz</button>
-        <button onclick="showSection('phishing')">Phishing Simulation</button>
-        <button onclick="showSection('tips')">Security Tips</button>
+        <button onclick="showSection('phishing')">Phishing</button>
+        <button onclick="showSection('password')">Password Training</button>
+        <button onclick="showSection('tips')">Tips</button>
         <button onclick="showSection('analytics')">Analytics</button>
         <button onclick="showSection('profile')">Profile</button>
         <button onclick="logout()">Logout</button>
@@ -98,6 +99,19 @@
             <button onclick="submitPhishing(false)">Mark as Phishing</button>
             <div id="phishing-feedback" style="margin-top: 10px; font-weight: bold;"></div>
         </section>
+        <section id="password" hidden>
+            <h2>Password Training</h2>
+            <div id="password-progress">
+                <div>Password Training Progress: <span id="password-progress-text">0%</span></div>
+                <div class="progress-bar">
+                    <div id="password-progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div id="password-question"></div>
+            <div id="password-options"></div>
+            <button onclick="submitPassword()" class="quiz-submit">Submit Answer</button>
+            <div id="password-feedback"></div>
+        </section>
         <section id="tips" hidden>
             <h2>Security Tips</h2>
             <ul id="tips-list"></ul>
@@ -111,6 +125,10 @@
             <div class="card">
                 <h3>Total Phishing Simulations Completed</h3>
                 <span id="total-phishing">0</span>
+            </div>
+            <div class="card">
+                <h3>Total Password Training Completed</h3>
+                <span id="total-password">0</span>
             </div>
             <canvas id="streak-trend"></canvas>
             <canvas id="dept-points-bar"></canvas>
@@ -130,8 +148,8 @@
                 <ul id="badges-list"></ul>
             </div>
             <div class="card" id="certificate-card" hidden>
-                <h3>Quiz Completion Certificates</h3>
-                <p>Congratulations on completing a quiz! Download your certificate below.</p>
+                <h3>Completion Certificates</h3>
+                <p>Congratulations on completing a module! Download your certificate below.</p>
                 <div id="certificate-buttons"></div>
             </div>
         </section>
