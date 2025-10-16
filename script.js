@@ -273,7 +273,7 @@ function logout() {
         document.getElementById("landing").hidden = false;
         document.querySelector("header").hidden = true;
         document.querySelector("nav").hidden = true;
-        document.querySelector("main").hidden = false;
+        document.querySelector("main").hidden = true;
         document.querySelector("footer").hidden = true;
         document.getElementById("landing-title").textContent = "🛡️ DefendIQ";
         console.log("Logged out");
@@ -379,7 +379,7 @@ function loadCharts() {
             type: "pie",
             data: {
                 labels: labels,
-                datasets: [{ data: deptPoints, backgroundColor: [defendiq.primaryColor, defendiq.secondaryColor, "#ccc"] }]
+                datasets: [{ data: deptPoints, backgroundColor: [defendiq.primaryColor, defendiq.secondaryColor, "#ccc", "#666"] }]
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
@@ -774,8 +774,8 @@ function downloadCertificate(test) {
     try {
         const user = defendiq.employees[currentUser];
         const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-        const safeUserName = user.name.replace(/([&%$#_{}])/g, "\\$1");
-        const safeTest = test.replace(/([&%$#_{}])/g, "\\$1");
+        const safeUserName = user.name.replace(/[&%$#_{}]/g, "\\$1").replace(/ /g, "\\ ");
+        const safeTest = test.replace(/[&%$#_{}]/g, "\\$1").replace(/ /g, "\\ ");
         const latex = `
 \\documentclass[a4paper]{article}
 \\usepackage[utf8]{inputenc}
@@ -821,7 +821,7 @@ on ${date}.\\\\
 \\end{center}
 \\end{document}
         `.trim();
-        const blob = new Blob([latex], { type: "text/plain" });
+        const blob = new Blob([latex], { type: "text/plain;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
