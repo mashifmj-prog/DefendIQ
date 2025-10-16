@@ -287,7 +287,7 @@ const questions = {
         {
             question: "What is a firewall?",
             options: ["Network security system that monitors traffic", "A wall against fire", "A software for file sharing"],
-            correct: 0,
+            alert: 0,
             explanation: "Firewalls control network traffic based on security rules."
         }
     ]
@@ -306,313 +306,572 @@ let deptPointsChart = null;
 const encouragementPhrases = ['Great job! 🚀', 'Awesome! 🌟', 'Well done! 👏', 'Keep it up! 💪', 'Nice catch! 🕵️'];
 
 function updateCompany(companyName) {
-    if (companyName === "Exit") {
-        resetDropdown();
-        return;
-    }
-    if (companyName) {
-        currentCompany = companies[companyName];
-        applyCompanyTheme();
+    try {
+        if (companyName === "Exit") {
+            resetDropdown();
+            return;
+        }
+        if (companyName && companies[companyName]) {
+            currentCompany = companies[companyName];
+            console.log('Company updated to:', companyName);
+            applyCompanyTheme();
+        } else {
+            console.error('Invalid company:', companyName);
+        }
+    } catch (error) {
+        console.error('Error in updateCompany:', error);
     }
 }
 
 function resetDropdown() {
-    const dropdown = document.getElementById('company-select-landing');
-    dropdown.value = '';
+    try {
+        const dropdown = document.getElementById('company-select-landing');
+        if (dropdown) {
+            dropdown.value = '';
+            console.log('Dropdown reset to default');
+        } else {
+            console.error('Dropdown element not found');
+        }
+    } catch (error) {
+        console.error('Error in resetDropdown:', error);
+    }
 }
 
 function startApp() {
-    const dropdownValue = document.getElementById('company-select-landing').value;
-    if (!dropdownValue || dropdownValue === "Exit") {
-        return alert('Please select a company.');
+    try {
+        const dropdown = document.getElementById('company-select-landing');
+        if (!dropdown) {
+            console.error('Dropdown element not found');
+            alert('Error: Company dropdown not found. Please refresh the page.');
+            return;
+        }
+        const dropdownValue = dropdown.value;
+        if (!dropdownValue || dropdownValue === "Exit") {
+            alert('Please select a company.');
+            return;
+        }
+        console.log('Starting app with company:', dropdownValue);
+        document.getElementById('landing').hidden = true;
+        document.querySelector('header').hidden = false;
+        document.querySelector('nav').hidden = false;
+        document.querySelector('main').hidden = false;
+        document.querySelector('footer').hidden = false;
+        applyCompanyTheme();
+        showSection('dashboard');
+    } catch (error) {
+        console.error('Error in startApp:', error);
+        alert('An error occurred while starting the app. Please refresh and try again.');
     }
-    document.getElementById('landing').hidden = true;
-    document.querySelector('header').hidden = false;
-    document.querySelector('nav').hidden = false;
-    document.querySelector('main').hidden = false;
-    document.querySelector('footer').hidden = false;
-    applyCompanyTheme();
-    showSection('dashboard');
 }
 
 function logout() {
-    currentCompany = null;
-    currentUserIndex = 0;
-    phishingIndex = 0;
-    quizIndex = 0;
-    currentTest = "Deepfake Awareness";
-    document.getElementById('landing').hidden = false;
-    document.querySelector('header').hidden = true;
-    document.querySelector('nav').hidden = true;
-    document.querySelector('main').hidden = true;
-    document.querySelector('footer').hidden = true;
-    document.getElementById('company-select-landing').value = '';
-    document.getElementById('landing-title').textContent = '🛡️ DefendIQ';
+    try {
+        currentCompany = null;
+        currentUserIndex = 0;
+        phishingIndex = 0;
+        quizIndex = 0;
+        currentTest = "Deepfake Awareness";
+        document.getElementById('landing').hidden = false;
+        document.querySelector('header').hidden = true;
+        document.querySelector('nav').hidden = true;
+        document.querySelector('main').hidden = true;
+        document.querySelector('footer').hidden = true;
+        document.getElementById('company-select-landing').value = '';
+        document.getElementById('landing-title').textContent = '🛡️ DefendIQ';
+        console.log('Logged out, returned to landing page');
+    } catch (error) {
+        console.error('Error in logout:', error);
+    }
 }
 
 function changeCompany(companyName) {
-    currentCompany = companies[companyName];
-    currentUserIndex = 0;
-    quizIndex = 0;
-    currentTest = "Deepfake Awareness";
-    applyCompanyTheme();
+    try {
+        currentCompany = companies[companyName];
+        currentUserIndex = 0;
+        quizIndex = 0;
+        currentTest = "Deepfake Awareness";
+        applyCompanyTheme();
+    } catch (error) {
+        console.error('Error in changeCompany:', error);
+    }
 }
 
 function applyCompanyTheme() {
-    if (!currentCompany) return;
-    document.documentElement.style.setProperty('--primary-color', currentCompany.primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', currentCompany.secondaryColor);
-    document.getElementById('logo').src = currentCompany.logo;
-    document.getElementById('app-title').textContent = `🛡️ DefendIQ — ${currentCompany.name}`;
-    document.getElementById('footer-text').textContent = `DefendIQ – Trusted by Openserve, FiberLink & Gyro`;
-    document.getElementById('company-select').value = currentCompany.name;
-    document.getElementById('test-select').value = currentTest;
-    loadDashboard();
-    loadLeaderboard();
-    loadTips();
-    loadQuiz();
-    loadPhishingQuiz();
+    try {
+        if (!currentCompany) {
+            console.error('No company selected for theme');
+            return;
+        }
+        document.documentElement.style.setProperty('--primary-color', currentCompany.primaryColor);
+        document.documentElement.style.setProperty('--secondary-color', currentCompany.secondaryColor);
+        document.getElementById('logo').src = currentCompany.logo;
+        document.getElementById('app-title').textContent = `🛡️ DefendIQ — ${currentCompany.name}`;
+        document.getElementById('footer-text').textContent = `DefendIQ – Trusted by Openserve, FiberLink & Gyro`;
+        document.getElementById('company-select').value = currentCompany.name;
+        document.getElementById('test-select').value = currentTest;
+        loadDashboard();
+        loadLeaderboard();
+        loadTips();
+        loadQuiz();
+        loadPhishingQuiz();
+    } catch (error) {
+        console.error('Error in applyCompanyTheme:', error);
+    }
 }
 
 function showSection(id) {
-    const sections = document.querySelectorAll('main > section');
-    sections.forEach(section => section.hidden = true);
-    document.getElementById(id).hidden = false;
-    if (id === 'dashboard') loadDashboard();
-    if (id === 'leaderboard') loadLeaderboard();
-    if (id === 'quiz') loadQuiz();
-    if (id === 'phishing') loadPhishingQuiz();
-    if (id === 'tips') loadTips();
-    if (id === 'analytics') loadAnalytics();
-    if (id === 'profile') loadProfile();
+    try {
+        const sections = document.querySelectorAll('main > section');
+        sections.forEach(section => section.hidden = true);
+        document.getElementById(id).hidden = false;
+        if (id === 'dashboard') loadDashboard();
+        if (id === 'leaderboard') loadLeaderboard();
+        if (id === 'quiz') loadQuiz();
+        if (id === 'phishing') loadPhishingQuiz();
+        if (id === 'tips') loadTips();
+        if (id === 'analytics') loadAnalytics();
+        if (id === 'profile') loadProfile();
+    } catch (error) {
+        console.error('Error in showSection:', error);
+    }
 }
 
 function loadDashboard() {
-    document.getElementById('streak').textContent = currentCompany.streak;
+    try {
+        document.getElementById('streak').textContent = currentCompany.streak;
 
-    const lowPerformers = currentCompany.employees.filter(e => e.completion < 60);
-    const lowList = document.getElementById('low-performers');
-    lowList.innerHTML = lowPerformers.length === 0 ? '<li>No low performers!</li>' : '';
-    lowPerformers.forEach(e => {
-        const li = document.createElement('li');
-        li.textContent = `${e.name} (${e.dept}): ${e.completion}%`;
-        lowList.appendChild(li);
-    });
+        const lowPerformers = currentCompany.employees.filter(e => e.completion < 60);
+        const lowList = document.getElementById('low-performers');
+        lowList.innerHTML = lowPerformers.length === 0 ? '<li>No low performers!</li>' : '';
+        lowPerformers.forEach(e => {
+            const li = document.createElement('li');
+            li.textContent = `${e.name} (${e.dept}): ${e.completion}%`;
+            lowList.appendChild(li);
+        });
 
-    const totalCompletion = currentCompany.employees.reduce((sum, e) => sum + e.completion, 0);
-    const avgCompletion = (totalCompletion / currentCompany.employees.length).toFixed(0);
-    document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
+        const totalCompletion = currentCompany.employees.reduce((sum, e) => sum + e.completion, 0);
+        const avgCompletion = (totalCompletion / currentCompany.employees.length).toFixed(0);
+        document.getElementById('avg-completion').textContent = `${avgCompletion}%`;
 
-    const totalPoints = currentCompany.employees.reduce((sum, e) => sum + e.points, 0);
-    const avgPoints = (totalPoints / currentCompany.employees.length).toFixed(0);
-    document.getElementById('avg-points').textContent = avgPoints;
+        const totalPoints = currentCompany.employees.reduce((sum, e) => sum + e.points, 0);
+        const avgPoints = (totalPoints / currentCompany.employees.length).toFixed(0);
+        document.getElementById('avg-points').textContent = avgPoints;
 
-    const sorted = [...currentCompany.employees].sort((a, b) => b.points - a.points);
-    const top3List = document.getElementById('top3');
-    top3List.innerHTML = '';
-    sorted.slice(0, 3).forEach(e => {
-        const li = document.createElement('li');
-        li.textContent = `${e.name}: ${e.points} points`;
-        top3List.appendChild(li);
-    });
+        const sorted = [...currentCompany.employees].sort((a, b) => b.points - a.points);
+        const top3List = document.getElementById('top3');
+        top3List.innerHTML = '';
+        sorted.slice(0, 3).forEach(e => {
+            const li = document.createElement('li');
+            li.textContent = `${e.name}: ${e.points} points`;
+            top3List.appendChild(li);
+        });
 
-    loadCharts();
+        loadCharts();
+    } catch (error) {
+        console.error('Error in loadDashboard:', error);
+    }
 }
 
 function loadCharts() {
-    if (deptChart) deptChart.destroy();
-    if (pointsPie) pointsPie.destroy();
+    try {
+        if (deptChart) deptChart.destroy();
+        if (pointsPie) pointsPie.destroy();
 
-    const depts = {};
-    currentCompany.employees.forEach(e => {
-        if (!depts[e.dept]) depts[e.dept] = { completion: [], points: 0 };
-        depts[e.dept].completion.push(e.completion);
-        depts[e.dept].points += e.points;
-    });
+        const depts = {};
+        currentCompany.employees.forEach(e => {
+            if (!depts[e.dept]) depts[e.dept] = { completion: [], points: 0 };
+            depts[e.dept].completion.push(e.completion);
+            depts[e.dept].points += e.points;
+        });
 
-    const deptLabels = Object.keys(depts);
-    const avgCompletions = deptLabels.map(d => {
-        const comps = depts[d].completion;
-        return comps.reduce((sum, c) => sum + c, 0) / comps.length;
-    });
-    const deptPoints = deptLabels.map(d => depts[d].points);
+        const deptLabels = Object.keys(depts);
+        const avgCompletions = deptLabels.map(d => {
+            const comps = depts[d].completion;
+            return comps.reduce((sum, c) => sum + c, 0) / comps.length;
+        });
+        const deptPoints = deptLabels.map(d => depts[d].points);
 
-    const deptCtx = document.getElementById('dept-chart').getContext('2d');
-    deptChart = new Chart(deptCtx, {
-        type: 'bar',
-        data: {
-            labels: deptLabels,
-            datasets: [{
-                label: 'Avg Completion %',
-                data: avgCompletions,
-                backgroundColor: currentCompany.secondaryColor
-            }]
-        },
-        options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
-    });
+        const deptCtx = document.getElementById('dept-chart').getContext('2d');
+        deptChart = new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Avg Completion %',
+                    data: avgCompletions,
+                    backgroundColor: currentCompany.secondaryColor
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
+        });
 
-    const pieCtx = document.getElementById('points-pie').getContext('2d');
-    pointsPie = new Chart(pieCtx, {
-        type: 'pie',
-        data: {
-            labels: deptLabels,
-            datasets: [{
-                data: deptPoints,
-                backgroundColor: [currentCompany.primaryColor, currentCompany.secondaryColor, '#ccc']
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+        const pieCtx = document.getElementById('points-pie').getContext('2d');
+        pointsPie = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    data: deptPoints,
+                    backgroundColor: [currentCompany.primaryColor, currentCompany.secondaryColor, '#ccc']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    } catch (error) {
+        console.error('Error in loadCharts:', error);
+    }
 }
 
 function loadLeaderboard() {
-    const sorted = [...currentCompany.employees].sort((a, b) => (b.completion + b.points) - (a.completion + a.points));
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = '';
-    const badges = ['🥇', '🥈', '🥉'];
-    sorted.forEach((e, index) => {
-        const li = document.createElement('li');
-        const badge = index < 3 ? badges[index] + ' ' : '';
-        li.textContent = `#${index + 1} ${badge}${e.name} (${e.dept}): ${e.completion}% completion, ${e.points} points`;
-        if (index < 3) li.style.fontWeight = 'bold';
-        list.appendChild(li);
-    });
+    try {
+        const sorted = [...currentCompany.employees].sort((a, b) => (b.completion + b.points) - (a.completion + a.points));
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = '';
+        const badges = ['🥇', '🥈', '🥉'];
+        sorted.forEach((e, index) => {
+            const li = document.createElement('li');
+            const badge = index < 3 ? badges[index] + ' ' : '';
+            li.textContent = `#${index + 1} ${badge}${e.name} (${e.dept}): ${e.completion}% completion, ${e.points} points`;
+            if (index < 3) li.style.fontWeight = 'bold';
+            list.appendChild(li);
+        });
+    } catch (error) {
+        console.error('Error in loadLeaderboard:', error);
+    }
 }
 
 function changeTest(testName) {
-    currentTest = testName;
-    quizIndex = 0;
-    loadQuiz();
+    try {
+        currentTest = testName;
+        quizIndex = 0;
+        loadQuiz();
+    } catch (error) {
+        console.error('Error in changeTest:', error);
+    }
 }
 
 function loadQuiz() {
-    const user = currentCompany.employees[currentUserIndex];
-    if (user.quizCompleted[currentTest] >= questions[currentTest].length) {
-        document.getElementById('quiz-question').textContent = `${currentTest} Completed!`;
-        document.getElementById('quiz-options').innerHTML = '';
-        document.getElementById('quiz-feedback').textContent = `🎉 Congratulations! You’ve completed the ${currentTest} quiz! Check your Profile for your certificate and badge.`;
-        return;
+    try {
+        const user = currentCompany.employees[currentUserIndex];
+        if (user.quizCompleted[currentTest] >= questions[currentTest].length) {
+            document.getElementById('quiz-question').textContent = `${currentTest} Completed!`;
+            document.getElementById('quiz-options').innerHTML = '';
+            document.getElementById('quiz-feedback').textContent = `🎉 Congratulations! You’ve completed the ${currentTest} quiz! Check your Profile for your certificate and badge.`;
+            return;
+        }
+        const q = questions[currentTest][quizIndex % questions[currentTest].length];
+        document.getElementById('quiz-question').textContent = q.question;
+        const optionsDiv = document.getElementById('quiz-options');
+        optionsDiv.innerHTML = '';
+        q.options.forEach((opt, i) => {
+            const label = document.createElement('label');
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'quiz-answer';
+            radio.value = i;
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(opt));
+            optionsDiv.appendChild(label);
+        });
+        document.getElementById('quiz-feedback').textContent = '';
+        updateQuizProgress();
+    } catch (error) {
+        console.error('Error in loadQuiz:', error);
     }
-    const q = questions[currentTest][quizIndex % questions[currentTest].length];
-    document.getElementById('quiz-question').textContent = q.question;
-    const optionsDiv = document.getElementById('quiz-options');
-    optionsDiv.innerHTML = '';
-    q.options.forEach((opt, i) => {
-        const label = document.createElement('label');
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'quiz-answer';
-        radio.value = i;
-        label.appendChild(radio);
-        label.appendChild(document.createTextNode(opt));
-        optionsDiv.appendChild(label);
-    });
-    document.getElementById('quiz-feedback').textContent = '';
-    updateQuizProgress();
 }
 
 function updateQuizProgress() {
-    const user = currentCompany.employees[currentUserIndex];
-    const progress = (user.quizCompleted[currentTest] / questions[currentTest].length) * 100;
-    document.getElementById('quiz-progress-text').textContent = `${progress.toFixed(0)}% (${user.quizCompleted[currentTest]}/${questions[currentTest].length})`;
-    document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+    try {
+        const user = currentCompany.employees[currentUserIndex];
+        const progress = (user.quizCompleted[currentTest] / questions[currentTest].length) * 100;
+        document.getElementById('quiz-progress-text').textContent = `${progress.toFixed(0)}% (${user.quizCompleted[currentTest]}/${questions[currentTest].length})`;
+        document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+    } catch (error) {
+        console.error('Error in updateQuizProgress:', error);
+    }
 }
 
 function submitQuiz() {
-    const user = currentCompany.employees[currentUserIndex];
-    if (user.quizCompleted[currentTest] >= questions[currentTest].length) {
-        showSection('profile');
-        return;
-    }
-    const selected = document.querySelector('input[name="quiz-answer"]:checked');
-    if (!selected) return alert("Select an answer!");
-    const q = questions[currentTest][quizIndex % questions[currentTest].length];
-    const correct = parseInt(selected.value) === q.correct;
-    const feedback = document.getElementById('quiz-feedback');
-    const yourAnswer = q.options[parseInt(selected.value)];
-    const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
-    if (correct) {
-        feedback.textContent = `${randomPhrase} Correct! "${yourAnswer}" is right. ${q.explanation} +10 points, +5% completion.`;
-        user.points += 10;
-        user.completion = Math.min(100, user.completion + 5);
-        user.quizCompleted[currentTest] = Math.min(questions[currentTest].length, user.quizCompleted[currentTest] + 1);
-        currentCompany.streak += 1;
-        currentCompany.streakHistory.push(currentCompany.streak);
+    try {
+        const user = currentCompany.employees[currentUserIndex];
         if (user.quizCompleted[currentTest] >= questions[currentTest].length) {
-            feedback.textContent = `🎉 Congratulations! You’ve completed the ${currentTest} quiz! Check your Profile for your certificate and badge.`;
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
             showSection('profile');
             return;
         }
-    } else {
-        feedback.textContent = `Oops! Incorrect. You chose "${yourAnswer}", but it's "${q.options[q.correct]}". ${q.explanation} Streak reset. Try again!`;
-        currentCompany.streak = 0;
+        const selected = document.querySelector('input[name="quiz-answer"]:checked');
+        if (!selected) return alert("Select an answer!");
+        const q = questions[currentTest][quizIndex % questions[currentTest].length];
+        const correct = parseInt(selected.value) === q.correct;
+        const feedback = document.getElementById('quiz-feedback');
+        const yourAnswer = q.options[parseInt(selected.value)];
+        const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
+        if (correct) {
+            feedback.textContent = `${randomPhrase} Correct! "${yourAnswer}" is right. ${q.explanation} +10 points, +5% completion.`;
+            user.points += 10;
+            user.completion = Math.min(100, user.completion + 5);
+            user.quizCompleted[currentTest] = Math.min(questions[currentTest].length, user.quizCompleted[currentTest] + 1);
+            currentCompany.streak += 1;
+            currentCompany.streakHistory.push(currentCompany.streak);
+            if (user.quizCompleted[currentTest] >= questions[currentTest].length) {
+                feedback.textContent = `🎉 Congratulations! You’ve completed the ${currentTest} quiz! Check your Profile for your certificate and badge.`;
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                showSection('profile');
+                return;
+            }
+        } else {
+            feedback.textContent = `Oops! Incorrect. You chose "${yourAnswer}", but it's "${q.options[q.correct]}". ${q.explanation} Streak reset. Try again!`;
+            currentCompany.streak = 0;
+        }
+        quizIndex++;
+        loadQuiz();
+        loadDashboard();
+        loadLeaderboard();
+    } catch (error) {
+        console.error('Error in submitQuiz:', error);
     }
-    quizIndex++;
-    loadQuiz();
-    loadDashboard();
-    loadLeaderboard();
 }
 
 function loadPhishingQuiz() {
-    const email = phishingEmails[phishingIndex % phishingEmails.length];
-    const container = document.getElementById("phishingContainer");
-    container.innerHTML = `
-        <p><strong>From:</strong> ${email.sender}</p>
-        <p><strong>Subject:</strong> ${email.subject}</p>
-        <p><strong>Body:</strong> ${email.body}</p>
-    `;
-    document.getElementById('phishing-feedback').textContent = '';
-    updatePhishingProgress();
+    try {
+        const email = phishingEmails[phishingIndex % phishingEmails.length];
+        const container = document.getElementById("phishingContainer");
+        container.innerHTML = `
+            <p><strong>From:</strong> ${email.sender}</p>
+            <p><strong>Subject:</strong> ${email.subject}</p>
+            <p><strong>Body:</strong> ${email.body}</p>
+        `;
+        document.getElementById('phishing-feedback').textContent = '';
+        updatePhishingProgress();
+    } catch (error) {
+        console.error('Error in loadPhishingQuiz:', error);
+    }
 }
 
 function updatePhishingProgress() {
-    const user = currentCompany.employees[currentUserIndex];
-    const progress = (user.phishingCompleted / phishingEmails.length) * 100;
-    document.getElementById('phishing-progress-text').textContent = `${progress.toFixed(0)}% (${user.phishingCompleted}/${phishingEmails.length})`;
-    document.getElementById('phishing-progress-bar').style.width = `${progress}%`;
+    try {
+        const user = currentCompany.employees[currentUserIndex];
+        const progress = (user.phishingCompleted / phishingEmails.length) * 100;
+        document.getElementById('phishing-progress-text').textContent = `${progress.toFixed(0)}% (${user.phishingCompleted}/${phishingEmails.length})`;
+        document.getElementById('phishing-progress-bar').style.width = `${progress}%`;
+    } catch (error) {
+        console.error('Error in updatePhishingProgress:', error);
+    }
 }
 
 function submitPhishing(isSafe) {
-    const email = phishingEmails[phishingIndex % phishingEmails.length];
-    const correct = email.correct === isSafe;
-    const feedback = document.getElementById('phishing-feedback');
-    const yourAction = isSafe ? "Safe" : "Phishing";
-    const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
-    const correctAction = email.correct ? "Safe" : "Phishing";
-    if (correct) {
-        feedback.textContent = `${randomPhrase} Correct! Marked as ${yourAction}. Tip: Check sender domain. +10 points, +5% completion.`;
-        currentCompany.employees[currentUserIndex].points += 10;
-        currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
-        currentCompany.employees[currentUserIndex].phishingCompleted = Math.min(phishingEmails.length, currentCompany.employees[currentUserIndex].phishingCompleted + 1);
-        currentCompany.streak += 1;
-        currentCompany.streakHistory.push(currentCompany.streak);
-    } else {
-        feedback.textContent = `Whoops! Incorrect. Marked as ${yourAction}, but it's ${correctAction}. Tip: Watch for urgent language. Streak reset. Keep practicing!`;
-        currentCompany.streak = 0;
+    try {
+        const email = phishingEmails[phishingIndex % phishingEmails.length];
+        const correct = email.correct === isSafe;
+        const feedback = document.getElementById('phishing-feedback');
+        const yourAction = isSafe ? "Safe" : "Phishing";
+        const randomPhrase = encouragementPhrases[Math.floor(Math.random() * encouragementPhrases.length)];
+        const correctAction = email.correct ? "Safe" : "Phishing";
+        if (correct) {
+            feedback.textContent = `${randomPhrase} Correct! Marked as ${yourAction}. Tip: Check sender domain. +10 points, +5% completion.`;
+            currentCompany.employees[currentUserIndex].points += 10;
+            currentCompany.employees[currentUserIndex].completion = Math.min(100, currentCompany.employees[currentUserIndex].completion + 5);
+            currentCompany.employees[currentUserIndex].phishingCompleted = Math.min(phishingEmails.length, currentCompany.employees[currentUserIndex].phishingCompleted + 1);
+            currentCompany.streak += 1;
+            currentCompany.streakHistory.push(currentCompany.streak);
+        } else {
+            feedback.textContent = `Whoops! Incorrect. Marked as ${yourAction}, but it's ${correctAction}. Tip: Watch for urgent language. Streak reset. Keep practicing!`;
+            currentCompany.streak = 0;
+        }
+        phishingIndex++;
+        loadPhishingQuiz();
+        loadDashboard();
+        loadLeaderboard();
+    } catch (error) {
+        console.error('Error in submitPhishing:', error);
     }
-    phishingIndex++;
-    loadPhishingQuiz();
-    loadDashboard();
-    loadLeaderboard();
 }
 
 function loadTips() {
-    const list = document.getElementById('tips-list');
-    list.innerHTML = '';
-    currentCompany.tips.forEach(tip => {
-        const li = document.createElement('li');
-        li.textContent = tip;
-        list.appendChild(li);
-    });
+    try {
+        const list = document.getElementById('tips-list');
+        list.innerHTML = '';
+        currentCompany.tips.forEach(tip => {
+            const li = document.createElement('li');
+            li.textContent = tip;
+            list.appendChild(li);
+        });
+    } catch (error) {
+        console.error('Error in loadTips:', error);
+    }
 }
 
 function loadAnalytics() {
-    const totalQuizzes = currentCompany.employees.reduce((sum, e) => sum + Object.values(e.quizCompleted).reduce((s, c) => s + c, 0), 0);
-    document.getElementById('total-quizzes').textContent = totalQuizzes;
+    try {
+        const totalQuizzes = currentCompany.employees.reduce((sum, e) => sum + Object.values(e.quizCompleted).reduce((s, c) => s + c, 0), 0);
+        document.getElementById('total-quizzes').textContent = totalQuizzes;
 
-    const totalPhishing = currentCompany.employees.reduce((sum, e) => sum + e.phishingCompleted, 0);
-    document.getElementById('total-phishing').textContent = totalPhishing;
+        const totalPhishing = currentCompany.employees.reduce((sum, e) => sum + e.phishingCompleted, 0);
+        document.getElementById('total-phishing').textContent = totalPhishing;
 
-    if (streakChart) streakChart.destroy();
-    const streakCtx
+        if (streakChart) streakChart.destroy();
+        const streakCtx = document.getElementById('streak-trend').getContext('2d');
+        streakChart = new Chart(streakCtx, {
+            type: 'line',
+            data: {
+                labels: currentCompany.streakHistory.map((_, i) => `Session ${i + 1}`),
+                datasets: [{
+                    label: 'Streak Trend',
+                    data: currentCompany.streakHistory,
+                    borderColor: currentCompany.primaryColor,
+                    fill: false
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (deptPointsChart) deptPointsChart.destroy();
+        const depts = {};
+        currentCompany.employees.forEach(e => {
+            if (!depts[e.dept]) depts[e.dept] = 0;
+            depts[e.dept] += e.points / currentCompany.employees.filter(emp => emp.dept === e.dept).length;
+        });
+        const deptLabels = Object.keys(depts);
+        const avgDeptPoints = deptLabels.map(d => depts[d]);
+        const deptPointsCtx = document.getElementById('dept-points-bar').getContext('2d');
+        deptPointsChart = new Chart(deptPointsCtx, {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Avg Points per Dept',
+                    data: avgDeptPoints,
+                    backgroundColor: currentCompany.secondaryColor
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    } catch (error) {
+        console.error('Error in loadAnalytics:', error);
+    }
+}
+
+function loadProfile() {
+    try {
+        const user = currentCompany.employees[currentUserIndex];
+        document.getElementById('profile-name').textContent = `Name: ${user.name}`;
+        document.getElementById('profile-dept').textContent = `Department: ${user.dept}`;
+        document.getElementById('profile-completion').textContent = `Completion: ${user.completion}%`;
+        document.getElementById('profile-points').textContent = `Points: ${user.points}`;
+        document.getElementById('profile-streak').textContent = `Current Streak: ${currentCompany.streak}`;
+
+        const badgesList = document.getElementById('badges-list');
+        badgesList.innerHTML = '';
+        const badges = getBadges(user);
+        if (badges.length === 0) {
+            badgesList.innerHTML = '<li>No badges yet—keep training!</li>';
+        } else {
+            badges.forEach(badge => {
+                const li = document.createElement('li');
+                li.textContent = badge;
+                badgesList.appendChild(li);
+            });
+        }
+
+        const certificateButtons = document.getElementById('certificate-buttons');
+        certificateButtons.innerHTML = '';
+        const completedTests = Object.keys(user.quizCompleted).filter(test => user.quizCompleted[test] >= questions[test].length);
+        document.getElementById('certificate-card').hidden = completedTests.length === 0;
+        completedTests.forEach(test => {
+            const button = document.createElement('button');
+            button.textContent = `Download ${test} Certificate`;
+            button.onclick = () => downloadCertificate(test);
+            certificateButtons.appendChild(button);
+        });
+    } catch (error) {
+        console.error('Error in loadProfile:', error);
+    }
+}
+
+function getBadges(user) {
+    try {
+        const badges = [];
+        if (user.quizCompleted["Deepfake Awareness"] === questions["Deepfake Awareness"].length) badges.push('🎥 Deepfake Defender: Completed Deepfake Awareness!');
+        if (user.quizCompleted["Reporting Security Incidents"] === questions["Reporting Security Incidents"].length) badges.push('🚨 Incident Reporter: Completed Reporting Security Incidents!');
+        if (user.quizCompleted["Culture Survey"] === questions["Culture Survey"].length) badges.push('🏛️ Culture Champion: Completed Culture Survey!');
+        if (user.quizCompleted["Social Engineering"] === questions["Social Engineering"].length) badges.push('🕵️ Social Shield: Completed Social Engineering!');
+        if (user.quizCompleted["General Cybersecurity"] === questions["General Cybersecurity"].length) badges.push('🔒 Cyber Guardian: Completed General Cybersecurity!');
+        if (user.phishingCompleted === phishingEmails.length) badges.push('🎣 Phishing Pro: Mastered all simulations!');
+        if (currentCompany.streak >= 5) badges.push('🔥 Streak King: Achieved a streak of 5+!');
+        if (user.completion === 100) badges.push('🌟 Cyber Hero: 100% completion!');
+        return badges;
+    } catch (error) {
+        console.error('Error in getBadges:', error);
+        return [];
+    }
+}
+
+function downloadCertificate(testName) {
+    try {
+        const user = currentCompany.employees[currentUserIndex];
+        const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const latexContent = `
+\\documentclass[a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\geometry{margin=0.75in}
+\\usepackage{mathpazo}
+\\usepackage{fancyhdr}
+\\usepackage{tikz}
+\\usepackage{xcolor}
+\\definecolor{primarycolor}{RGB}{0,77,64}
+\\definecolor{secondarycolor}{RGB}{38,166,154}
+\\pagestyle{fancy}
+\\fancyhf{}
+\\fancyhead[C]{\\color{primarycolor}\\textbf{DefendIQ Cybersecurity Training}}
+\\fancyfoot[C]{\\color{primarycolor}\\small Issued by DefendIQ}
+\\begin{document}
+\\begin{center}
+\\begin{tikzpicture}
+\\draw[line width=2pt, primarycolor] (0,0) rectangle (\\paperwidth-1in,\\paperheight-1in);
+\\draw[line width=1pt, secondarycolor] (0.2in,0.2in) rectangle (\\paperwidth-1.2in,\\paperheight-1.2in);
+\\node at (0.5,0.5) {\\color{secondarycolor}\\large \\textbf{🛡️}};
+\\node at (\\paperwidth-1in,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{🛡️}};
+\\node at (0.5,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{🛡️}};
+\\node at (\\paperwidth-1in,0.5) {\\color{secondarycolor}\\large \\textbf{🛡️}};
+\\end{tikzpicture}
+\\vspace{1cm}
+{\\color{primarycolor}\\Huge \\textbf{Certificate of Completion}}\\\\
+\\vspace{0.5cm}
+{\\color{secondarycolor}\\Large ${testName} Quiz}\\\\
+\\vspace{1cm}
+This certifies that\\\\
+{\\color{primarycolor}\\Huge \\textbf{${user.name}}}\\\\
+has successfully completed the quiz at\\\\
+{\\color{primarycolor}\\Large \\textbf{${currentCompany.name}}}\\\\
+on ${date}.\\\\
+\\vspace{1cm}
+{\\color{secondarycolor}\\large \\textbf{Congratulations on your achievement!}}\\\\
+\\vspace{0.5cm}
+\\begin{tikzpicture}
+\\draw[line width=1pt, secondarycolor] (0,0) -- (5,0);
+\\node at (2.5,0.3) {\\color{primarycolor}\\small Program Director};
+\\end{tikzpicture}
+\\end{center}
+\\end{document}
+`;
+        const blob = new Blob([latexContent], { type: 'text/latex' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${user.name}_${testName.replace(/\s+/g, '_')}_Certificate.tex`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error in downloadCertificate:', error);
+    }
+}
+
+function exportCSV() {
+    try {
+        let csvContent = "data:text/csv;charset=utf-8,Name,Dept,Completion,Points\n";
+        currentCompany.employees.forEach(e => {
+            csvContent += `${e.name},${e.dept},${e.completion},${e.points}\n`;
+        });
+        const encodedUri = encodeURI(csvContent
