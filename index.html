@@ -1,162 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛡️ DefendIQ</title>
-    <link rel="stylesheet" href="style.css">
-    <script async src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DefendIQ</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <section id="landing" style="display: block;">
-        <div class="landing-container">
-            <div class="landing-left">
-                <h2>DefendIQ</h2>
-            </div>
-            <div class="landing-right">
-                <img src="logos/defendiq-logo.png" alt="DefendIQ Logo" class="landing-logo">
-                <h1 id="landing-title" class="animate-text">🛡️ DefendIQ</h1>
-                <p class="animate-text">Your trusted platform for cybersecurity training. Stay vigilant, earn badges, and protect your organization!</p>
-                <button onclick="startApp()" class="start-button">Start Training</button>
-            </div>
-        </div>
+  <header>
+    <img id="companyLogo" src="logos/default-logo.png" alt="Company Logo" />
+    <div class="header-text">
+      <h1 id="appTitle">🛡️ DefendIQ</h1>
+      <p id="tagline">Your trusted platform for cybersecurity training — Stay vigilant, earn badges, and protect your organization!</p>
+    </div>
+    <div class="company-selector">
+      <label for="companySelect">Switch Company:</label>
+      <select id="companySelect" onchange="changeCompany(this.value)">
+        <option value="DefendIQ">DefendIQ</option>
+        <option value="Openserve">Openserve</option>
+        <option value="FiberLink">FiberLink</option>
+        <option value="Gyro">Gyro</option>
+      </select>
+    </div>
+  </header>
+
+  <nav>
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('leaderboard')">Leaderboard</button>
+    <button onclick="showSection('quiz')">Quiz</button>
+    <button onclick="showSection('phishing')">Phishing Simulation</button>
+    <button onclick="showSection('tips')">Tips</button>
+  </nav>
+
+  <main>
+    <section id="dashboard" class="active">
+      <h2>📊 Company Dashboard</h2>
+      <button onclick="exportCSV()">📥 Download Report</button>
+      <div id="dashboardContent"></div>
+      <canvas id="deptChart"></canvas>
+      <canvas id="pointsChart"></canvas>
     </section>
-    <header hidden>
-        <img id="logo" src="logos/defendiq-logo.png" alt="DefendIQ Logo" width="32">
-        <h1 id="app-title">🛡️ DefendIQ</h1>
-    </header>
-    <nav hidden>
-        <button onclick="showSection('dashboard')">Dashboard</button>
-        <button onclick="showSection('leaderboard')">Leaderboard</button>
-        <button onclick="showSection('quiz')">Quiz</button>
-        <button onclick="showSection('phishing')">Phishing</button>
-        <button onclick="showSection('password')">Password Training</button>
-        <button onclick="showSection('tips')">Tips</button>
-        <button onclick="showSection('analytics')">Analytics</button>
-        <button onclick="showSection('profile')">Profile</button>
-        <button onclick="logout()">Logout</button>
-    </nav>
-    <main hidden>
-        <section id="dashboard">
-            <div class="card">
-                <h3>Streak</h3>
-                <span id="streak" class="streak">0</span>
-            </div>
-            <div class="card" id="alerts">
-                <h3>Low Completion Alerts</h3>
-                <ul id="low-performers"></ul>
-            </div>
-            <div class="card">
-                <h3>Avg Completion</h3>
-                <span id="avg-completion">0%</span>
-            </div>
-            <div class="card">
-                <h3>Avg Points</h3>
-                <span id="avg-points">0</span>
-            </div>
-            <div class="card">
-                <h3>Top 3 Performers</h3>
-                <ul id="top3"></ul>
-            </div>
-            <canvas id="dept-chart"></canvas>
-            <canvas id="points-pie"></canvas>
-            <button onclick="exportCSV()">Export Report (CSV)</button>
-        </section>
-        <section id="leaderboard" hidden>
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-list"></ul>
-        </section>
-        <section id="quiz" hidden>
-            <h2>Quiz</h2>
-            <label for="test-select">Select Test</label>
-            <select id="test-select" onchange="changeTest(this.value)">
-                <option value="Deepfake">Deepfake Awareness</option>
-                <option value="Reporting">Reporting Security Incidents</option>
-                <option value="Culture">Culture Survey</option>
-            </select>
-            <div id="quiz-progress">
-                <div>Quiz Progress: <span id="quiz-progress-text">0%</span></div>
-                <div class="progress-bar">
-                    <div id="quiz-progress-bar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div id="quiz-question"></div>
-            <div id="quiz-options"></div>
-            <button onclick="submitQuiz()" class="quiz-submit">Submit Answer</button>
-            <div id="quiz-feedback"></div>
-        </section>
-        <section id="phishing" hidden>
-            <h2>Phishing Simulation</h2>
-            <div id="phishing-progress">
-                <div>Phishing Progress: <span id="phishing-progress-text">0%</span></div>
-                <div class="progress-bar">
-                    <div id="phishing-progress-bar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div id="phishingContainer"></div>
-            <button onclick="submitPhishing(true)">Mark as Safe</button>
-            <button onclick="submitPhishing(false)">Mark as Phishing</button>
-            <div id="phishing-feedback" style="margin-top: 10px; font-weight: bold;"></div>
-        </section>
-        <section id="password" hidden>
-            <h2>Password Training</h2>
-            <div id="password-progress">
-                <div>Password Training Progress: <span id="password-progress-text">0%</span></div>
-                <div class="progress-bar">
-                    <div id="password-progress-bar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div id="password-question"></div>
-            <div id="password-options"></div>
-            <button onclick="submitPassword()" class="quiz-submit">Submit Answer</button>
-            <div id="password-feedback"></div>
-        </section>
-        <section id="tips" hidden>
-            <h2>Security Tips</h2>
-            <ul id="tips-list"></ul>
-        </section>
-        <section id="analytics" hidden>
-            <h2>Advanced Analytics</h2>
-            <div class="card">
-                <h3>Total Quizzes Completed</h3>
-                <span id="total-quizzes">0</span>
-            </div>
-            <div class="card">
-                <h3>Total Phishing Simulations Completed</h3>
-                <span id="total-phishing">0</span>
-            </div>
-            <div class="card">
-                <h3>Total Password Training Completed</h3>
-                <span id="total-password">0</span>
-            </div>
-            <canvas id="streak-trend"></canvas>
-            <canvas id="dept-points-bar"></canvas>
-        </section>
-        <section id="profile" hidden>
-            <h2>User Profile</h2>
-            <div class="card">
-                <h3>Your Stats</h3>
-                <p id="profile-name"></p>
-                <p id="profile-dept"></p>
-                <p id="profile-completion"></p>
-                <p id="profile-points"></p>
-                <p id="profile-streak"></p>
-            </div>
-            <div class="card">
-                <h3>Achievements</h3>
-                <ul id="badges-list"></ul>
-            </div>
-            <div class="card" id="certificate-card" hidden>
-                <h3>Completion Certificates</h3>
-                <p>Congratulations on completing a module! Download your certificate below.</p>
-                <div id="certificate-buttons"></div>
-            </div>
-        </section>
-    </main>
-    <footer hidden>
-        <p id="footer-text">DefendIQ – Cybersecurity Training</p>
-    </footer>
-    <script src="script.js"></script>
+
+    <section id="leaderboard">
+      <h2>🏆 Awareness Leaderboard</h2>
+      <div id="leaderboardContent"></div>
+    </section>
+
+    <section id="quiz">
+      <h2>🧠 Quick Phishing Awareness Quiz</h2>
+      <div id="quizContainer"></div>
+    </section>
+
+    <section id="phishing">
+      <h2>📧 Phishing Simulation</h2>
+      <div id="phishingContainer"></div>
+    </section>
+
+    <section id="tips">
+      <h2>💡 Security Tips</h2>
+      <div id="tipsContent"></div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 <strong>DefendIQ</strong> — Trusted by Openserve, FiberLink & Gyro
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
