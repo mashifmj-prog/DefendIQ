@@ -13,11 +13,17 @@ header {
   color: white;
   padding: 0.6rem 1.5rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transition: background 0.5s ease;
 }
 
 header img {
   height: 45px;
   border-radius: 6px;
+  transition: transform 0.4s ease;
+}
+
+header img.animate {
+  transform: rotateY(360deg);
 }
 
 .header-text {
@@ -33,7 +39,7 @@ header img {
 #tagline {
   margin: 0;
   font-size: 0.9rem;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .company-selector label {
@@ -56,10 +62,12 @@ nav button {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
+  transition: all 0.25s ease;
 }
 
 nav button:hover {
   background: #00796b;
+  transform: scale(1.05);
 }
 
 main {
@@ -87,6 +95,7 @@ footer {
   padding: 0.8rem 0;
   margin-top: 1rem;
   font-size: 0.9rem;
+  transition: background 0.5s ease;
 }
 
 button {
