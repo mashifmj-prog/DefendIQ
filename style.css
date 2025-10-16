@@ -39,60 +39,11 @@ body {
     min-width: 200px;
 }
 
-.landing-left label {
-    display: block;
-    font-size: 1.2rem;
+.landing-left h2 {
+    font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 10px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
-
-.landing-left select {
-    padding: 10px 34px 10px 10px;
-    width: 200px;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    appearance: none;
-}
-
-.landing-left select:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-#close-dropdown {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: var(--primary-color);
-    color: white;
-    border: 1px solid white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-#close-dropdown:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-50%) scale(1.2);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .landing-right {
@@ -163,15 +114,6 @@ header h1 {
     margin: 0;
     font-size: 1.2rem;
     flex: 1;
-}
-
-select {
-    padding: 6px;
-    background-color: var(--secondary-color);
-    color: white;
-    border: none;
-    font-size: 0.9rem;
-    border-radius: 4px;
 }
 
 nav {
@@ -318,6 +260,11 @@ footer {
 #quiz select {
     margin-bottom: 20px;
     width: 200px;
+    padding: 6px;
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
 }
 
 #quiz-options label {
@@ -382,28 +329,6 @@ footer {
     }
     #quiz-feedback {
         margin-bottom: 120px;
-    }
-}
-
-@media (max-width: 400px) {
-    header img {
-        max-width: 30px;
-    }
-    select {
-        font-size: 0.8rem;
-        padding: 4px 28px 4px 8px;
-    }
-    #close-dropdown {
-        right: 8px;
-        width: 20px;
-        height: 20px;
-        font-size: 14px;
-    }
-    .quiz-submit {
-        margin-bottom: 140px;
-    }
-    #quiz-feedback {
-        margin-bottom: 140px;
     }
 }
 
