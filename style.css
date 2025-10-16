@@ -11,23 +11,12 @@ body, html {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: url('https://images.unsplash.com/photo-1581091870623-8a53f93f1d9c') no-repeat center center/cover;
+  background-color: #444444; /* Charcoal gray Pantone 425 */
+  color: white;
 }
 
 .landing-content {
-  background: white;
-  padding: 50px 70px;
-  border-radius: 15px;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-
-.landing-content h1 {
-  margin-bottom: 20px;
-}
-
-.landing-content p {
-  margin-bottom: 30px;
 }
 
 #start-training {
@@ -36,28 +25,25 @@ body, html {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #007BFF;
-  color: white;
-  transition: background 0.3s;
+  background-color: white;
+  color: black;
+  transition: transform 0.2s;
 }
 
 #start-training:hover {
-  background-color: #0056b3;
+  transform: scale(1.05);
 }
 
 /* Dashboard */
-.hidden {
-  display: none;
-}
+.hidden { display: none; }
 
 .nav-bar {
-  background-color: #333; /* dark grey */
+  background-color: #3c3c3c; /* Sardine gray Pantone 418 */
   color: white;
   padding: 15px 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
 }
 
 .nav-bar .logo {
@@ -65,42 +51,57 @@ body, html {
   font-size: 20px;
 }
 
-.nav-bar nav button {
-  background: none;
-  border: none;
-  color: white;
-  margin-left: 15px;
-  font-size: 16px;
+.home-btn {
+  margin-right: 15px;
+  padding: 5px 12px;
   cursor: pointer;
-  transition: color 0.3s;
+  border-radius: 5px;
+  border: none;
+  background: #00bfff;
+  color: white;
+  transition: opacity 0.2s;
+}
+.home-btn:active {
+  animation: flicker 0.3s ease-in-out;
 }
 
-.nav-bar nav button:hover {
-  color: #00bfff;
+@keyframes flicker {
+  0%, 100% {opacity:1;}
+  50% {opacity:0.5;}
 }
 
+.dropdown label {
+  margin-right: 10px;
+}
+
+.dropdown select {
+  padding: 5px;
+}
+
+/* Stats Section */
 .stats-section {
-  background-color: #777; /* light grey */
+  background-color: #888888; /* Sidewalk gray Pantone 416 */
   color: white;
   padding: 20px 30px;
 }
 
-.stats-section h2 {
-  margin-top: 0;
-}
-
+/* Module Content */
 .module-content {
-  padding: 20px 30px;
-  min-height: 300px;
+  padding: 10px 30px;
+  min-height: 200px;
+  background-color: #555;
+  color: white;
+  border-top: 1px solid #333;
+  transition: all 0.5s ease;
 }
 
-/* Question Cards */
+/* Question Card */
 .question-card {
-  background-color: #555;
+  background-color: #666;
   color: white;
   padding: 20px;
   border-radius: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   animation: fadeIn 0.5s;
 }
 
@@ -114,20 +115,25 @@ body, html {
   background-color: #007BFF;
   color: white;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .options button:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 10px #00bfff;
 }
 
 .next-btn {
   margin-top: 10px;
-  background-color: #28a745;
+  background-color: #ffcc00;
+  color: black;
+  font-weight: bold;
+  animation: glow 1s infinite alternate;
 }
 
-.next-btn:hover {
-  background-color: #218838;
+@keyframes glow {
+  from {box-shadow: 0 0 5px #ffcc00;}
+  to {box-shadow: 0 0 20px #ffcc00;}
 }
 
 .progress-bar-container {
@@ -144,8 +150,38 @@ body, html {
   transition: width 0.5s;
 }
 
-/* Animations */
 @keyframes fadeIn {
   from {opacity:0;}
   to {opacity:1;}
+}
+
+/* Certificate */
+.certificate {
+  background-color: black;
+  border: 5px solid gold;
+  color: gold;
+  padding: 30px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.certificate h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.certificate h2 {
+  font-size: 22px;
+  margin: 15px 0;
+}
+
+.certificate p {
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.certificate .seal {
+  font-weight: bold;
+  margin-top: 20px;
+  font-size: 18px;
 }
