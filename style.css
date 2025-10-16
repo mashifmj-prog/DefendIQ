@@ -3,8 +3,10 @@ body {
   margin: 0;
   background-color: #f4f6f8;
   color: #333;
+  transition: background-color 0.6s ease, color 0.6s ease;
 }
 
+/* HEADER */
 header {
   display: flex;
   align-items: center;
@@ -13,13 +15,13 @@ header {
   color: white;
   padding: 0.6rem 1.5rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  transition: background 0.5s ease;
+  transition: background 0.6s ease;
 }
 
 header img {
   height: 45px;
   border-radius: 6px;
-  transition: transform 0.4s ease;
+  transition: transform 0.6s ease;
 }
 
 header img.animate {
@@ -42,17 +44,14 @@ header img.animate {
   opacity: 0.85;
 }
 
-.company-selector label {
-  font-size: 0.85rem;
-  margin-right: 4px;
-}
-
+/* NAVIGATION */
 nav {
   display: flex;
   justify-content: center;
   gap: 0.6rem;
   background: #e0f2f1;
   padding: 0.6rem;
+  transition: background 0.5s ease;
 }
 
 nav button {
@@ -70,8 +69,16 @@ nav button:hover {
   transform: scale(1.05);
 }
 
+/* MAIN CONTENT */
 main {
   padding: 1rem 2rem;
+  min-height: 65vh;
+  opacity: 1;
+  transition: opacity 0.6s ease-in-out;
+}
+
+main.fade-out {
+  opacity: 0;
 }
 
 section {
@@ -80,7 +87,7 @@ section {
 
 section.active {
   display: block;
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -88,6 +95,22 @@ section.active {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* LEADERBOARD ITEMS */
+.leader-item {
+  background: #ffffff;
+  border-left: 5px solid var(--theme-color, #004d40);
+  padding: 0.6rem;
+  margin: 0.4rem 0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.leader-item.alert {
+  background: #ffebee;
+  border-left: 5px solid #c62828;
+}
+
+/* FOOTER */
 footer {
   text-align: center;
   background: #004d40;
@@ -95,9 +118,10 @@ footer {
   padding: 0.8rem 0;
   margin-top: 1rem;
   font-size: 0.9rem;
-  transition: background 0.5s ease;
+  transition: background 0.6s ease;
 }
 
+/* BUTTON */
 button {
   transition: all 0.2s ease-in-out;
 }
