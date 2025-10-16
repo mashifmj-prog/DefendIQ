@@ -5,41 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🛡️ DefendIQ</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <section id="landing" style="display: block;">
         <div class="landing-container">
             <div class="landing-left">
-                <label for="company-select-landing">Company</label>
-                <div class="dropdown-container">
-                    <select id="company-select-landing" onchange="updateCompany(this.value)">
-                        <option value="" disabled selected>Select your company</option>
-                        <option value="Openserve">Openserve</option>
-                        <option value="FiberLink">FiberLink</option>
-                        <option value="Gyro">Gyro</option>
-                        <option value="Exit">Exit</option>
-                    </select>
-                    <button id="close-dropdown" onclick="resetDropdown()" aria-label="Clear company selection">×</button>
-                </div>
+                <h2>DefendIQ</h2>
             </div>
             <div class="landing-right">
                 <img src="logos/defendiq-logo.png" alt="DefendIQ Logo" class="landing-logo">
                 <h1 id="landing-title" class="animate-text">🛡️ DefendIQ</h1>
-                <p class="animate-text">Your trusted platform for cybersecurity training. Stay vigilant, earn badges, and protect your organization with confidence!</p>
+                <p class="animate-text">Your trusted platform for cybersecurity training. Stay vigilant, earn badges, and protect your organization!</p>
                 <button onclick="startApp()" class="start-button">Start Training</button>
             </div>
         </div>
     </section>
     <header hidden>
-        <img id="logo" src="logos/openserve-logo.png" alt="Company Logo" width="40">
-        <h1 id="app-title">🛡️ DefendIQ — Openserve</h1>
-        <select id="company-select" onchange="changeCompany(this.value)">
-            <option value="Openserve">Openserve</option>
-            <option value="FiberLink">FiberLink</option>
-            <option value="Gyro">Gyro</option>
-        </select>
+        <img id="logo" src="logos/defendiq-logo.png" alt="DefendIQ Logo" width="40">
+        <h1 id="app-title">🛡️ DefendIQ</h1>
     </header>
     <nav hidden>
         <button onclick="showSection('dashboard')">Dashboard</button>
@@ -85,11 +70,9 @@
             <h2>Quiz</h2>
             <label for="test-select">Select Test</label>
             <select id="test-select" onchange="changeTest(this.value)">
-                <option value="Deepfake Awareness">Deepfake Awareness</option>
-                <option value="Reporting Security Incidents">Reporting Security Incidents</option>
-                <option value="Culture Survey">Culture Survey</option>
-                <option value="Social Engineering">Social Engineering</option>
-                <option value="General Cybersecurity">General Cybersecurity</option>
+                <option value="Deepfake">Deepfake Awareness</option>
+                <option value="Reporting">Reporting Security Incidents</option>
+                <option value="Culture">Culture Survey</option>
             </select>
             <div id="quiz-progress">
                 <div>Quiz Progress: <span id="quiz-progress-text">0%</span></div>
@@ -154,7 +137,7 @@
         </section>
     </main>
     <footer hidden>
-        <p id="footer-text">DefendIQ – Trusted by Openserve, FiberLink & Gyro</p>
+        <p id="footer-text">DefendIQ – Cybersecurity Training</p>
     </footer>
     <script src="script.js"></script>
 </body>
