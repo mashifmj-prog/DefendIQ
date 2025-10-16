@@ -16,7 +16,8 @@ const defendiq = {
             completion: 90,
             points: 200,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         },
         {
             name: "Bob Johnson",
@@ -24,7 +25,8 @@ const defendiq = {
             completion: 70,
             points: 150,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         },
         {
             name: "Fiona Green",
@@ -32,7 +34,8 @@ const defendiq = {
             completion: 85,
             points: 180,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         },
         {
             name: "Kyle Lane",
@@ -40,7 +43,8 @@ const defendiq = {
             completion: 65,
             points: 140,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         },
         {
             name: "Emma Brown",
@@ -48,7 +52,8 @@ const defendiq = {
             completion: 95,
             points: 220,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         },
         {
             name: "Liam Carter",
@@ -56,7 +61,8 @@ const defendiq = {
             completion: 75,
             points: 160,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
-            phishingCompleted: 0
+            phishingCompleted: 0,
+            passwordCompleted: 0
         }
     ],
     streak: 0,
@@ -195,10 +201,44 @@ const phishingEmails = [
     }
 ];
 
+const passwordQuestions = [
+    {
+        question: "What makes a password strong?",
+        options: ["Short and simple", "At least 12 characters, mixed case, numbers, symbols", "Your name", "Reused across sites"],
+        correct: 1,
+        explanation: "Strong passwords are long and complex, with diverse characters."
+    },
+    {
+        question: "What’s a risky password practice?",
+        options: ["Using a password manager", "Writing passwords down", "Using unique passwords", "Enabling 2FA"],
+        correct: 1,
+        explanation: "Writing passwords down risks exposure."
+    },
+    {
+        question: "How often should you change passwords?",
+        options: ["Never", "Every 3-6 months", "Daily", "Only if short"],
+        correct: 1,
+        explanation: "Change passwords periodically, especially after a breach."
+    },
+    {
+        question: "Which is a secure password example?",
+        options: ["password123", "MyDog2023", "X7$kPq9mW#2vL8", "123456"],
+        correct: 2,
+        explanation: "Secure passwords are random and complex, like X7$kPq9mW#2vL8."
+    },
+    {
+        question: "What should you avoid in passwords?",
+        options: ["Symbols", "Personal info like birthdays", "Numbers", "Mixed case"],
+        correct: 1,
+        explanation: "Avoid personal info to prevent easy guessing."
+    }
+];
+
 // === State Variables ===
 let currentUser = 0; // Index of current employee (e.g., 0 = Alice Smith)
 let phishingIndex = 0; // Current phishing email index
 let questionIndex = 0; // Current quiz question index
+let passwordIndex = 0; // Current password question index
 let currentTest = "Deepfake"; // Current quiz test
 let deptChart = null; // Chart.js instance for department completion
 let pointsPie = null; // Chart.js instance for points pie chart
@@ -228,11 +268,12 @@ function logout() {
         currentUser = 0;
         phishingIndex = 0;
         questionIndex = 0;
+        passwordIndex = 0;
         currentTest = "Deepfake";
         document.getElementById("landing").hidden = false;
         document.querySelector("header").hidden = true;
         document.querySelector("nav").hidden = true;
-        document.querySelector("main").hidden = true;
+        document.querySelector("main").hidden = false;
         document.querySelector("footer").hidden = true;
         document.getElementById("landing-title").textContent = "🛡️ DefendIQ";
         console.log("Logged out");
@@ -254,6 +295,7 @@ function applyTheme() {
         loadTips();
         loadQuiz();
         loadPhishing();
+        loadPassword();
     } catch (error) {
         console.error("applyTheme error:", error);
     }
@@ -267,6 +309,7 @@ function showSection(sectionId) {
         if (sectionId === "leaderboard") loadLeaderboard();
         if (sectionId === "quiz") loadQuiz();
         if (sectionId === "phishing") loadPhishing();
+        if (sectionId === "password") loadPassword();
         if (sectionId === "tips") loadTips();
         if (sectionId === "analytics") loadAnalytics();
         if (sectionId === "profile") loadProfile();
@@ -525,6 +568,94 @@ function submitPhishing(isSafe) {
     }
 }
 
+// === Password Training ===
+function loadPassword() {
+    try {
+        const user = defendiq.employees[currentUser];
+        if (user.passwordCompleted >= passwordQuestions.length) {
+            document.getElementById("password-question").textContent = "Password Training Completed!";
+            document.getElementById("password-options").innerHTML = "";
+            document.getElementById("password-feedback").textContent = 
+                `🎉 Password Training done! Check Profile for certificate.`;
+            return;
+        }
+        const question = passwordQuestions[passwordIndex % passwordQuestions.length];
+        document.getElementById("password-question").textContent = question.question;
+        const optionsDiv = document.getElementById("password-options");
+        optionsDiv.innerHTML = "";
+        question.options.forEach((option, index) => {
+            const label = document.createElement("label");
+            const radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "password-answer";
+            radio.value = index;
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(option));
+            optionsDiv.appendChild(label);
+        });
+        document.getElementById("password-feedback").textContent = "";
+        updatePasswordProgress();
+    } catch (error) {
+        console.error("loadPassword error:", error);
+    }
+}
+
+function updatePasswordProgress() {
+    try {
+        const user = defendiq.employees[currentUser];
+        const progress = (user.passwordCompleted / passwordQuestions.length) * 100;
+        document.getElementById("password-progress-text").textContent = 
+            `${progress.toFixed(0)}% (${user.passwordCompleted}/${passwordQuestions.length})`;
+        document.getElementById("password-progress-bar").style.width = `${progress}%`;
+    } catch (error) {
+        console.error("updatePasswordProgress error:", error);
+    }
+}
+
+function submitPassword() {
+    try {
+        const user = defendiq.employees[currentUser];
+        if (user.passwordCompleted >= passwordQuestions.length) {
+            showSection("profile");
+            return;
+        }
+        const selected = document.querySelector('input[name="password-answer"]:checked');
+        if (!selected) return alert("Please select an answer!");
+        const question = passwordQuestions[passwordIndex % passwordQuestions.length];
+        const isCorrect = parseInt(selected.value) === question.correct;
+        const feedback = document.getElementById("password-feedback");
+        const selectedAnswer = question.options[parseInt(selected.value)];
+        const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+        if (isCorrect) {
+            feedback.textContent = 
+                `${phrase} Correct! "${selectedAnswer}" is right. ${question.explanation} +10 pts, +5% comp.`;
+            user.points += 10;
+            user.completion = Math.min(100, user.completion + 5);
+            user.passwordCompleted = Math.min(
+                passwordQuestions.length, 
+                user.passwordCompleted + 1
+            );
+            defendiq.streak += 1;
+            defendiq.streakHistory.push(defendiq.streak);
+            if (user.passwordCompleted >= passwordQuestions.length) {
+                feedback.textContent = `🎉 Password Training done! Check Profile for certificate.`;
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                showSection("profile");
+            }
+        } else {
+            feedback.textContent = 
+                `Oops! Wrong. You chose "${selectedAnswer}", but it's "${question.options[question.correct]}". ${question.explanation} Streak reset.`;
+            defendiq.streak = 0;
+        }
+        passwordIndex++;
+        loadPassword();
+        loadDashboard();
+        loadLeaderboard();
+    } catch (error) {
+        console.error("submitPassword error:", error);
+    }
+}
+
 // === Security Tips ===
 function loadTips() {
     try {
@@ -549,6 +680,8 @@ function loadAnalytics() {
         document.getElementById("total-quizzes").textContent = totalQuizzes;
         const totalPhishing = defendiq.employees.reduce((sum, emp) => sum + emp.phishingCompleted, 0);
         document.getElementById("total-phishing").textContent = totalPhishing;
+        const totalPassword = defendiq.employees.reduce((sum, emp) => sum + emp.passwordCompleted, 0);
+        document.getElementById("total-password").textContent = totalPassword;
         if (streakChart) streakChart.destroy();
         const ctx = document.getElementById("streak-trend").getContext("2d");
         streakChart = new Chart(ctx, {
@@ -605,6 +738,9 @@ function loadProfile() {
         const completedTests = Object.keys(user.quizCompleted).filter(
             test => user.quizCompleted[test] >= questions[test].length
         );
+        if (user.passwordCompleted >= passwordQuestions.length) {
+            completedTests.push("Password");
+        }
         document.getElementById("certificate-card").hidden = completedTests.length === 0;
         completedTests.forEach(test => {
             const button = document.createElement("button");
@@ -624,6 +760,7 @@ function getBadges(user) {
         if (user.quizCompleted.Reporting === questions.Reporting.length) badges.push("🚨 Incident Reporter");
         if (user.quizCompleted.Culture === questions.Culture.length) badges.push("🏛️ Culture Champion");
         if (user.phishingCompleted === phishingEmails.length) badges.push("🎣 Phishing Pro");
+        if (user.passwordCompleted === passwordQuestions.length) badges.push("🔒 Password Master");
         if (defendiq.streak >= 5) badges.push("🔥 Streak King");
         if (user.completion === 100) badges.push("🌟 Cyber Hero");
         return badges;
@@ -637,7 +774,6 @@ function downloadCertificate(test) {
     try {
         const user = defendiq.employees[currentUser];
         const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-        // Escaping special characters in user name and test
         const safeUserName = user.name.replace(/([&%$#_{}])/g, "\\$1");
         const safeTest = test.replace(/([&%$#_{}])/g, "\\$1");
         const latex = `
@@ -668,11 +804,11 @@ function downloadCertificate(test) {
 \\vspace{1cm}
 {\\color{primarycolor}\\Huge \\textbf{Certificate of Completion}}\\\\
 \\vspace{0.5cm}
-{\\color{secondarycolor}\\Large ${safeTest} Quiz}\\\\
+{\\color{secondarycolor}\\Large ${safeTest} Training}\\\\
 \\vspace{1cm}
 This certifies that\\\\
 {\\color{primarycolor}\\Huge \\textbf{${safeUserName}}}\\\\
-has successfully completed the quiz at\\\\
+has successfully completed the training at\\\\
 {\\color{primarycolor}\\Large \\textbf{DefendIQ}}\\\\
 on ${date}.\\\\
 \\vspace{1cm}
