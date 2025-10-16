@@ -1,122 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DefendIQ — Training</title>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ DefendIQ</title>
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 </head>
 <body>
-
-  <!-- LANDING (Pantone 425 approx) -->
-  <section id="landing" class="landing">
-    <div class="landing-box">
-      <h1>Welcome to DefendIQ Training!</h1>
-      <p>Boost your cybersecurity skills by completing interactive modules</p>
-      <button id="startBtn" class="start-btn">Start Training</button>
-    </div>
-  </section>
-
-  <!-- APPLICATION -->
-  <section id="app" class="hidden">
-
-    <!-- NAV TOP (sardine gray) -->
-    <header class="nav-top">
-      <div class="nav-left">
-        <span class="brand">DefendIQ</span>
-      </div>
-
-      <div class="nav-right">
-        <button id="homeBtn" class="home-btn" title="Back to landing">Home</button>
-
-        <div class="quiz-dropdown">
-          <label class="dropdown-label">Quiz</label>
-          <div class="select-wrap">
-            <select id="moduleSelect" aria-label="Select module">
-              <option value="" selected hidden>Select your module</option>
-              <option value="keymessage">Key Message</option>
-              <option value="deepfake">Deepfake Awareness</option>
-              <option value="reporting">Reporting Security Incidents</option>
-              <option value="culture">Culture Survey</option>
-              <option value="social">Social Engineering</option>
-              <option value="phishing">Phishing Simulation</option>
-              <option value="password">Password Training</option>
-              <option value="exit">Exit</option>
-            </select>
-            <div class="watermark">Select your module</div>
-          </div>
+    <section id="landing" class="landing">
+        <div class="landing-box">
+            <h1>DefendIQ</h1>
+            <p class="animated-text">DefendIQ: Your trusted partner in training</p>
+            <button id="startBtn" class="start-btn">Start Training</button>
         </div>
-      </div>
-    </header>
-
-    <!-- STATS (sidewalk gray) -->
-    <div class="stats-area">
-      <div class="stats-left">
-        <h2>Dashboard</h2>
-      </div>
-      <div class="stats-right">
-        <div class="stat">Streak: <span id="streak">0</span></div>
-        <div class="stat">Points: <span id="points">0</span></div>
-        <div class="stat">Completion: <span id="completion">0%</span></div>
-        <div class="stat">Badges Earned: <span id="badges">None</span></div>
-      </div>
-    </div>
-
-    <!-- MODULE AREA (module header + body) -->
-    <main class="module-area">
-      <div id="moduleHeader" class="module-header">
-        <div id="moduleTitle" class="module-title">DefendIQ: Your trusted partner in training</div>
-        <div class="module-actions">
-          <button id="closeModuleBtn" class="close-btn" title="Close module">Close</button>
+    </section>
+    <section id="app" class="hidden">
+        <div class="nav-top">
+            <div class="brand">DefendIQ</div>
+            <div class="nav-right">
+                <div class="quiz-dropdown">
+                    <div class="select-wrap">
+                        <span class="watermark">Select Module</span>
+                        <select id="moduleSelect">
+                            <option value="" disabled selected>Select a Module</option>
+                            <option value="keymessage">Key Message</option>
+                            <option value="deepfake">Deepfake Awareness</option>
+                            <option value="reporting">Reporting Security Incidents</option>
+                            <option value="culture">Culture Survey</option>
+                            <option value="social">Social Engineering</option>
+                            <option value="phishing">Phishing Simulation</option>
+                            <option value="password">Password Training</option>
+                            <option value="exit">Exit Module</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="homeBtn" class="home-btn">Home</button>
+            </div>
         </div>
-      </div>
-
-      <div id="moduleBody" class="module-body">
-        <div id="defaultWelcome" class="welcome-message">DefendIQ: Your trusted partner in training</div>
-
-        <!-- Small overall dashboard graph + affirmation -->
-        <div class="overall-panel">
-          <canvas id="overallChart" width="400" height="120"></canvas>
-          <div id="affirmation" class="affirmation">You're making progress — keep going! 💪</div>
+        <div class="module-area">
+            <div class="module-header">
+                <div class="module-title">Select a module to begin</div>
+                <div class="module-actions">
+                    <button id="closeModuleBtn" class="close-btn">Close</button>
+                </div>
+            </div>
+            <div class="module-body" id="moduleBody">
+                <div class="welcome-message">Select a module to begin</div>
+            </div>
         </div>
-      </div>
-
-      <!-- Rotating tips area (thin) -->
-      <div class="tips-bar">
-        <span id="rotatingTip">Tip: Hover over links to preview URLs before clicking.</span>
-      </div>
-    </main>
-  </section>
-
-  <!-- Hidden certificate template (render inside moduleBody when needed) -->
-  <div id="certificateTemplate" class="hidden">
-    <div class="certificate-card" id="certificateCardStatic">
-      <div class="cert-inner">
-        <div class="cert-top">
-          <h1 class="cert-title">Certificate of Appreciation</h1>
-          <div id="certBrand" class="cert-brand">DefendIQ</div>
+        <div class="stats-area">
+            <div class="stats-right">
+                <div class="stat">Streak: <span id="streak">0</span></div>
+                <div class="stat">Points: <span id="points">0</span></div>
+                <div class="stat">Completion: <span id="completion">0%</span></div>
+                <div class="stat">Badges: <span id="badges">None</span></div>
+            </div>
         </div>
-        <div contenteditable="true" id="certName" class="cert-name">Name Surname</div>
-        <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span id="certModule" class="cert-module" style="color:white;font-weight:700">[Module Name]</span> training module.</p>
-        <div class="cert-meta">
-          <div>Date: <span id="certDate"></span></div>
-          <div>Signature: <span class="sample-sign">Jane Doe</span></div>
-        </div>
-        <div class="cert-seal">GRAND AWARD</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="script.js"></script>
+    </section>
+    <div id="certificateTemplate" class="hidden"></div>
+    <script src="script.js"></script>
 </body>
 </html>
