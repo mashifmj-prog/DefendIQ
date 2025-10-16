@@ -1,6 +1,3 @@
-// =========================
-// COMPANY THEMES
-// =========================
 const companies = {
   DefendIQ: {
     color: "#004d40",
@@ -40,50 +37,45 @@ const companies = {
   }
 };
 
-// =========================
-// INITIAL LOAD
-// =========================
 document.addEventListener("DOMContentLoaded", () => {
   showSection("dashboard");
   applyCompanyTheme("DefendIQ");
 });
 
-// =========================
-// COMPANY SWITCHING
-// =========================
 function changeCompany(name) {
-  applyCompanyTheme(name);
+  const main = document.getElementById("mainContent");
+  main.classList.add("fade-out");
+  setTimeout(() => {
+    applyCompanyTheme(name);
+    main.classList.remove("fade-out");
+  }, 500);
 }
 
 function applyCompanyTheme(name = "DefendIQ") {
   const company = companies[name];
+  const header = document.getElementById("header");
+  const footer = document.getElementById("footer");
+
   document.body.style.setProperty("--theme-color", company.color);
-  document.querySelector("header").style.background = company.color;
-  document.querySelector("footer").style.background = company.color;
+  header.style.background = company.color;
+  footer.style.background = company.color;
+
   document.getElementById("appTitle").textContent = `🛡️ ${name}`;
-  
-  // Animate logo
   const logo = document.getElementById("companyLogo");
   logo.src = company.logo;
   logo.classList.add("animate");
   setTimeout(() => logo.classList.remove("animate"), 600);
-  
+
   updateDashboard(name);
   updateLeaderboard(name);
   renderCharts(name);
 }
 
-// =========================
-// NAVIGATION
-// =========================
 function showSection(sectionId) {
   document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
   document.getElementById(sectionId).classList.add("active");
 }
 
-// =========================
-// DASHBOARD CONTENT
-// =========================
 function updateDashboard(name) {
   const company = companies[name];
   const avg = (
@@ -94,9 +86,6 @@ function updateDashboard(name) {
   `;
 }
 
-// =========================
-// LEADERBOARD
-// =========================
 function updateLeaderboard(name) {
   const company = companies[name];
   const content = company.employees
@@ -107,12 +96,14 @@ function updateLeaderboard(name) {
       </div>
     `)
     .join("");
-  document.getElementById("leaderboardContent").innerHTML = content;
+  const container = document.getElementById("leaderboardContent");
+  container.style.opacity = 0;
+  setTimeout(() => {
+    container.innerHTML = content;
+    container.style.opacity = 1;
+  }, 200);
 }
 
-// =========================
-// CHARTS
-// =========================
 let deptChart, pointsChart;
 
 function renderCharts(name) {
@@ -133,7 +124,7 @@ function renderCharts(name) {
         backgroundColor: company.color + "cc"
       }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
+    options: { animation: { duration: 1000 }, responsive: true, plugins: { legend: { display: false } } }
   });
 
   pointsChart = new Chart(ctx2, {
@@ -150,11 +141,10 @@ function renderCharts(name) {
         ]
       }]
     },
-    options: { responsive: true }
+    options: { animation: { duration: 1000 }, responsive: true }
   });
 }
 
-// Helper to lighten colors
 function lighten(color, percent) {
   const num = parseInt(color.replace("#", ""), 16);
   const amt = Math.round(2.55 * percent * 100);
@@ -174,9 +164,6 @@ function lighten(color, percent) {
   );
 }
 
-// =========================
-// EXPORT
-// =========================
 function exportCSV() {
   const rows = [["Name", "Dept", "Completion", "Points"]];
   const name = document.getElementById("companySelect").value;
