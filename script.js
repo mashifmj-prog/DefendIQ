@@ -25,71 +25,139 @@ const defendiq = {
             points: 150,
             quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
             phishingCompleted: 0
+        },
+        {
+            name: "Fiona Green",
+            dept: "Sales",
+            completion: 85,
+            points: 180,
+            quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
+            phishingCompleted: 0
+        },
+        {
+            name: "Kyle Lane",
+            dept: "Engineering",
+            completion: 65,
+            points: 140,
+            quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
+            phishingCompleted: 0
+        },
+        {
+            name: "Emma Brown",
+            dept: "IT",
+            completion: 95,
+            points: 220,
+            quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
+            phishingCompleted: 0
+        },
+        {
+            name: "Liam Carter",
+            dept: "Sales",
+            completion: 75,
+            points: 160,
+            quizCompleted: { Deepfake: 0, Reporting: 0, Culture: 0 },
+            phishingCompleted: 0
         }
     ],
     streak: 0,
-    streakHistory: [0, 1, 2]
+    streakHistory: [0, 1, 2, 0, 3]
 };
 
 const questions = {
     Deepfake: [
         {
             question: "What is a deepfake?",
-            options: ["Encryption", "AI-generated fake media", "Malware"],
+            options: ["Encryption", "AI-generated fake media", "Malware", "Firewall"],
             correct: 1,
             explanation: "Deepfakes use AI to create realistic fake videos or audio."
         },
         {
             question: "How can you spot a deepfake?",
-            options: ["Unnatural movements", "High-resolution graphics", "File size"],
+            options: ["Unnatural movements", "High-resolution graphics", "File size", "Fast loading"],
             correct: 0,
             explanation: "Look for unnatural blinks or lip-sync issues."
         },
         {
             question: "How are deepfakes used in cyberattacks?",
-            options: ["Encrypt data", "Impersonate executives", "Speed up downloads"],
+            options: ["Encrypt data", "Impersonate executives", "Speed up downloads", "Block ads"],
             correct: 1,
             explanation: "Deepfakes can impersonate leaders to trick employees."
+        },
+        {
+            question: "What technology powers deepfakes?",
+            options: ["Blockchain", "Machine learning", "Antivirus", "Compression"],
+            correct: 1,
+            explanation: "Machine learning, like neural networks, creates deepfakes."
+        },
+        {
+            question: "Best defense against deepfakes?",
+            options: ["Update software", "Verify identity", "Use VPN", "Clear cache"],
+            correct: 1,
+            explanation: "Verifying identity via trusted channels prevents deception."
         }
     ],
     Reporting: [
         {
             question: "What should you do if you suspect a breach?",
-            options: ["Ignore it", "Report to IT immediately", "Share on social media"],
+            options: ["Ignore it", "Report to IT immediately", "Share on social media", "Reboot system"],
             correct: 1,
             explanation: "Quick reporting mitigates risks."
         },
         {
             question: "Who should you contact about a phishing email?",
-            options: ["Your manager", "IT team", "The sender"],
+            options: ["Your manager", "IT team", "The sender", "HR"],
             correct: 1,
             explanation: "IT teams handle phishing investigations."
         },
         {
             question: "What’s considered a security incident?",
-            options: ["A team meeting", "Unauthorized access", "Software update"],
+            options: ["A team meeting", "Unauthorized access", "Software update", "New hire"],
             correct: 1,
             explanation: "Unauthorized access compromises systems."
+        },
+        {
+            question: "When should you report a suspicious email?",
+            options: ["After replying", "Immediately", "Next day", "After clicking links"],
+            correct: 1,
+            explanation: "Immediate reporting prevents further damage."
+        },
+        {
+            question: "What’s a key part of incident reporting?",
+            options: ["Deleting emails", "Providing details", "Changing passwords", "Logging out"],
+            correct: 1,
+            explanation: "Detailed reports help IT investigate effectively."
         }
     ],
     Culture: [
         {
             question: "What builds a strong cybersecurity culture?",
-            options: ["Ignoring policies", "Regular training", "Sharing passwords"],
+            options: ["Ignoring policies", "Regular training", "Sharing passwords", "Using public Wi-Fi"],
             correct: 1,
             explanation: "Regular training fosters awareness."
         },
         {
             question: "How can employees contribute to security?",
-            options: ["Bypass protocols", "Report suspicious activity", "Use personal devices"],
+            options: ["Bypass protocols", "Report suspicious activity", "Use personal devices", "Disable updates"],
             correct: 1,
             explanation: "Reporting strengthens security."
         },
         {
             question: "What’s a sign of a weak security culture?",
-            options: ["Regular training", "Ignoring policies", "Strong passwords"],
+            options: ["Regular training", "Ignoring policies", "Strong passwords", "2FA use"],
             correct: 1,
             explanation: "Ignoring policies weakens security."
+        },
+        {
+            question: "Why is a security culture important?",
+            options: ["Reduces costs", "Prevents breaches", "Speeds up work", "Simplifies tasks"],
+            correct: 1,
+            explanation: "A strong culture helps prevent breaches."
+        },
+        {
+            question: "What encourages a security culture?",
+            options: ["Open communication", "Ignoring alerts", "Sharing logins", "Skipping training"],
+            correct: 0,
+            explanation: "Open communication promotes vigilance."
         }
     ]
 };
@@ -569,15 +637,18 @@ function downloadCertificate(test) {
     try {
         const user = defendiq.employees[currentUser];
         const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+        // Escaping special characters in user name and test
+        const safeUserName = user.name.replace(/([&%$#_{}])/g, "\\$1");
+        const safeTest = test.replace(/([&%$#_{}])/g, "\\$1");
         const latex = `
 \\documentclass[a4paper]{article}
 \\usepackage[utf8]{inputenc}
 \\usepackage{geometry}
-\\geometry{margin=0.75in}
 \\usepackage{mathpazo}
 \\usepackage{fancyhdr}
 \\usepackage{tikz}
 \\usepackage{xcolor}
+\\geometry{margin=0.75in}
 \\definecolor{primarycolor}{RGB}{0,77,64}
 \\definecolor{secondarycolor}{RGB}{38,166,154}
 \\pagestyle{fancy}
@@ -587,20 +658,20 @@ function downloadCertificate(test) {
 \\begin{document}
 \\begin{center}
 \\begin{tikzpicture}
-\\draw[line width=2pt, primarycolor] (0,0) rectangle (\\paperwidth-1in,\\paperheight-1in);
-\\draw[line width=1pt, secondarycolor] (0.2in,0.2in) rectangle (\\paperwidth-1.2in,\\paperheight-1.2in);
-\\node at (0.5,0.5) {\\color{secondarycolor}\\large \\textbf{🛡️}};
-\\node at (\\paperwidth-1in,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{🛡️}};
-\\node at (0.5,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{🛡️}};
-\\node at (\\paperwidth-1in,0.5) {\\color{secondarycolor}\\large \\textbf{🛡️}};
+\\draw[line width=2pt,primarycolor] (0,0) rectangle (\\paperwidth-1in,\\paperheight-1in);
+\\draw[line width=1pt,secondarycolor] (0.2in,0.2in) rectangle (\\paperwidth-1.2in,\\paperheight-1.2in);
+\\node at (0.5,0.5) {\\color{secondarycolor}\\large \\textbf{\\char"1F6E1}};
+\\node at (\\paperwidth-1in,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{\\char"1F6E1}};
+\\node at (0.5,\\paperheight-1in) {\\color{secondarycolor}\\large \\textbf{\\char"1F6E1}};
+\\node at (\\paperwidth-1in,0.5) {\\color{secondarycolor}\\large \\textbf{\\char"1F6E1}};
 \\end{tikzpicture}
 \\vspace{1cm}
 {\\color{primarycolor}\\Huge \\textbf{Certificate of Completion}}\\\\
 \\vspace{0.5cm}
-{\\color{secondarycolor}\\Large ${test} Quiz}\\\\
+{\\color{secondarycolor}\\Large ${safeTest} Quiz}\\\\
 \\vspace{1cm}
 This certifies that\\\\
-{\\color{primarycolor}\\Huge \\textbf{${user.name}}}\\\\
+{\\color{primarycolor}\\Huge \\textbf{${safeUserName}}}\\\\
 has successfully completed the quiz at\\\\
 {\\color{primarycolor}\\Large \\textbf{DefendIQ}}\\\\
 on ${date}.\\\\
@@ -608,12 +679,13 @@ on ${date}.\\\\
 {\\color{secondarycolor}\\large \\textbf{Congratulations on your achievement!}}\\\\
 \\vspace{0.5cm}
 \\begin{tikzpicture}
-\\draw[line width=1pt, secondarycolor] (0,0) -- (5,0);
+\\draw[line width=1pt,secondarycolor] (0,0) -- (5,0);
 \\node at (2.5,0.3) {\\color{primarycolor}\\small Program Director};
 \\end{tikzpicture}
 \\end{center}
-\\end{document}`;
-        const blob = new Blob([latex], { type: "text/latex" });
+\\end{document}
+        `.trim();
+        const blob = new Blob([latex], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -624,6 +696,7 @@ on ${date}.\\\\
         URL.revokeObjectURL(url);
     } catch (error) {
         console.error("downloadCertificate error:", error);
+        alert("Error generating certificate. Please try again.");
     }
 }
 
