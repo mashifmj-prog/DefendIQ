@@ -1,20 +1,14 @@
-/* DefendIQ full interactive script.js
-   - Handles landing -> dashboard
-   - Dropdown module selection with watermark
-   - 10 realistic questions per module
-   - Next/Prev navigation, animations
-   - Module progress, streak, badges, localStorage
-   - Certificate print / download (PNG & PDF) & share
-*/
+/* ========== DefendIQ full app script ========== */
 
-/* ---------- DOM ---------- */
+/* DOM */
 const startBtn = document.getElementById('startBtn');
 const landing = document.getElementById('landing');
 const app = document.getElementById('app');
+
 const homeBtn = document.getElementById('homeBtn');
 const moduleSelect = document.getElementById('moduleSelect');
+const moduleTitle = document.getElementById('moduleTitle');
 const moduleBody = document.getElementById('moduleBody');
-const moduleHeader = document.getElementById('moduleHeader');
 const closeModuleBtn = document.getElementById('closeModuleBtn');
 
 const streakDOM = document.getElementById('streak');
@@ -22,31 +16,49 @@ const pointsDOM = document.getElementById('points');
 const completionDOM = document.getElementById('completion');
 const badgesDOM = document.getElementById('badges');
 
-/* ---------- persistent stats ---------- */
-let stats = JSON.parse(localStorage.getItem('defendiq_stats')) || {
+const overallChartCanvas = document.getElementById('overallChart');
+const rotatingTip = document.getElementById('rotatingTip');
+
+/* libraries */
+const confetti = window.confetti || null;
+
+/* ========== Persistent state ========= */
+const STORAGE_KEY = 'defendiq_v2_state';
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
   streak: 0,
   points: 0,
-  completion: 0,
-  badges: []  // names of completed modules
+  badges: [],
+  moduleProgress: {} // e.g. { deepfake: { answered: [0,2], completed: true } }
 };
 
-/* helper to save */
-function saveStats(){ localStorage.setItem('defendiq_stats', JSON.stringify(stats)); }
-
-/* update UI */
-function refreshStatsUI(){
-  streakDOM.textContent = stats.streak;
-  pointsDOM.textContent = stats.points;
-  completionDOM.textContent = stats.completion + '%';
-  badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
+/* helper to persist locally and try server */
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  saveToServer(state).catch(()=>{/* ignore server errors for now */});
 }
-refreshStatsUI();
 
-/* ---------- modules + realistic questions (10 each) ---------- */
+/* server placeholder - replace /api/saveProgress with your real API */
+async function saveToServer(payload){
+  // Example: POST to /api/saveProgress
+  // Replace URL with your server endpoint and implement auth as needed
+  try {
+    await fetch('/api/saveProgress', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    // server not configured — keep local
+    console.warn('Server save failed (placeholder):', err);
+  }
+}
+
+/* ========== MODULES DATA (realistic questions) ========== */
+/* Same modules defined earlier but with full answers index 'a' */
 const MODULES = {
   keymessage: {
-    title: 'Key Message',
-    questions: [
+    title:'Key Message',
+    questions:[
       { q:"Why is cybersecurity awareness important in a company?", opts:["Reduces risk of breaches","Slows employees","Costs more","Is optional"], a:0 },
       { q:"What should you do when you receive unexpected attachments?", opts:["Open immediately","Scan and verify sender","Forward to all","Ignore permanently"], a:1 },
       { q:"Phone requests for credentials should be handled how?", opts:["Share immediately","Verify caller and escalate","Assume it's HR","Post online"], a:1 },
@@ -62,7 +74,7 @@ const MODULES = {
 
   deepfake: {
     title: 'Deepfake Awareness',
-    questions: [
+    questions:[
       { q:"What is a deepfake?", opts:["AI-generated fake media","A firewall","A password type","A network switch"], a:0 },
       { q:"A red flag for deepfake video is:", opts:["Perfect lip sync","Unnatural facial movement","Crystal clear audio always","Very long length"], a:1 },
       { q:"Deepfakes can be used for:", opts:["Impersonation for fraud","Improving passwords","Faster internet","Reducing spam"], a:0 },
@@ -78,7 +90,7 @@ const MODULES = {
 
   reporting: {
     title: 'Reporting Security Incidents',
-    questions: [
+    questions:[
       { q:"Why report quickly?", opts:["Speeds investigation and containment","Causes panic","Is not necessary","Annoys IT"], a:0 },
       { q:"What info helps an incident report?", opts:["Screenshots, timestamps, sender details","Only feelings","No details","Random data"], a:0 },
       { q:"Reporting channels should be:", opts:["Unofficial chat only","Official IT/security channels","Public forum","Email to attacker"], a:1 },
@@ -94,7 +106,7 @@ const MODULES = {
 
   culture: {
     title: 'Culture Survey',
-    questions: [
+    questions:[
       { q:"What helps a strong security culture?", opts:["Open communication and training","Ignoring policy","Sharing passwords","Avoiding reporting"], a:0 },
       { q:"Employees contribute by:", opts:["Reporting suspicious activity","Avoiding training","Hiding issues","Sharing credentials"], a:0 },
       { q:"Frequent training results in:", opts:["Better awareness and fewer incidents","More breaches","Slower work","Confusion"], a:0 },
@@ -110,7 +122,7 @@ const MODULES = {
 
   social: {
     title: 'Social Engineering',
-    questions: [
+    questions:[
       { q:"What is social engineering?", opts:["Manipulating people to reveal secrets","A software update","A firewall rule","Antivirus"], a:0 },
       { q:"Red flags in phone social engineering:", opts:["Sense of urgency, pressure to act, odd caller ID","Perfect grammar","Long hold music","Friendly voice only"], a:0 },
       { q:"If asked for credentials by caller:", opts:["Verify identity via official channel","Share immediately","Hang up and reshare","Text credentials"], a:0 },
@@ -125,8 +137,8 @@ const MODULES = {
   },
 
   phishing: {
-    title: 'Phishing Simulation',
-    questions: [
+    title:'Phishing Simulation',
+    questions:[
       { q:"'Urgent – update your password' from unknown domain. You:", opts:["Hover, inspect sender, do not click; report","Click and type password","Forward to all","Reply with credentials"], a:0 },
       { q:"Suspicious attachment from supplier, you:", opts:["Verify with sender using known contact, scan file","Open immediately","Send to HR only","Ignore the email permanently"], a:0 },
       { q:"A link that shortens domain should be:", opts:["Inspected via right tools or hover reveal","Trusted","Clicked only on mobile","Pasted in social"], a:0 },
@@ -141,8 +153,8 @@ const MODULES = {
   },
 
   password: {
-    title: 'Password Training',
-    questions: [
+    title:'Password Training',
+    questions:[
       { q:"Strong passwords should be:", opts:["Long, unique, with mixed characters","Your name","123456","Repeated across accounts"], a:0 },
       { q:"Using a password manager is:", opts:["Recommended for generating and storing strong passwords","Unsafe","Illegal","Only for admins"], a:0 },
       { q:"Reusing passwords across sites is:", opts:["Risky and should be avoided","Efficient","Secure","Required"], a:0 },
@@ -157,336 +169,486 @@ const MODULES = {
   }
 };
 
-/* ---------- state for current module ---------- */
-let current = {
-  key: null,      // module key eg 'deepfake'
-  idx: 0          // current question index
-};
-
-/* ---------- landing -> app ---------- */
-startBtn.addEventListener('click', () => {
+/* ========== UI: start and home ========== */
+startBtn.addEventListener('click', ()=> {
   landing.classList.add('hidden');
   app.classList.remove('hidden');
+  renderOverallChart(); // show simulated chart
 });
 
-/* ---------- home button (back to landing) ---------- */
-homeBtn.addEventListener('click', () => {
-  // flicker animation handled by CSS :active; go to landing
+homeBtn.addEventListener('click', ()=> {
+  // Home flicker handled by :active; return to landing
   app.classList.add('hidden');
   landing.classList.remove('hidden');
 });
 
-/* ---------- dropdown interactions ---------- */
-/* watermark behavior - show watermark only when no selection */
-const watermark = document.querySelector('.select-wrap .watermark');
-moduleSelect.addEventListener('focus', ()=> watermark.style.opacity = 0.2);
-moduleSelect.addEventListener('blur', ()=> watermark.style.opacity = 1);
+/* ========== rotating tips ========== */
+const TIPS = [
+  'Tip: Hover over links to preview URLs before clicking.',
+  'Tip: Use long passphrases and a password manager.',
+  'Tip: Never share your credentials via email.',
+  'Tip: Verify requests for funds through a known phone number.',
+  'Tip: Report suspicious emails to security quickly.'
+];
+let tipIdx = 0;
+function rotateTips(){
+  rotatingTip.textContent = TIPS[tipIdx % TIPS.length];
+  tipIdx++;
+}
+setInterval(rotateTips, 6000);
+rotateTips();
 
-moduleSelect.addEventListener('change', () => {
+/* ========== Chart: overall progress (simulated data) ========== */
+let overallChart = null;
+function renderOverallChart(){
+  const labels = ['KeyMessage','Deepfake','Reporting','Culture','Social','Phishing','Password'];
+  // simulate completion per module using stored badges and other values
+  const data = labels.map(l => {
+    const key = l.toLowerCase().replace(/\s+/g,'');
+    // crude mapping: if badge exists, show higher number; otherwise random-ish but encouraging
+    const hasBadge = state.badges && state.badges.includes(l);
+    return hasBadge ? 95 : Math.min(60 + (Math.random()*30), 90).toFixed(0);
+  });
+
+  const ctx = overallChartCanvas.getContext('2d');
+  if(overallChart) overallChart.destroy();
+  overallChart = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Module completion %',
+        data:data,
+        backgroundColor: labels.map((_,i)=> i%2? '#00bfff':'#7afcff')
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{legend:{display:false}}
+    }
+  });
+
+  // positive affirmation text change depending on average
+  const avg = data.reduce((s,v)=>s+Number(v),0)/data.length;
+  const affirm = document.getElementById('affirmation');
+  if(avg > 80) affirm.textContent = "Excellent progress — you’re doing great!";
+  else if(avg > 60) affirm.textContent = "Good progress — keep going!";
+  else affirm.textContent = "You're on your way — small steps every day!";
+}
+
+/* ========== Selection & module open ========== */
+moduleSelect.addEventListener('change', ()=> {
   const v = moduleSelect.value;
-  if(!v || v === "") return;
-  if(v === 'exit'){
-    // reset
-    moduleSelect.selectedIndex = 0;
-    moduleBody.innerHTML = `<div class="welcome-message">DefendIQ: Your trusted partner in training</div>`;
-    closeModule(); // reset state
-    return;
-  }
+  if(!v || v === '') return;
+  if(v === 'exit'){ closeModule(); return; }
   openModule(v);
 });
 
-/* close module button resets dropdown and content */
-closeModuleBtn.addEventListener('click', () => {
-  moduleSelect.selectedIndex = 0;
-  closeModule();
-});
-
-/* ---------- open module ---------- */
+/* open module and render first question and module-level chart */
 function openModule(key){
-  current.key = key;
-  current.idx = 0;
+  const mod = MODULES[key];
+  if(!mod) return;
+  moduleTitle.textContent = mod.title;
+  state.currentModule = key;
+  state.currentIndex = 0;
+  // ensure moduleProgress record exists
+  const mp = state.moduleProgress[key] || {answered:[], completed:false};
+  state.moduleProgress[key] = mp;
+  persist();
   renderQuestion();
-  // set header title
-  const title = MODULES[key] ? MODULES[key].title : key;
-  document.querySelector('.module-title')?.replaceWith(createModuleTitleElem(title));
+  renderModuleChart(key);
+  // show Learning Material and Take Quiz buttons above body
+  showModuleActions();
 }
 
-/* helper to create a title element */
-function createModuleTitleElem(title){
-  const el = document.createElement('div');
-  el.className = 'module-title';
-  el.textContent = title;
-  return el;
+/* close module resets */
+function closeModule(){
+  moduleTitle.textContent = 'DefendIQ: Your trusted partner in training';
+  state.currentModule = null;
+  state.currentIndex = 0;
+  moduleBody.innerHTML = `<div id="defaultWelcome" class="welcome-message">DefendIQ: Your trusted partner in training</div>
+    <div class="overall-panel"><canvas id="overallChart" width="400" height="120"></canvas><div id="affirmation" class="affirmation">You're making progress — keep going! 💪</div></div>`;
+  bindOverallChartToCanvas(); // rebind
+  hideModuleActions();
+  persist();
 }
 
-/* ---------- render question ---------- */
+/* show/hide module-level buttons */
+function showModuleActions(){
+  // create two buttons: Learning Material & Take a Quiz (Take a Quiz starts question flow from first unanswered)
+  if(document.getElementById('moduleActionBar')) return; // already present
+  const bar = document.createElement('div');
+  bar.id = 'moduleActionBar';
+  bar.className = 'module-action-bar';
+  bar.innerHTML = `<button id="learningMaterialBtn" class="small-btn">Learning Material</button>
+                   <button id="takeQuizBtn" class="small-btn">Take a Quiz</button>`;
+  moduleHeader.appendChild(bar);
+
+  document.getElementById('learningMaterialBtn').addEventListener('click', showLearningMaterial);
+  document.getElementById('takeQuizBtn').addEventListener('click', ()=> {
+    // jump to first unanswered question or start from 0
+    const key = state.currentModule;
+    state.currentIndex = (state.moduleProgress[key] && state.moduleProgress[key].answered && state.moduleProgress[key].answered.length) ?
+                          state.moduleProgress[key].answered.length : 0;
+    renderQuestion();
+  });
+}
+
+function hideModuleActions(){
+  const bar = document.getElementById('moduleActionBar');
+  if(bar) bar.remove();
+}
+
+/* Learning Material: brief bullet points */
+function showLearningMaterial(){
+  const key = state.currentModule;
+  if(!key) return;
+  const info = {
+    keymessage:['Security begins with you','Verify senders','Report suspicious items'],
+    deepfake:['Check lip-sync','Confirm identity by other channels','Be skeptical of unsolicited media'],
+    reporting:['Capture screenshots','Note timestamps','Contact IT immediately'],
+    culture:['Be proactive','Support colleagues','Encourage reporting'],
+    social:['Pause and verify','Do not share credentials','Use official channels'],
+    phishing:['Hover links first','Check sender domain','Do not open unexpected attachments'],
+    password:['Use a password manager','Enable MFA','Use long passphrases']
+  };
+  const bullets = (info[key] || ['Review the official learning pack.']).map(b=>`<li>${b}</li>`).join('');
+  moduleBody.innerHTML = `<div class="learning-material"><h3>Learning Material</h3><ul>${bullets}</ul>
+    <div style="margin-top:12px"><button class="small-btn" id="backToQuiz">Back to quiz</button></div></div>`;
+  document.getElementById('backToQuiz').addEventListener('click', ()=> renderQuestion());
+}
+
+/* ========== Render question (with strict per-question awarding) ========== */
 function renderQuestion(){
-  if(!current.key) return;
-  const mod = MODULES[current.key];
-  const qObj = mod.questions[current.idx];
+  const key = state.currentModule;
+  if(!key) return;
+  const mod = MODULES[key];
+  const idx = state.currentIndex || 0;
+  const q = mod.questions[idx];
 
-  // progress percent within module
-  const pct = Math.round(((current.idx+1) / mod.questions.length) * 100);
+  // progress percent module-level
+  const moduleAnswered = state.moduleProgress[key]?.answered?.length || 0;
+  const pct = Math.round(((idx+1)/mod.questions.length)*100);
 
-  // render HTML
+  // build DOM
   moduleBody.innerHTML = `
-    <div class="question-card" aria-live="polite">
-      <div class="q-text">${sanitize(qObj.q)}</div>
-      <div class="options">
-        ${qObj.opts.map((o,i)=>`<button class="opt-btn" data-i="${i}">${sanitize(o)}</button>`).join('')}
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
-      </div>
-      <div class="controls">
-        <button class="prev-btn" ${current.idx===0? 'disabled':''}>Previous</button>
-        <button class="next-btn" ${current.idx===mod.questions.length-1? '':'disabled'}>Next Question</button>
+    <div class="question-card" role="region" aria-live="polite">
+      <div class="q-text">${escapeHtml(q.q)}</div>
+      <div class="options">${q.opts.map((o,i)=>`<button class="opt-btn" data-i="${i}">${escapeHtml(o)}</button>`).join('')}</div>
+      <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+      <div class="controls"><button class="prev-btn" ${idx===0?'disabled':''}>Previous</button>
+        <button class="next-btn" ${idx === mod.questions.length-1 ? '':'disabled'}>Next Question</button>
         <div style="flex:1"></div>
-        <div class="badge-strip" aria-hidden="true">
-          ${stats.badges && stats.badges.length ? stats.badges.map(b=>`<span class="badge">${b}</span>`).join('') : ''}
-        </div>
+        <div class="badge-strip">${state.badges && state.badges.length ? state.badges.map(b=>`<span class="badge">${b}</span>`).join(' ') : ''}</div>
       </div>
-    </div>`;
+    </div>
+  `;
 
-  // attach handlers
-  moduleBody.querySelectorAll('.opt-btn').forEach(btn => btn.addEventListener('click', onOptionClicked));
-  const prev = moduleBody.querySelector('.prev-btn');
-  const next = moduleBody.querySelector('.next-btn');
-
-  prev?.addEventListener('click', () => {
-    if(current.idx>0){ current.idx--; slideTransition('left'); renderQuestion(); }
+  // bind options
+  moduleBody.querySelectorAll('.opt-btn').forEach(btn=>{
+    btn.addEventListener('click', onOptionSelected);
   });
 
-  // Next button initially disabled until answer selected. We'll handle enabling.
-  if(current.idx === mod.questions.length -1){
-    // Last question -> change Next to Finish
+  // bind prev/next
+  const prev = moduleBody.querySelector('.prev-btn');
+  const next = moduleBody.querySelector('.next-btn');
+  prev.addEventListener('click', ()=> {
+    if(state.currentIndex > 0){ state.currentIndex--; slideTransition('left'); renderQuestion(); }
+  });
+
+  // next initially disabled until an answer chosen; Next could be Finish on last question
+  if(state.currentIndex === mod.questions.length -1){
     next.textContent = 'Finish Module';
     next.disabled = true;
     next.addEventListener('click', finishModule);
   } else {
     next.textContent = 'Next Question';
-    next.disabled = true; // becomes enabled after selecting an answer
-    next.addEventListener('click', () => {
-      if(current.idx < mod.questions.length -1){ current.idx++; slideTransition('right'); renderQuestion(); }
+    next.disabled = true;
+    next.addEventListener('click', ()=> {
+      if(state.currentIndex < mod.questions.length -1){ state.currentIndex++; slideTransition('right'); renderQuestion(); }
     });
   }
 
-  // update small progress bar globally:
-  updateGlobalProgress();
+  // small module-specific dashboard on right (render)
+  renderModuleChart(key);
 }
 
-/* ---------- sanitize helper to avoid injection in demo */
-function sanitize(s){ return String(s).replace(/</g,"&lt;").replace(/>/g,"&gt;") }
-
-/* ---------- option click handler ---------- */
-function onOptionClicked(ev){
-  const btn = ev.currentTarget;
+/* option selected: check correctness, award points once, confetti on correct, show shake on incorrect */
+function onOptionSelected(e){
+  const btn = e.currentTarget;
   const chosenIndex = Number(btn.dataset.i);
-  const mod = MODULES[current.key];
-  const qObj = mod.questions[current.idx];
+  const key = state.currentModule;
+  const mod = MODULES[key];
+  const q = mod.questions[state.currentIndex];
+  const correctIndex = q.a;
 
-  // disable all options, mark correct/incorrect
-  moduleBody.querySelectorAll('.opt-btn').forEach(ob=>{
-    ob.disabled = true;
-    const idx = Number(ob.dataset.i);
-    if(mod.questions[current.idx].opts[idx] === qObj.opts[qObj.a]) {
-      ob.classList.add('correct');
-    }
-    if(idx === chosenIndex && qObj.a !== idx) ob.classList.add('incorrect');
+  // disable all options
+  moduleBody.querySelectorAll('.opt-btn').forEach(b=> b.disabled = true);
+
+  // visual marking
+  moduleBody.querySelectorAll('.opt-btn').forEach(b=>{
+    const i = Number(b.dataset.i);
+    if(i === correctIndex) b.classList.add('correct');
+    if(i === chosenIndex && i !== correctIndex) b.classList.add('incorrect');
   });
 
-  // award points & streak if correct
-  if(chosenIndex === qObj.a){
-    stats.points += 10;
-    stats.streak += 1;
-    // small confetti-like visual: we'll flash the next button via CSS
-    flashNextButton();
+  // strict awarding: only award once per question
+  const mp = state.moduleProgress[key] || {answered:[], completed:false};
+  const alreadyAnswered = mp.answered.includes(state.currentIndex);
+
+  if(chosenIndex === correctIndex){
+    // award only if not already answered
+    if(!alreadyAnswered){
+      state.points += 10;
+      mp.answered.push(state.currentIndex);
+      // confetti burst - fun and celebratory
+      launchConfetti();
+      // flash next button for delight
+      flashNext();
+    }
+    // small positive message
+    showTempMessage('Correct! Well done.', 2200, 'positive');
   } else {
-    // incorrect resets streak
-    stats.streak = 0;
+    // incorrect => reset streak and show shake + encouraging message
+    state.streak = 0;
+    showTempMessage('Not quite — the correct answer is highlighted. Keep going!', 3000, 'error');
+    shakeModule();
+    // mark answered (but not award) to avoid re-trying for points? We keep it so user can retry but not get points if they had previously answered correct.
+    if(!alreadyAnswered){
+      mp.answered.push(state.currentIndex); // mark as attempted so can't farm by switching answers
+    }
   }
 
-  // enable next or finish button
+  // save module progress
+  state.moduleProgress[key] = mp;
+  // enable next/finish
   const nextBtn = moduleBody.querySelector('.next-btn');
   if(nextBtn) nextBtn.disabled = false;
 
-  // mark current module progress in temporary store so progress persists
-  // We store per-module answeredCount (basic)
-  const keyProgress = JSON.parse(localStorage.getItem('defendiq_module_progress') || '{}');
-  const prog = keyProgress[current.key] || {answered: []};
-  // mark this question answered (avoid duplicate awarding)
-  if(!prog.answered.includes(current.idx)){
-    prog.answered.push(current.idx);
-    keyProgress[current.key] = prog;
-    localStorage.setItem('defendiq_module_progress', JSON.stringify(keyProgress));
+  // update streak only if correct and not already answered
+  if(chosenIndex === correctIndex && !alreadyAnswered){
+    state.streak += 1;
   }
 
-  // update completion and UI
-  updateModuleCompletionStats();
-  saveAndRefresh();
+  updateGlobalCompletionAndBadges(key);
+  persist();
+  refreshUI();
 }
 
-/* ---------- update module completion and global completion ---------- */
-function updateModuleCompletionStats(){
-  const keyProgress = JSON.parse(localStorage.getItem('defendiq_module_progress') || '{}');
-  const totalModules = Object.keys(MODULES).length;
-  // completed modules = badges length
-  // We compute overall completion as percent of modules completed
-  stats.completion = Math.round((stats.badges.length / totalModules) * 100);
+/* show temp message under module header */
+function showTempMessage(text, ms=2000, type='info'){
+  const msg = document.createElement('div');
+  msg.className = 'temp-msg ' + type;
+  msg.textContent = text;
+  moduleBody.prepend(msg);
+  setTimeout(()=> {
+    msg.style.opacity = 0;
+    setTimeout(()=> msg.remove(), 400);
+  }, ms);
 }
 
-/* ---------- flash next button effect ---------- */
-function flashNextButton(){
-  const nextBtn = moduleBody.querySelector('.next-btn');
-  if(!nextBtn) return;
-  nextBtn.animate([
-    { transform: 'scale(1)', boxShadow: '0 0 8px rgba(255,204,0,0.5)' },
-    { transform: 'scale(1.06)', boxShadow: '0 0 24px rgba(255,204,0,0.95)' }
-  ], { duration: 450, iterations: 1 });
+/* small shake effect */
+function shakeModule(){
+  moduleBody.animate([{transform:'translateX(0)'},{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'translateX(-6px)'},{transform:'translateX(0)'}],{duration:500});
 }
 
-/* ---------- slide transition (moduleBody) ---------- */
+/* flash next button */
+function flashNext(){
+  const btn = moduleBody.querySelector('.next-btn');
+  if(!btn) return;
+  btn.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],{duration:360});
+}
+
+/* confetti launcher (fun & celebratory) */
+function launchConfetti(){
+  if(typeof confetti === 'function'){
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.35 },
+      colors: ['#ff7a7a','#ffd56b','#8affc1','#9fb4ff','#ff7a7a','#ffb6c1']
+    });
+  } else {
+    // fallback: create small colored dots
+    // omitted for brevity; canvas-confetti is included in index.html
+  }
+}
+
+/* slide transition helper */
 function slideTransition(dir='right'){
   moduleBody.style.transition = 'transform .28s ease, opacity .28s ease';
-  moduleBody.style.opacity = '0';
-  moduleBody.style.transform = dir === 'right' ? 'translateX(12px)' : 'translateX(-12px)';
-  setTimeout(()=>{ moduleBody.style.opacity = '1'; moduleBody.style.transform='translateX(0)'; }, 260);
+  moduleBody.style.opacity = 0;
+  moduleBody.style.transform = dir === 'right'? 'translateX(12px)' : 'translateX(-12px)';
+  setTimeout(()=> { moduleBody.style.opacity = 1; moduleBody.style.transform = 'translateX(0)'; }, 260);
 }
 
-/* ---------- next/finish flow ---------- */
+/* finish module: mark completed, award badge & points, show certificate */
 function finishModule(){
-  // mark module as completed (add badge if not present)
-  if(!stats.badges.includes(MODULES[current.key].title)){
-    stats.badges.push(MODULES[current.key].title);
+  const key = state.currentModule;
+  if(!key) return;
+  const mod = MODULES[key];
+  // mark completed
+  if(!state.badges.includes(mod.title)) {
+    state.badges.push(mod.title);
+    // award completion bonus
+    state.points += 50;
   }
-  // award some points for finishing
-  stats.points += 50;
-  stats.streak += 1;
-  // compute new completion
-  updateModuleCompletionStats();
-  saveAndRefresh();
-
-  // show certificate area within moduleBody
-  showCertificate(MODULES[current.key].title);
+  state.moduleProgress[key].completed = true;
+  updateGlobalCompletionAndBadges(key);
+  persist();
+  // show certificate
+  showCertificate(mod.title, key);
 }
 
-/* close module resets selection & module content */
-function closeModule(){
-  current.key = null; current.idx = 0;
-  moduleSelect.selectedIndex = 0;
-  moduleBody.innerHTML = `<div class="welcome-message">DefendIQ: Your trusted partner in training</div>`;
-  // restore module title
-  const t = document.querySelector('.module-title');
-  if(t) t.textContent = 'DefendIQ: Your trusted partner in training';
-  saveAndRefresh();
+/* update completion percent and badges display */
+function updateGlobalCompletionAndBadges(){
+  const total = Object.keys(MODULES).length;
+  const completedCount = state.badges.length;
+  const percent = Math.round((completedCount / total) * 100);
+  state.completion = percent;
 }
 
-/* ---------- save & refresh ---------- */
-function saveAndRefresh(){
-  saveStats();
-  refreshStatsUI();
+/* refresh UI numbers */
+function refreshUI(){
+  streakDOM.textContent = state.streak;
+  pointsDOM.textContent = state.points;
+  completionDOM.textContent = state.completion + '%';
+  badgesDOM.innerHTML = state.badges.length ? state.badges.map(b=>`<span class="badge flash">${b}</span>`).join(' ') : 'None';
 }
 
-/* ---------- certificate rendering & actions ---------- */
-function showCertificate(moduleName){
-  // populate cert template (use the hidden certificateTemplate container in DOM)
-  const cTemp = document.getElementById('certificateTemplate');
-  if(!cTemp){
-    // fallback: insert inline
-    moduleBody.innerHTML = certificateHTML(moduleName);
-  } else {
-    // build certificate HTML from template
-    const certHtml = `
-      <div class="certificate-card" id="certificateCard">
-        <div class="cert-inner">
-          <h1 class="cert-title">Certificate of Appreciation</h1>
-          <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">Name Surname</div>
-          <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the ${escapeHtml(moduleName)} training module.</p>
-          <div class="cert-meta">
-            <div>Date: <span id="certDate">${new Date().toLocaleDateString()}</span></div>
-            <div>Signature: ____________________</div>
-          </div>
-          <div class="cert-seal">GRAND AWARD</div>
-          <div class="cert-actions">
-            <button id="printCert">Print</button>
-            <button id="downloadPNG">Download PNG</button>
-            <button id="downloadPDF">Download PDF</button>
-            <button id="shareCert">Share</button>
-            <button id="closeCert">Close Certificate</button>
-          </div>
-        </div>
-      </div>
-    `;
-    moduleBody.innerHTML = certHtml;
-  }
-
-  // wire certificate buttons
-  document.getElementById('printCert').addEventListener('click', () => window.print());
-  document.getElementById('closeCert').addEventListener('click', () => {
-    closeModule(); // returns to module selection default message
-  });
-
-  document.getElementById('downloadPNG').addEventListener('click', async () => {
-    await downloadCertificatePNG();
-  });
-
-  document.getElementById('downloadPDF').addEventListener('click', async () => {
-    await downloadCertificatePDF();
-  });
-
-  document.getElementById('shareCert').addEventListener('click', async () => {
-    await shareCertificate();
-  });
-}
-
-/* ---------- certificate export helpers ---------- */
-async function downloadCertificatePNG(){
-  const node = document.getElementById('certificateCard');
-  if(!node) return alert('Certificate not ready');
-  const canvas = await html2canvas(node, { scale: 2 });
-  const url = canvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = url; a.download = 'DefendIQ_Certificate.png'; document.body.appendChild(a); a.click(); a.remove();
-}
-
-async function downloadCertificatePDF(){
-  const node = document.getElementById('certificateCard');
-  if(!node) return alert('Certificate not ready');
-  const canvas = await html2canvas(node, { scale: 2 });
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'landscape' });
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight - 10);
-  pdf.save('DefendIQ_Certificate.pdf');
-}
-
-async function shareCertificate(){
-  if(!navigator.canShare) {
-    alert('Sharing not supported by this browser — you can download the certificate instead.');
-    return;
-  }
-  const node = document.getElementById('certificateCard');
-  if(!node) return;
-  const canvas = await html2canvas(node, { scale: 2 });
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-  const file = new File([blob], 'DefendIQ_Certificate.png', { type: 'image/png' });
-  try {
-    await navigator.share({ files: [file], title: 'DefendIQ Certificate', text: 'Certificate of Appreciation' });
-  } catch (err) {
-    console.warn('Share canceled or failed', err);
+/* bind overall chart canvas (redraw) */
+function bindOverallChartToCanvas(){
+  const canvas = document.getElementById('overallChart');
+  if(canvas){
+    renderOverallChart();
   }
 }
 
-/* ---------- escape html helper ---------- */
-function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+/* render module-level chart (small) */
+let moduleChart = null;
+function renderModuleChart(key){
+  // small chart showing progress within module (answers correct vs total)
+  const mod = MODULES[key];
+  const mp = state.moduleProgress[key] || {answered:[], completed:false};
+  const answered = mp.answered ? mp.answered.length : 0;
+  const correct = mp.answered ? mp.answered.filter(i=> {
+    // if index i was answered earlier, check if it was correct by comparing options; however we marked answered regardless of correct in earlier storage
+    // For module-level chart we simulate positivity: ratio = answered / total * random boost
+    return true;
+  }).length;
 
-/* ---------- initial render state ---------- */
-closeModule();
-saveAndRefresh();
+  // create a simple doughnut showing answered vs remaining
+  const ctx = document.createElement('canvas');
+  ctx.width = 300; ctx.height = 120;
+  // remove old chart element and append new on top-right of moduleBody (or replace existing)
+  const existing = document.getElementById('moduleMiniChart');
+  if(existing) existing.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'moduleMiniChart';
+  wrap.style.marginTop = '12px';
+  wrap.appendChild(ctx);
+  moduleBody.appendChild(wrap);
 
-/* ---------- small utility: preload progressive answered states if localStorage has data ---------- */
-/* This demo uses a simple approach: per-question awarding occurs once and is stored in defendiq_module_progress,
-   but we don't deduct points if user repeats on refresh. That logic can be made stricter later. */
+  if(moduleChart) moduleChart.destroy();
+  moduleChart = new Chart(ctx.getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Answered','Remaining'],
+      datasets:[{
+        data:[answered, mod.questions.length - answered],
+        backgroundColor:['#00bfff','#444']
+      }]
+    },
+    options:{plugins:{legend:{display:false}}}
+  });
+}
 
+/* ========== Certificate rendering & actions ========== */
+async function showCertificate(moduleTitle, moduleKey){
+  // build certificate from hidden template
+  const certHtml = document.getElementById('certificateTemplate').innerHTML;
+  // fill placeholders
+  const frag = document.createRange().createContextualFragment(certHtml);
+  const card = frag.querySelector('.certificate-card') || frag;
+  // set module name and date
+  card.querySelector('#certModule').textContent = moduleTitle;
+  card.querySelector('#certDate').textContent = new Date().toLocaleDateString();
+  // ensure brand on right
+  card.querySelector('#certBrand')?.setAttribute('aria-hidden','true');
+
+  // replace moduleBody with certificate (and action buttons outside certificate)
+  moduleBody.innerHTML = '';
+  moduleBody.appendChild(card);
+
+  // actions area (outside certificate, will be hidden for printing)
+  const actions = document.createElement('div');
+  actions.className = 'cert-actions';
+  actions.innerHTML = `
+    <button id="printCert">Print</button>
+    <button id="downloadPNG">Download PNG</button>
+    <button id="downloadPDF">Download PDF</button>
+    <button id="shareCert">Share</button>
+    <button id="closeCert">Close Certificate</button>
+  `;
+  moduleBody.appendChild(actions);
+
+  // wire events
+  document.getElementById('printCert').addEventListener('click', ()=> window.print());
+  document.getElementById('closeCert').addEventListener('click', ()=> closeModule());
+  document.getElementById('downloadPNG').addEventListener('click', async ()=>{
+    const node = moduleBody.querySelector('.certificate-card');
+    if(!node) return alert('Certificate not ready');
+    const canvas = await html2canvas(node, {scale:2});
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url; a.download = `DefendIQ_Certificate_${moduleKey}.png`; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  document.getElementById('downloadPDF').addEventListener('click', async ()=>{
+    const node = moduleBody.querySelector('.certificate-card');
+    if(!node) return alert('Certificate not ready');
+    const canvas = await html2canvas(node, {scale:3});
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({orientation:'landscape'});
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = (canvas.height * pdfW) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 10, pdfW, pdfH - 10);
+    pdf.save(`DefendIQ_Certificate_${moduleKey}.pdf`);
+  });
+
+  document.getElementById('shareCert').addEventListener('click', async ()=>{
+    if(!navigator.canShare){ alert('Sharing not supported on this browser. Please download the file.'); return; }
+    const node = moduleBody.querySelector('.certificate-card');
+    const canvas = await html2canvas(node, {scale:2});
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file = new File([blob], `DefendIQ_Certificate_${moduleKey}.png`, {type:'image/png'});
+    try { await navigator.share({files:[file], title:'DefendIQ Certificate', text:'Certificate of Appreciation'}); }
+    catch(err){ console.warn('Share failed', err); alert('Share failed or canceled.'); }
+  });
+
+  // create QR code linking to a verification URL (demo)
+  const qrWrap = document.createElement('div');
+  qrWrap.style.marginTop='12px';
+  moduleBody.appendChild(qrWrap);
+  const verifyUrl = `${location.origin}/verify?cert=${encodeURIComponent(moduleKey+'-'+Date.now())}`;
+  QRCode.toCanvas(verifyUrl, { width: 100 }, (err, canvas) => {
+    if(!err) qrWrap.appendChild(canvas);
+  });
+}
+
+/* ========== Utilities ========== */
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* initial UI refresh */
+refreshUI();
+bindOverallChartToCanvas();
+
+/* Helper: re-render overall chart and module chart on load changes */
+function bindOverallChartToCanvas(){ setTimeout(()=> renderOverallChart(), 60); }
+
+/* final persist wrapper */
+persist();
+
+/* ========== End of script ========== */
