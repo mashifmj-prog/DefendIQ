@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header>
+  <header id="header">
     <img id="companyLogo" src="logos/default-logo.png" alt="Company Logo" />
     <div class="header-text">
       <h1 id="appTitle">🛡️ DefendIQ</h1>
@@ -35,7 +35,7 @@
     <button onclick="showSection('tips')">Tips</button>
   </nav>
 
-  <main>
+  <main id="mainContent">
     <section id="dashboard" class="active">
       <h2>📊 Company Dashboard</h2>
       <button onclick="exportCSV()">📥 Download Report</button>
@@ -65,7 +65,7 @@
     </section>
   </main>
 
-  <footer>
+  <footer id="footer">
     © 2025 <strong>DefendIQ</strong> — Trusted by Openserve, FiberLink & Gyro
   </footer>
 
