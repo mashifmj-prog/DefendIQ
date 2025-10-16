@@ -1,72 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DefendIQ</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DefendIQ Multi-Company</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header id="header">
-    <img id="companyLogo" src="logos/default-logo.png" alt="Company Logo" />
-    <div class="header-text">
-      <h1 id="appTitle">🛡️ DefendIQ</h1>
-      <p id="tagline">
-        Your trusted platform for cybersecurity training — stay vigilant, earn badges, and protect your organization!
-      </p>
+  <!-- Landing / Header -->
+  <header>
+    <div class="logo">
+      <img id="company-logo" src="logos/defendiq-logo.png" alt="Logo">
+      <h1 id="company-name">DefendIQ</h1>
     </div>
-    <div class="company-selector">
-      <label for="companySelect">Switch Company:</label>
-      <select id="companySelect" onchange="changeCompany(this.value)">
-        <option value="DefendIQ">DefendIQ</option>
-        <option value="Openserve">Openserve</option>
-        <option value="FiberLink">FiberLink</option>
-        <option value="Gyro">Gyro</option>
-      </select>
-    </div>
+    <select id="company-select">
+      <option value="DefendIQ">DefendIQ</option>
+      <option value="CyberSafeInc">CyberSafeInc</option>
+      <option value="SecureOps">SecureOps</option>
+    </select>
+    <button onclick="showSection('dashboard')">Start Training</button>
   </header>
 
-  <nav>
-    <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="showSection('leaderboard')">Leaderboard</button>
-    <button onclick="showSection('quiz')">Quiz</button>
-    <button onclick="showSection('phishing')">Phishing Simulation</button>
-    <button onclick="showSection('tips')">Tips</button>
-  </nav>
-
-  <main id="mainContent">
-    <section id="dashboard" class="active">
-      <h2>📊 Company Dashboard</h2>
-      <button onclick="exportCSV()">📥 Download Report</button>
-      <div id="dashboardContent"></div>
-      <canvas id="deptChart"></canvas>
-      <canvas id="pointsChart"></canvas>
+  <!-- Main Sections -->
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard" class="section hidden">
+      <h2>Dashboard</h2>
+      <div class="stats">
+        <div class="card">Streak: <span id="streak">0</span></div>
+        <div class="card">Points: <span id="points">0</span></div>
+        <div class="card">Completion: <span id="completion">0%</span></div>
+      </div>
+      <canvas id="analyticsChart"></canvas>
     </section>
 
-    <section id="leaderboard">
-      <h2>🏆 Awareness Leaderboard</h2>
-      <div id="leaderboardContent"></div>
+    <!-- Quiz -->
+    <section id="quiz" class="section hidden">
+      <h2>Quiz</h2>
+      <div id="quiz-question"></div>
+      <div id="quiz-options"></div>
+      <button id="submit-quiz">Submit</button>
+      <div id="quiz-feedback"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="quiz-progress"></div>
+      </div>
     </section>
 
-    <section id="quiz">
-      <h2>🧠 Quick Phishing Awareness Quiz</h2>
-      <div id="quizContainer"></div>
+    <!-- Phishing -->
+    <section id="phishing" class="section hidden">
+      <h2>Phishing Simulation</h2>
+      <div id="phishing-email"></div>
+      <button id="phishing-safe">Safe</button>
+      <button id="phishing-phish">Phishing</button>
+      <div id="phishing-feedback"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="phishing-progress"></div>
+      </div>
     </section>
 
-    <section id="phishing">
-      <h2>📧 Phishing Simulation</h2>
-      <div id="phishingContainer"></div>
+    <!-- Password -->
+    <section id="password" class="section hidden">
+      <h2>Password Training</h2>
+      <div id="password-task"></div>
+      <button id="submit-password">Submit</button>
+      <div id="password-feedback"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="password-progress"></div>
+      </div>
     </section>
 
-    <section id="tips">
-      <h2>💡 Security Tips</h2>
-      <div id="tipsContent"></div>
+    <!-- Profile -->
+    <section id="profile" class="section hidden">
+      <h2>Profile</h2>
+      <div>Points: <span id="profile-points">0</span></div>
+      <div>Completion: <span id="profile-completion">0%</span></div>
+      <div>Streak: <span id="profile-streak">0</span></div>
+      <div>Badges:</div>
+      <ul id="profile-badges"></ul>
+      <button onclick="downloadCertificate()">Download Certificate</button>
     </section>
   </main>
 
-  <footer id="footer">
-    © 2025 <strong>DefendIQ</strong> — Trusted by Openserve, FiberLink & Gyro
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 DefendIQ Multi-Company</p>
   </footer>
 
   <script src="script.js"></script>
