@@ -101,18 +101,18 @@ header {
     align-items: center;
     background-color: var(--primary-color);
     color: white;
-    padding: 8px 12px;
+    padding: 6px 10px;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 header img {
-    max-width: 40px;
+    max-width: 32px;
 }
 
 header h1 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1rem;
     flex: 1;
 }
 
@@ -121,8 +121,8 @@ nav {
     flex-wrap: wrap;
     justify-content: space-around;
     background-color: var(--secondary-color);
-    padding: 8px;
-    gap: 5px;
+    padding: 6px;
+    gap: 4px;
 }
 
 nav button {
@@ -130,8 +130,8 @@ nav button {
     border: none;
     color: white;
     cursor: pointer;
-    font-size: 0.9rem;
-    padding: 10px;
+    font-size: 0.8rem;
+    padding: 6px;
     min-width: 44px;
     min-height: 44px;
     border-radius: 4px;
@@ -231,7 +231,7 @@ footer {
     width: 100%;
 }
 
-#quiz-progress, #phishing-progress {
+#quiz-progress, #phishing-progress, #password-progress {
     margin-bottom: 20px;
     font-weight: bold;
 }
@@ -244,14 +244,14 @@ footer {
     margin-top: 5px;
 }
 
-#quiz-progress-bar, #phishing-progress-bar {
+#quiz-progress-bar, #phishing-progress-bar, #password-progress-bar {
     height: 100%;
     background-color: var(--secondary-color);
     border-radius: 4px;
     transition: width 0.3s ease-in-out;
 }
 
-#quiz label {
+#quiz label, #password label {
     display: block;
     margin: 10px 0;
     font-weight: bold;
@@ -267,12 +267,12 @@ footer {
     border-radius: 4px;
 }
 
-#quiz-options label {
+#quiz-options label, #password-options label {
     display: block;
     margin: 10px 0;
 }
 
-#quiz-feedback {
+#quiz-feedback, #password-feedback {
     min-height: 80px;
     font-weight: bold;
     margin-bottom: 100px;
@@ -302,23 +302,24 @@ footer {
     header {
         flex-direction: column;
         align-items: flex-start;
+        padding: 5px 8px;
     }
     header h1 {
-        font-size: 1rem;
-    }
-    main {
-        grid-template-columns: 1fr;
-        padding: 10px;
+        font-size: 0.9rem;
     }
     nav {
         flex-direction: column;
         align-items: stretch;
+        padding: 5px;
     }
     nav button {
-        font-size: 0.85rem;
-        padding: 8px;
+        font-size: 0.75rem;
+        padding: 5px;
+        min-width: 44px;
+        min-height: 44px;
     }
-    .card {
+    main {
+        grid-template-columns: 1fr;
         padding: 10px;
     }
     canvas {
@@ -327,7 +328,7 @@ footer {
     .quiz-submit {
         margin-bottom: 120px;
     }
-    #quiz-feedback {
+    #quiz-feedback, #password-feedback {
         margin-bottom: 120px;
     }
 }
@@ -336,7 +337,23 @@ footer {
     .quiz-submit {
         margin-bottom: 160px;
     }
-    #quiz-feedback {
+    #quiz-feedback, #password-feedback {
         margin-bottom: 160px;
+    }
+    header {
+        padding: 4px 6px;
+    }
+    header img {
+        max-width: 28px;
+    }
+    header h1 {
+        font-size: 0.85rem;
+    }
+    nav {
+        padding: 4px;
+    }
+    nav button {
+        font-size: 0.7rem;
+        padding: 4px;
     }
 }
