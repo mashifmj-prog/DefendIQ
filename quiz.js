@@ -1,143 +1,4 @@
-/* Quiz and module logic */
-async function loadQuestions(attempt = 1, maxAttempts = 3) {
-  try {
-    if (Object.keys(MODULES).length) return;
-    const response = await fetch('questions.json', { cache: 'no-store' });
-    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-    const text = await response.text();
-    MODULES = JSON.parse(text);
-    const options = Object.keys(MODULES).map(key => `<option value="${key}">${MODULES[key].title}</option>`).join('');
-    moduleSelect.innerHTML = `<option value="" disabled selected>Select a module</option>${options}<option value="exit">Exit</option>`;
-    await restoreState();
-    if (getMode() === 'training') debounceRenderGlobalProgressChart();
-    startLearningTips();
-  } catch (err) {
-    console.error(`Attempt ${attempt} failed to load questions.json:`, err.message);
-    if (attempt < maxAttempts) {
-      console.log(`Retrying... (${attempt + 1}/${maxAttempts})`);
-      return setTimeout(() => loadQuestions(attempt + 1, maxAttempts), 1000);
-    }
-    console.error('All attempts to load questions.json failed.');
-    alert('Error loading questions. Please check your connection or try again later.');
-    MODULES = {};
-    current = { key: null, idx: 0, mode: 'selection', certificate: null };
-    saveState();
-    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
-    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
-    closeModule();
-  }
-}
-
-function closeModule() {
-  current = { key: null, idx: 0, mode: 'selection', certificate: null };
-  saveState();
-  moduleBody.innerHTML = `
-    <div class="module-selection">
-      <p>Select a module from the dropdown to begin.</p>
-      <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
-      <div class="affirmation" id="globalAffirmation"></div>
-    </div>`;
-  document.querySelector('.module-title').textContent = 'Select a module to begin';
-  debounceRenderGlobalProgressChart();
-}
-
-function openModule(key) {
-  current.key = key;
-  current.idx = 0;
-  current.mode = 'selection';
-  current.certificate = null;
-  saveState();
-  renderModuleSelection();
-  const title = MODULES[key] ? MODULES[key].title : key;
-  document.querySelector('.module-title').textContent = title;
-}
-
-async function renderModuleSelection() {
-  if (!Object.keys(MODULES).length) {
-    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
-    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
-    return;
-  }
-  current.mode = 'selection';
-  saveState();
-  const mod = MODULES[current.key];
-  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
-  const completion = (prog.answered.length / mod.questions.length) * 100;
-
-  moduleBody.innerHTML = `
-    <div class="module-selection">
-      <canvas id="moduleProgressChart" style="max-width: 300px; margin: 20px auto;"></canvas>
-      <div class="affirmation" id="moduleAffirmation"></div>
-      <button id="learningMaterialBtn" class="action-btn">Learning Material</button>
-      <button id="takeQuizBtn" class="action-btn">Take a Quiz</button>
-    </div>`;
-
-  const ctx = document.getElementById('moduleProgressChart').getContext('2d');
-  if (chartInstance) chartInstance.destroy();
-  chartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Module Progress'],
-      datasets: [{
-        label: 'Completion (%)',
-        data: [completion],
-        backgroundColor: '#8affc1',
-        borderColor: '#ffffff',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      animation: false,
-      scales: { y: { beginAtZero: true, max: 100 } },
-      plugins: { legend: { display: false }, title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' } }
-    }
-  });
-
-  const affirmations = [
-    completion < 30 ? "You're starting strong! Dive into this module!" :
-    completion < 60 ? "You're making great progress! Keep it up!" :
-    completion < 100 ? "Almost done! You're killing it!" :
-    "Module complete! You're a cybersecurity star!"
-  ];
-  document.getElementById('moduleAffirmation').textContent = affirmations[0];
-
-  document.getElementById('learningMaterialBtn').addEventListener('click', () => {
-    current.mode = 'material';
-    saveState();
-    renderLearningMaterial();
-  });
-  document.getElementById('takeQuizBtn').addEventListener('click', () => {
-    current.mode = 'quiz';
-    saveState();
-    renderQuestion();
-  });
-}
-
-function renderLearningMaterial() {
-  if (!Object.keys(MODULES).length || !MODULES[current.key]) {
-    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
-    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
-    return;
-  }
-  current.mode = 'material';
-  saveState();
-  const mod = MODULES[current.key];
-  moduleBody.innerHTML = `
-    <div class="learning-material">
-      <h3>Learning Points for ${mod.title}</h3>
-      <ul>
-        ${mod.points.map(point => `<li>${sanitize(point)}</li>`).join('')}
-      </ul>
-      <button id="backToSelectionBtn" class="action-btn">Back to Module</button>
-    </div>`;
-  document.getElementById('backToSelectionBtn').addEventListener('click', () => {
-    current.mode = 'selection';
-    saveState();
-    renderModuleSelection();
-  });
-}
-
-async function renderQuestion() {
+function renderQuestion() {
   if (!Object.keys(MODULES).length || !MODULES[current.key]) {
     moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
     document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
@@ -210,124 +71,234 @@ async function renderQuestion() {
   }
 }
 
-async function onOptionClicked(e) {
-  const idx = Number(e.target.dataset.i);
+function onOptionClicked(ev) {
+  const btn = ev.currentTarget;
+  const chosenIndex = Number(btn.dataset.i);
   const mod = MODULES[current.key];
   const qObj = mod.questions[current.idx];
-  let prog = keyProgressCache[current.key] || { answered: [], correct: [] };
-
-  if (!prog.answered.includes(current.idx)) {
-    prog.answered.push(current.idx);
-    if (qObj.opts[idx] === qObj.opts[qObj.a]) {
-      prog.correct.push(current.idx);
-      stats.points += 10;
-      stats.streak++;
-      confetti({ particleCount: 50, spread: 70 });
-      e.target.classList.add('correct');
-    } else {
-      stats.streak = 0;
-      e.target.classList.add('incorrect');
-      moduleBody.querySelectorAll('.opt-btn').forEach(ob => {
-        if (mod.questions[current.idx].opts[Number(ob.dataset.i)] === qObj.opts[qObj.a]) {
-          ob.classList.add('correct');
-        }
-      });
-    }
-    moduleBody.querySelectorAll('.opt-btn').forEach(btn => btn.disabled = true);
-    moduleBody.querySelector('.next-btn').disabled = false;
-
-    stats.completion = Object.keys(MODULES).reduce((acc, key) => {
-      const p = keyProgressCache[key] || { answered: [] };
-      return acc + (p.answered.length / MODULES[key].questions.length) * 100;
-    }, 0) / Object.keys(MODULES).length;
-
-    await saveModuleProgress({ ...keyProgressCache, [current.key]: prog });
-    await saveStats();
-    refreshStatsUI();
-
-    if (prog.answered.length === mod.questions.length && !stats.badges.includes(mod.title)) {
-      stats.badges.push(mod.title);
-      await saveStats();
-      refreshStatsUI();
-      if (current.idx === mod.questions.length - 1) {
-        const timestamp = new Date().toISOString();
-        const hash = btoa(timestamp + mod.title);
-        current.certificate = { moduleName: mod.title, timestamp, hash };
-        saveState();
-      }
-    }
-  }
-}
-
-async function finishModule() {
-  const mod = MODULES[current.key];
   const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
-  if (prog.answered.length === mod.questions.length) {
-    const timestamp = new Date().toISOString();
-    const hash = btoa(timestamp + mod.title);
-    current.certificate = { moduleName: mod.title, timestamp, hash };
-    saveState();
-    showCertificate(mod.title, timestamp, hash);
+
+  if (prog.answered.includes(current.idx)) return;
+
+  moduleBody.querySelectorAll('.opt-btn').forEach(ob => {
+    ob.disabled = true;
+    const idx = Number(ob.dataset.i);
+    if (mod.questions[current.idx].opts[idx] === qObj.opts[qObj.a]) {
+      ob.classList.add('correct');
+    }
+    if (idx === chosenIndex && qObj.a !== idx) ob.classList.add('incorrect');
+  });
+
+  if (chosenIndex === qObj.a) {
+    stats.points += 10;
+    stats.streak += 1;
+    prog.correct.push(current.idx);
+    flashNextButton();
+    triggerConfetti(true);
   } else {
-    current.idx++;
-    saveState();
-    slideTransition('right');
-    renderQuestion();
+    stats.streak = 0;
+    triggerConfetti(false);
   }
+
+  prog.answered.push(current.idx);
+  keyProgressCache[current.key] = prog;
+  saveModuleProgress(keyProgressCache).then(() => {
+    const nextBtn = moduleBody.querySelector('.next-btn');
+    if (nextBtn) nextBtn.disabled = false;
+    updateModuleCompletionStats().then(saveStats);
+    animatePoints();
+  });
 }
 
-function showCertificate(moduleName, timestamp, hash) {
-  current.mode = 'certificate';
+function finishModule() {
+  if (!stats.badges.includes(MODULES[current.key].title)) {
+    stats.badges.push(MODULES[current.key].title);
+    triggerConfetti(true);
+  }
+  stats.points += 50;
+  stats.streak += 1;
+  updateModuleCompletionStats().then(saveStats).then(() => {
+    animatePoints();
+    showCertificate(MODULES[current.key].title);
+  });
+}
+
+function closeModule() {
+  current = { key: null, idx: 0, mode: 'selection', certificate: null };
   saveState();
-  const certUrl = `https://mashifmj-prog.github.io/DefendIQ/certificate?module=${encodeURIComponent(moduleName)}&hash=${hash}`;
+  moduleSelect.selectedIndex = 0;
+  moduleBody.innerHTML = `
+    <div class="learning-tip" id="learningTips"></div>
+    <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
+    <div class="affirmation" id="globalAffirmation"></div>`;
+  document.querySelector('.module-title').textContent = 'Select a module to begin';
+  startLearningTips();
+  renderGlobalProgressChart();
+}
+
+function showCertificate(moduleName, timestamp = new Date().toISOString(), hash = generateHash(moduleName + timestamp)) {
+  current.mode = 'certificate';
+  current.certificate = { moduleName, timestamp, hash };
+  saveState();
+  const verifyUrl = `https://api.defendiq.com/verify?hash=${hash}`;
+  const qrCodeId = 'qrcode-' + hash;
+
   moduleBody.innerHTML = `
     <div class="certificate-wrapper">
-      <div class="certificate-card">
-        <div class="cert-title">Certificate of Completion</div>
-        <div class="cert-name">${sanitize(userProfile?.name || 'User')}</div>
-        <div class="cert-body">
-          Has successfully completed the <span class="module-name">${sanitize(moduleName)}</span> module on DefendIQ, demonstrating proficiency in cybersecurity awareness.
+      <div class="certificate-card" id="certificateCard">
+        <div class="cert-inner">
+          <h1 class="cert-title">Certificate of Appreciation</h1>
+          <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">Name Surname</div>
+          <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span class="module-name">${sanitize(moduleName)}</span> training module.</p>
+          <div class="cert-meta">
+            <div>Date: <span id="certDate">${new Date(timestamp).toLocaleDateString()}</span></div>
+            <div>Certificate ID: <span id="certHash">${hash}</span></div>
+          </div>
+          <div class="cert-signature">Signature: Jonas Mashifane, Cybersecurity Lead</div>
+          <div id="${qrCodeId}" class="cert-qr"></div>
+          <div class="cert-logo">DefendIQ</div>
         </div>
-        <div class="cert-meta">
-          <div>Date: ${new Date(timestamp).toLocaleDateString()}</div>
-          <div>Certificate ID: ${hash.slice(0, 8)}</div>
-        </div>
-        <div class="cert-signature">Signed: Jonas Mashifane</div>
-        <canvas id="qrCode" class="cert-qr"></canvas>
-        <div class="cert-logo">🛡️ DefendIQ</div>
-        <div class="cert-actions">
-          <button id="downloadCertBtn" class="action-btn">Download PDF</button>
-          <button id="backToModuleBtn" class="action-btn">Back to Module</button>
-        </div>
+      </div>
+      <div class="cert-actions">
+        <button id="printCert">Print</button>
+        <button id="downloadPNG">Download PNG</button>
+        <button id="downloadPDF">Download PDF</button>
+        <button id="shareCert">Share</button>
+        <button id="closeCert">Close Certificate</button>
       </div>
     </div>`;
 
-  QRCode.toCanvas(document.getElementById('qrCode'), certUrl, { width: 100, height: 100 }, err => {
-    if (err) console.error('QR code generation failed:', err);
+  QRCode.toCanvas(document.getElementById(qrCodeId), verifyUrl, { width: 100, scale: 8 }, (err) => {
+    if (err) console.error('QR Code generation failed:', err);
   });
 
-  document.getElementById('downloadCertBtn').addEventListener('click', async () => {
-    const certCard = document.querySelector('.certificate-card');
-    const canvas = await html2canvas(certCard);
-    const imgData = canvas.toDataURL('image/png');
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
-    pdf.save(`${moduleName}_Certificate.pdf`);
-  });
-
-  document.getElementById('backToModuleBtn').addEventListener('click', () => {
-    current.mode = 'selection';
-    saveState();
-    renderModuleSelection();
-  });
+  document.getElementById('printCert').addEventListener('click', () => window.print());
+  document.getElementById('closeCert').addEventListener('click', () => closeModule());
+  document.getElementById('downloadPNG').addEventListener('click', async () => await downloadCertificatePNG());
+  document.getElementById('downloadPDF').addEventListener('click', async () => await downloadCertificatePDF());
+  document.getElementById('shareCert').addEventListener('click', async () => await shareCertificate(verifyUrl, moduleName, hash));
 }
 
-function slideTransition(direction) {
-  moduleBody.style.transition = 'transform 0.3s ease';
-  moduleBody.style.transform = `translateX(${direction === 'left' ? '100%' : '-100%'})`;
+async function downloadCertificatePNG() {
+  const node = document.getElementById('certificateCard');
+  if (!node) return alert('Certificate not ready');
+  const canvas = await html2canvas(node, { scale: 4 });
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'DefendIQ_Certificate.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function downloadCertificatePDF() {
+  const node = document.getElementById('certificateCard');
+  if (!node) return alert('Certificate not ready');
+  const canvas = await html2canvas(node, { scale: 4 });
+  const imgData = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape' });
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+  pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight - 10);
+  pdf.save('DefendIQ_Certificate.pdf');
+}
+
+async function shareCertificate(verifyUrl, moduleName, hash) {
+  const node = document.getElementById('certificateCard');
+  if (!node) return alert('Certificate not ready');
+  const canvas = await html2canvas(node, { scale: 2 });
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  const file = new File([blob], 'DefendIQ_Certificate.png', { type: 'image/png' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'DefendIQ Certificate',
+        text: `I completed the ${moduleName} module on DefendIQ. Verify here: ${verifyUrl}\nCertificate ID: ${hash}`
+      });
+    } catch (err) {
+      console.warn('Share canceled or failed:', err);
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(verifyUrl);
+      alert('Sharing not supported. Verification link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      alert('Sharing not supported. Please copy the link manually: ' + verifyUrl);
+    }
+  }
+}
+
+function generateHash(input) {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36).padStart(8, '0');
+}
+
+function updateModuleCompletionStats() {
+  const totalModules = Object.keys(MODULES).length;
+  stats.completion = Math.round((stats.badges.length / totalModules) * 100);
+  return Promise.resolve();
+}
+
+function flashNextButton() {
+  const nextBtn = moduleBody.querySelector('.next-btn');
+  if (!nextBtn) return;
+  nextBtn.animate([
+    { transform: 'scale(1)', boxShadow: '0 0 8px rgba(255,204,0,0.5)' },
+    { transform: 'scale(1.06)', boxShadow: '0 0 24px rgba(255,204,0,0.95)' }
+  ], { duration: 450, iterations: 1 });
+}
+
+function animatePoints() {
+  const start = Number(stats.pointsDOM.textContent);
+  const end = stats.points;
+  const duration = 500;
+  const startTime = performance.now();
+
+  function update() {
+    const now = performance.now();
+    const progress = Math.min((now - startTime) / duration, 1);
+    const currentPoints = Math.round(start + (end - start) * progress);
+    stats.pointsDOM.textContent = currentPoints;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+function slideTransition(dir = 'right') {
+  moduleBody.style.transition = 'transform 0.28s ease, opacity 0.28s ease';
+  moduleBody.style.opacity = '0';
+  moduleBody.style.transform = dir === 'right' ? 'translateX(12px)' : 'translateX(-12px)';
   setTimeout(() => {
-    moduleBody.style.transition = 'none';
+    moduleBody.style.opacity = '1';
     moduleBody.style.transform = 'translateX(0)';
-  }, 300);
+  }, 260);
+}
+
+function startLearningTips() {
+  const tips = [
+    "Stay curious—ask questions to deepen your understanding!",
+    "Take breaks to recharge your focus.",
+    "Practice makes perfect—review modules regularly."
+  ];
+  let index = 0;
+  const tipElement = document.getElementById('learningTips');
+  function showNextTip() {
+    tipElement.textContent = tips[index];
+    tipElement.classList.remove('fade-out');
+    void tipElement.offsetWidth; // Trigger reflow
+    tipElement.classList.add('fade-out');
+    index = (index + 1) % tips.length;
+    setTimeout(showNextTip, 5000);
+  }
+  showNextTip();
 }
