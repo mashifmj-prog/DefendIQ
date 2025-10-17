@@ -145,8 +145,17 @@ function renderSupportMode() {
   startSupportTips();
   const sendButton = document.getElementById('sendSupport');
   if (sendButton) {
-    console.log('Attaching event listener to Send button'); // Debug log
-    sendButton.addEventListener('click', handleSupportInput);
+    sendButton.addEventListener('click', () => {
+      const input = document.getElementById('supportInput');
+      const output = document.getElementById('supportOutput');
+      if (input && output && input.value.trim()) {
+        handleSupportInput();
+      } else {
+        console.log('Input or output missing, or input is empty');
+      }
+    });
+  } else {
+    console.log('Send button not found');
   }
 }
 
