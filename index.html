@@ -25,7 +25,7 @@
     <div class="nav-top">
       <div class="brand">DefendIQ</div>
       <div class="nav-right">
-        <button id="feedbackBtn" class="feedback-btn">Feedback</button>
+        <button id="feedbackBtn" class="feedback-btn" disabled>Feedback</button>
         <button id="homeBtn" class="home-btn">Home</button>
         <button id="refreshBtn" class="refresh-btn">Refresh</button>
         <div class="quiz-dropdown hidden">
@@ -61,36 +61,6 @@
       </div>
     </div>
   </section>
-  <!-- Feedback Modal -->
-  <div id="feedbackModal" class="feedback-modal hidden" style="z-index: 3000;">
-    <div class="feedback-content">
-      <h2>Secure DefendIQ with Your Feedback! 🛡️</h2>
-      <div class="feedback-rating">
-        <label for="feedbackRating">Rate your experience:</label>
-        <div class="star-rating">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">★</span>
-          <span class="star" data-value="5">★</span>
-        </div>
-      </div>
-      <label for="feedbackCategory">Category:</label>
-      <select id="feedbackCategory">
-        <option value="Content Quality">Content Quality</option>
-        <option value="Usability">Usability</option>
-        <option value="Quiz Difficulty">Quiz Difficulty</option>
-        <option value="App Design">App Design</option>
-        <option value="Learning Tips">Learning Tips</option>
-        <option value="Suggestions">Suggestions</option>
-      </select>
-      <textarea id="feedbackText" placeholder="Your feedback helps us improve!" rows="5"></textarea>
-      <div class="feedback-actions">
-        <button id="submitFeedbackBtn" class="action-btn">Submit</button>
-        <button id="cancelFeedbackBtn" class="action-btn">Cancel</button>
-      </div>
-    </div>
-  </div>
   <script src="script.js"></script>
 </body>
 </html>
