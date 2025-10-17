@@ -36,12 +36,6 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   border-radius: 10px; 
   border: 2px solid var(--accent);
 }
-.logo-top-left::after {
-  content: 'DefendIQ Logo';
-  display: none;
-  font-size: 20px;
-  color: var(--text-white);
-}
 .landing-box { 
   background: rgba(255,255,255,0.1); 
   padding: 48px 56px; 
@@ -75,7 +69,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   z-index: 20;
 }
 .start-btn:hover { background: #ffffff; }
-.start-btn:active { transform: scale(.99); }
+.start-btn:active { transform: scale(0.98); transition: transform 0.2s ease; }
 
 /* App wrapper hidden toggles */
 .hidden { display: none; }
@@ -102,12 +96,12 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   color: var(--text-white); 
   padding: 6px 10px; 
   border-radius: 6px; 
-  cursor: pointer; 
+  cursor: pointer;
 }
-.home-btn:active, .refresh-btn:active, .feedback-btn:active { animation: flicker .28s; }
+.home-btn:active, .refresh-btn:active, .feedback-btn:active { animation: flicker 0.28s; }
 
 /* Flicker animation */
-@keyframes flicker { 0% { opacity: 1; } 50% { opacity: .4; } 100% { opacity: 1; } }
+@keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
 /* Dropdown look */
 .quiz-dropdown { position: relative; }
@@ -135,7 +129,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   color: var(--text-white); 
   padding: 12px 20px; 
   min-height: 40vh; 
-  transition: all .36s ease; 
+  transition: all 0.36s ease; 
 }
 .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .module-title { font-weight: 600; }
@@ -188,7 +182,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   border-radius: 10px; 
   padding: 18px; 
   margin-bottom: 12px; 
-  animation: cardIn .35s; 
+  animation: cardIn 0.35s; 
   box-shadow: 0 6px 18px rgba(0,0,0,0.4); 
 }
 @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -203,7 +197,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   border-radius: 8px; 
   cursor: pointer; 
   text-align: left; 
-  transition: transform .14s, box-shadow .14s; 
+  transition: transform 0.14s, box-shadow 0.14s; 
 }
 .opt-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,0.45); }
 .opt-btn.correct { background: #28a745; animation: pulseCorrect 0.5s; }
@@ -237,7 +231,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   height: 100%; 
   background: linear-gradient(90deg, #00bfff, #7afcff); 
   width: 0%; 
-  transition: width .5s ease; 
+  transition: width 0.5s ease; 
 }
 
 /* Badges */
@@ -252,7 +246,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
 }
 .badge.flash { animation: flashColors 1.2s infinite; }
-@keyframes flashColor { 
+@keyframes flashColors { 
   0% { background: #ff7a7a; }
   25% { background: #ffd56b; }
   50% { background: #8affc1; }
@@ -319,12 +313,11 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
 /* Responsive */
 @media (max-width: 720px) {
   .nav-right { gap: 6px; }
-  .stat-right { flex-wrap: wrap; gap: 10px; }
+  .stats-right { flex-wrap: wrap; gap: 10px; }
   .certificate-card { padding: 16px; }
   .logo-top-left { font-size: 64px; top: 25px; left: 10px; padding: 8px; }
   .landing-box { margin-top: 70px; padding: 24px; }
   .animated-text { font-size: 16px; }
   .button-group { flex-direction: column; gap: 10px; }
   .start-btn { padding: 10px 18px; }
-  .support-form, .support-message { padding: 15px; }
 }
