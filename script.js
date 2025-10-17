@@ -1,18 +1,15 @@
 /* DefendIQ interactive script.js
-   - Handles landing -> dashboard with graphs
-   - Module selection with learning material and quiz buttons
-   - Questions from questions.json with stricter progress
-   - Fun feedback with confetti for answers
-   - Certificate with timestamp, hash, QR code, high-res PDF
-   - Share via Web Share API (WhatsApp, device, etc.)
-   - Server-side persistence via API
-   - Random learning tips
+   - Optimized for performance with debounced chart rendering, reduced confetti, cached data
+   - Persists state for refresh to preserve selections and current view
+   - Handles landing -> dashboard with graphs, module selection, quizzes, certificates
+   - Uses Web Share API, server-side persistence, random learning tips
 */
 
 const startBtn = document.getElementById('startBtn');
 const landing = document.getElementById('landing');
 const app = document.getElementById('app');
 const homeBtn = document.getElementById('homeBtn');
+const refreshBtn = document.getElementById('refreshBtn');
 const moduleSelect = document.getElementById('moduleSelect');
 const moduleBody = document.getElementById('moduleBody');
 const closeModuleBtn = document.getElementById('closeModuleBtn');
@@ -30,6 +27,9 @@ let stats = {
   completion: 0,
   badges: []
 };
+let MODULES = {};
+let keyProgressCache = {}; // Cache progress to reduce API/localStorage calls
+let chartInstance = null; // Store chart instance to prevent multiple renders
 
 /* API Endpoint (Hypothetical) */
 const API_URL = 'https://api.defendiq.com';
@@ -46,7 +46,6 @@ async function loadStats() {
     }
   } catch (err) {
     console.error('Failed to load stats:', err);
-    // Fallback to localStorage if API fails
     stats = JSON.parse(localStorage.getItem('defendiq_stats')) || stats;
   }
   refreshStatsUI();
@@ -63,29 +62,32 @@ async function saveStats() {
     if (!response.ok) throw new Error('Failed to save stats');
   } catch (err) {
     console.error('Failed to save stats:', err);
-    // Fallback to localStorage
     localStorage.setItem('defendiq_stats', JSON.stringify(stats));
   }
 }
 
 /* Load module progress from server */
 async function loadModuleProgress() {
+  if (Object.keys(keyProgressCache).length) return keyProgressCache;
   try {
     const response = await fetch(`${API_URL}/progress`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
     if (response.ok) {
-      return await response.json();
+      keyProgressCache = await response.json();
+      return keyProgressCache;
     }
   } catch (err) {
     console.error('Failed to load progress:', err);
-    return JSON.parse(localStorage.getItem('defendiq_module_progress') || '{}');
+    keyProgressCache = JSON.parse(localStorage.getItem('defendiq_module_progress') || '{}');
+    return keyProgressCache;
   }
 }
 
 /* Save module progress to server */
 async function saveModuleProgress(keyProgress) {
+  keyProgressCache = keyProgress;
   try {
     const response = await fetch(`${API_URL}/progress`, {
       method: 'POST',
@@ -102,19 +104,53 @@ async function saveModuleProgress(keyProgress) {
 /* Update UI */
 function refreshStatsUI() {
   streakDOM.textContent = stats.streak;
+  pointsDOM.textContent = stats.streak;
   pointsDOM.textContent = stats.points;
   completionDOM.textContent = stats.completion + '%';
   badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
-  renderGlobalProgressChart();
+  debounceRenderGlobalProgressChart();
+}
+
+/* ---------- State Persistence for Refresh ---------- */
+let current = {
+  key: null,
+  idx: 0,
+  mode: 'selection', // 'selection', 'material', 'quiz', 'certificate'
+  certificate: null // { moduleName, timestamp, hash }
+};
+
+function saveState() {
+  localStorage.setItem('defendiq_state', JSON.stringify(current));
+}
+
+async function restoreState() {
+  const savedState = JSON.parse(localStorage.getItem('defendiq_state') || '{}');
+  if (savedState.key && MODULES[savedState.key]) {
+    current = savedState;
+    landing.classList.add('hidden');
+    app.classList.remove('hidden');
+    moduleSelect.value = current.key;
+    document.querySelector('.module-title').textContent = MODULES[current.key].title;
+    if (current.mode === 'selection') {
+      renderModuleSelection();
+    } else if (current.mode === 'material') {
+      renderLearningMaterial();
+    } else if (current.mode === 'quiz') {
+      renderQuestion();
+    } else if (current.mode === 'certificate' && current.certificate) {
+      showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+    }
+  }
 }
 
 /* ---------- Load Questions from JSON ---------- */
-let MODULES = {};
 async function loadQuestions() {
   try {
+    if (Object.keys(MODULES).length) return; // Cache questions
     const response = await fetch('questions.json');
     MODULES = await response.json();
-    renderGlobalProgressChart();
+    await restoreState();
+    debounceRenderGlobalProgressChart();
     startLearningTips();
   } catch (err) {
     console.error('Failed to load questions:', err);
@@ -124,7 +160,7 @@ async function loadQuestions() {
 loadQuestions();
 loadStats();
 
-/* ---------- Learning Tips ---------- */
+/* ---------- Learning Tips (Optimized) ---------- */
 const LEARNING_TIPS = [
   "Always verify email senders before clicking links.",
   "Use strong, unique passwords for every account.",
@@ -139,20 +175,29 @@ function startLearningTips() {
   learningTipsDOM.textContent = LEARNING_TIPS[tipIndex];
   setInterval(() => {
     tipIndex = (tipIndex + 1) % LEARNING_TIPS.length;
-    learningTipsDOM.style.opacity = 0;
+    learningTipsDOM.classList.add('fade-out');
     setTimeout(() => {
       learningTipsDOM.textContent = LEARNING_TIPS[tipIndex];
-      learningTipsDOM.style.opacity = 1;
+      learningTipsDOM.classList.remove('fade-out');
     }, 500);
   }, 5000);
 }
 
-/* ---------- Global Progress Chart ---------- */
+/* ---------- Debounced Chart Rendering ---------- */
+let chartRenderTimeout = null;
+function debounceRenderGlobalProgressChart() {
+  if (chartRenderTimeout) clearTimeout(chartRenderTimeout);
+  chartRenderTimeout = setTimeout(() => {
+    renderGlobalProgressChart();
+  }, 100);
+}
+
 function renderGlobalProgressChart() {
+  if (!Object.keys(MODULES).length) return;
   const ctx = document.getElementById('globalProgressChart').getContext('2d');
-  const keyProgress = JSON.parse(localStorage.getItem('defendiq_module_progress') || '{}');
+  if (chartInstance) chartInstance.destroy(); // Prevent multiple chart instances
   const data = Object.keys(MODULES).map(key => {
-    const prog = keyProgress[key] || { answered: [] };
+    const prog = keyProgressCache[key] || { answered: [] };
     return prog.answered.length / MODULES[key].questions.length * 100;
   });
 
@@ -164,52 +209,52 @@ function renderGlobalProgressChart() {
   ];
   globalAffirmationDOM.textContent = affirmations[0];
 
-  ```chartjs
-  {
-    "type": "bar",
-    "data": {
-      "labels": Object.keys(MODULES).map(key => MODULES[key].title),
-      "datasets": [{
-        "label": "Module Completion (%)",
-        "data": data,
-        "backgroundColor": ["#ff7a7a", "#ffd56b", "#8affc1", "#9fb4ff", "#ff7a7a", "#ffd56b", "#8affc1"],
-        "borderColor": ["#ffffff"],
-        "borderWidth": 1
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(MODULES).map(key => MODULES[key].title),
+      datasets: [{
+        label: 'Module Completion (%)',
+        data: data,
+        backgroundColor: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff', '#ff7a7a', '#ffd56b', '#8affc1'],
+        borderColor: ['#ffffff'],
+        borderWidth: 1
       }]
     },
-    "options": {
-      "scales": {
-        "y": {
-          "beginAtZero": true,
-          "max": 100
-        }
-      },
-      "plugins": {
-        "legend": { "display": false },
-        "title": { "display": true, "text": "Your Overall Progress", "color": "#ffffff" }
-      }
+    options: {
+      animation: false, // Reduce animation overhead
+      scales: { y: { beginAtZero: true, max: 100 } },
+      plugins: { legend: { display: false }, title: { display: true, text: 'Your Overall Progress', color: '#ffffff' } }
     }
-  }
-  ```
+  });
 }
-
-/* ---------- State for Current Module ---------- */
-let current = {
-  key: null,
-  idx: 0,
-  mode: 'selection' // 'selection', 'material', 'quiz'
-};
 
 /* ---------- Landing -> App ---------- */
 startBtn.addEventListener('click', () => {
   landing.classList.add('hidden');
   app.classList.remove('hidden');
+  saveState();
 });
 
 /* ---------- Home Button ---------- */
 homeBtn.addEventListener('click', () => {
   app.classList.add('hidden');
   landing.classList.remove('hidden');
+  current = { key: null, idx: 0, mode: 'selection', certificate: null };
+  saveState();
+});
+
+/* ---------- Refresh Button ---------- */
+refreshBtn.addEventListener('click', () => {
+  if (current.mode === 'selection') {
+    renderModuleSelection();
+  } else if (current.mode === 'material') {
+    renderLearningMaterial();
+  } else if (current.mode === 'quiz') {
+    renderQuestion();
+  } else if (current.mode === 'certificate' && current.certificate) {
+    showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+  }
 });
 
 /* ---------- Dropdown Interactions ---------- */
@@ -239,6 +284,8 @@ function openModule(key) {
   current.key = key;
   current.idx = 0;
   current.mode = 'selection';
+  current.certificate = null;
+  saveState();
   renderModuleSelection();
   const title = MODULES[key] ? MODULES[key].title : key;
   document.querySelector('.module-title')?.replaceWith(createModuleTitleElem(title));
@@ -254,9 +301,10 @@ function createModuleTitleElem(title) {
 
 /* ---------- Render Module Selection ---------- */
 async function renderModuleSelection() {
+  current.mode = 'selection';
+  saveState();
   const mod = MODULES[current.key];
-  const keyProgress = await loadModuleProgress();
-  const prog = keyProgress[current.key] || { answered: [], correct: [] };
+  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
   const completion = (prog.answered.length / mod.questions.length) * 100;
 
   moduleBody.innerHTML = `
@@ -268,33 +316,25 @@ async function renderModuleSelection() {
     </div>`;
 
   const ctx = document.getElementById('moduleProgressChart').getContext('2d');
-  ```chartjs
-  {
-    "type": "bar",
-    "data": {
-      "labels": ["Module Progress"],
-      "datasets": [{
-        "label": "Completion (%)",
-        "data": [completion],
-        "backgroundColor": "#8affc1",
-        "borderColor": "#ffffff",
-        "borderWidth": 1
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Module Progress'],
+      datasets: [{
+        label: 'Completion (%)',
+        data: [completion],
+        backgroundColor: '#8affc1',
+        borderColor: '#ffffff',
+        borderWidth: 1
       }]
     },
-    "options": {
-      "scales": {
-        "y": {
-          "beginAtZero": true,
-          "max": 100
-        }
-      },
-      "plugins": {
-        "legend": { "display": false },
-        "title": { "display": true, "text": "${mod.title} Progress", "color": "#ffffff" }
-      }
+    options: {
+      animation: false,
+      scales: { y: { beginAtZero: true, max: 100 } },
+      plugins: { legend: { display: false }, title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' } }
     }
-  }
-  ```
+  });
 
   const affirmations = [
     completion < 30 ? "You're starting strong! Dive into this module!" :
@@ -306,16 +346,20 @@ async function renderModuleSelection() {
 
   document.getElementById('learningMaterialBtn').addEventListener('click', () => {
     current.mode = 'material';
+    saveState();
     renderLearningMaterial();
   });
   document.getElementById('takeQuizBtn').addEventListener('click', () => {
     current.mode = 'quiz';
+    saveState();
     renderQuestion();
   });
 }
 
 /* ---------- Render Learning Material ---------- */
 function renderLearningMaterial() {
+  current.mode = 'material';
+  saveState();
   const mod = MODULES[current.key];
   moduleBody.innerHTML = `
     <div class="learning-material">
@@ -327,17 +371,19 @@ function renderLearningMaterial() {
     </div>`;
   document.getElementById('backToSelectionBtn').addEventListener('click', () => {
     current.mode = 'selection';
+    saveState();
     renderModuleSelection();
   });
 }
 
 /* ---------- Render Question ---------- */
 async function renderQuestion() {
+  current.mode = 'quiz';
+  saveState();
   if (!current.key) return;
   const mod = MODULES[current.key];
   const qObj = mod.questions[current.idx];
-  const keyProgress = await loadModuleProgress();
-  const prog = keyProgress[current.key] || { answered: [], correct: [] };
+  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
   const isAnswered = prog.answered.includes(current.idx);
 
   const pct = Math.round(((current.idx + 1) / mod.questions.length) * 100);
@@ -380,6 +426,7 @@ async function renderQuestion() {
   prev?.addEventListener('click', () => {
     if (current.idx > 0) {
       current.idx--;
+      saveState();
       slideTransition('left');
       renderQuestion();
     }
@@ -391,6 +438,7 @@ async function renderQuestion() {
     next.addEventListener('click', () => {
       if (current.idx < mod.questions.length - 1) {
         current.idx++;
+        saveState();
         slideTransition('right');
         renderQuestion();
       }
@@ -409,8 +457,7 @@ async function onOptionClicked(ev) {
   const chosenIndex = Number(btn.dataset.i);
   const mod = MODULES[current.key];
   const qObj = mod.questions[current.idx];
-  const keyProgress = await loadModuleProgress();
-  const prog = keyProgress[current.key] || { answered: [], correct: [] };
+  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
 
   if (prog.answered.includes(current.idx)) return; // Prevent re-answering
 
@@ -435,8 +482,8 @@ async function onOptionClicked(ev) {
   }
 
   prog.answered.push(current.idx);
-  keyProgress[current.key] = prog;
-  await saveModuleProgress(keyProgress);
+  keyProgressCache[current.key] = prog;
+  await saveModuleProgress(keyProgressCache);
 
   const nextBtn = moduleBody.querySelector('.next-btn');
   if (nextBtn) nextBtn.disabled = false;
@@ -446,37 +493,40 @@ async function onOptionClicked(ev) {
   animatePoints();
 }
 
-/* ---------- Enhanced Confetti Animation ---------- */
+/* ---------- Optimized Confetti Animation ---------- */
 function triggerConfetti(isCorrect) {
   if (isCorrect) {
     confetti({
-      particleCount: 150,
-      spread: 90,
+      particleCount: 100, // Reduced particles
+      spread: 70,
       origin: { y: 0.5 },
       colors: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff'],
-      shapes: ['circle', 'square', 'triangle', 'star'],
-      scalar: 1.5,
-      drift: 0.3
+      shapes: ['circle', 'square'],
+      scalar: 1.2,
+      drift: 0.2,
+      disableForReducedMotion: true
     });
+    setTimeout(() => confetti.reset(), 1000); // Clear canvas
   } else {
     confetti({
-      particleCount: 50,
-      spread: 30,
+      particleCount: 30,
+      spread: 20,
       origin: { y: 0.5 },
       colors: ['#c62828'],
       shapes: ['circle'],
-      scalar: 0.8
+      scalar: 0.7,
+      disableForReducedMotion: true
     });
+    setTimeout(() => confetti.reset(), 1000);
   }
 }
 
 /* ---------- Update Module Completion ---------- */
 async function updateModuleCompletionStats() {
-  const keyProgress = await loadModuleProgress();
   const totalModules = Object.keys(MODULES).length;
   stats.completion = Math.round((stats.badges.length / totalModules) * 100);
   await saveStats();
-  renderGlobalProgressChart();
+  debounceRenderGlobalProgressChart();
 }
 
 /* ---------- Flash Next Button Effect ---------- */
@@ -533,9 +583,8 @@ async function finishModule() {
 
 /* ---------- Close Module ---------- */
 function closeModule() {
-  current.key = null;
-  current.idx = 0;
-  current.mode = 'selection';
+  current = { key: null, idx: 0, mode: 'selection', certificate: null };
+  saveState();
   moduleSelect.selectedIndex = 0;
   moduleBody.innerHTML = `
     <div class="learning-tips" id="learningTips"></div>
@@ -544,14 +593,15 @@ function closeModule() {
   const t = document.querySelector('.module-title');
   if (t) t.textContent = 'Select a module to begin';
   startLearningTips();
-  renderGlobalProgressChart();
+  debounceRenderGlobalProgressChart();
   saveStats();
 }
 
 /* ---------- Certificate Rendering & Actions ---------- */
-function showCertificate(moduleName) {
-  const timestamp = new Date().toISOString();
-  const hash = generateHash(moduleName + timestamp);
+function showCertificate(moduleName, timestamp = new Date().toISOString(), hash = generateHash(moduleName + timestamp)) {
+  current.mode = 'certificate';
+  current.certificate = { moduleName, timestamp, hash };
+  saveState();
   const verifyUrl = `https://api.defendiq.com/verify?hash=${hash}`;
   const qrCodeId = 'qrcode-' + hash;
 
@@ -563,7 +613,7 @@ function showCertificate(moduleName) {
           <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">Name Surname</div>
           <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span class="module-name">${escapeHtml(moduleName)}</span> training module.</p>
           <div class="cert-meta">
-            <div>Date: <span id="certDate">${new Date().toLocaleDateString()}</span></div>
+            <div>Date: <span id="certDate">${new Date(timestamp).toLocaleDateString()}</span></div>
             <div>Certificate ID: <span id="certHash">${hash}</span></div>
           </div>
           <div class="cert-signature">Signature: John Doe, Cybersecurity Lead</div>
