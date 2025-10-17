@@ -33,5 +33,80 @@
         "a": 1
       }
     ]
+  },
+  "reporting": {
+    "title": "Reporting Security Incidents",
+    "points": [
+      "Know when to report incidents.",
+      "Understand the reporting process.",
+      "Recognize the importance of timely reporting."
+    ],
+    "questions": [
+      {
+        "q": "What should you do if you suspect a security incident?",
+        "opts": ["Ignore it", "Report it immediately", "Wait a day", "Tell a friend"],
+        "a": 1
+      }
+    ]
+  },
+  "culture": {
+    "title": "Culture Survey",
+    "points": [
+      "Assess organizational culture on security.",
+      "Identify areas for improvement.",
+      "Promote a security-conscious culture."
+    ],
+    "questions": [
+      {
+        "q": "What is a security-conscious culture?",
+        "opts": ["Ignoring threats", "Everyone aware of security", "Sharing passwords", "Using weak passwords"],
+        "a": 1
+      }
+    ]
+  },
+  "social": {
+    "title": "Social Engineering",
+    "points": [
+      "Recognize social engineering tactics.",
+      "Learn to avoid manipulation.",
+      "Understand the risks of social engineering."
+    ],
+    "questions": [
+      {
+        "q": "What is social engineering?",
+        "opts": ["Building bridges", "Manipulating people for information", "Social media", "Engineering society"],
+        "a": 1
+      }
+    ]
+  },
+  "phishing": {
+    "title": "Phishing Simulation",
+    "points": [
+      "Practice spotting phishing emails.",
+      "Learn common phishing tactics.",
+      "Improve response to phishing attempts."
+    ],
+    "questions": [
+      {
+        "q": "What is a common sign of a phishing email?",
+        "opts": ["Urgent language", "Friendly tone", "Personalized greeting", "Long email"],
+        "a": 0
+      }
+    ]
+  },
+  "password": {
+    "title": "Password Training",
+    "points": [
+      "Create strong passwords.",
+      "Use password managers.",
+      "Avoid common password mistakes."
+    ],
+    "questions": [
+      {
+        "q": "What makes a strong password?",
+        "opts": ["Short and simple", "Long and complex", "Your birthday", "The word 'password'"],
+        "a": 1
+      }
+    ]
   }
 }
