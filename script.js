@@ -2,17 +2,23 @@
    - Optimized for performance with debounced chart rendering, reduced confetti, cached data
    - Persists state for refresh to preserve selections and current view
    - Enhanced error handling for questions.json with retry and fallback
-   - Handles landing -> dashboard with graphs, module selection, quizzes, certificates
-   - Uses Web Share API, server-side persistence, random learning tips
-   - Added Support mode with signup and tailored emotional support
+   - Handles landing -> training/support modes, quizzes, certificates, feedback
+   - Support mode with signup and tailored emotional support
+   - Enhanced feedback with rating, categories, points, confetti
 */
 
-const startBtn = document.getElementById('startBtn');
+const trainingBtn = document.getElementById('trainingBtn');
+const supportBtn = document.getElementById('supportBtn');
 const landing = document.getElementById('landing');
 const app = document.getElementById('app');
 const homeBtn = document.getElementById('homeBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const feedbackBtn = document.getElementById('feedbackBtn');
+const feedbackModal = document.getElementById('feedbackModal');
+const feedbackText = document.getElementById('feedbackText');
+const feedbackCategory = document.getElementById('feedbackCategory');
+const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
 const moduleSelect = document.getElementById('moduleSelect');
 const moduleBody = document.getElementById('moduleBody');
 const closeModuleBtn = document.getElementById('closeModuleBtn');
@@ -22,6 +28,8 @@ const completionDOM = document.getElementById('completion');
 const badgesDOM = document.getElementById('badges');
 const learningTipsDOM = document.getElementById('learningTips');
 const globalAffirmationDOM = document.getElementById('globalAffirmation');
+const quizDropdown = document.querySelector('.quiz-dropdown');
+const statsArea = document.querySelector('.stats-area');
 
 /* ---------- Persistent Stats (Server-Side) ---------- */
 let stats = {
@@ -31,8 +39,10 @@ let stats = {
   badges: []
 };
 let MODULES = {};
-let keyProgressCache = {}; // Cache progress to reduce API/localStorage calls
-let chartInstance = null; // Store chart instance to prevent multiple renders
+let keyProgressCache = {};
+let chartInstance = null;
+let userProfile = JSON.parse(localStorage.getItem('defendiq_user')) || null;
+let currentMode = 'landing'; // 'landing', 'training', 'support'
 
 /* API Endpoint (Hypothetical) */
 const API_URL = 'https://api.defendiq.com';
@@ -110,31 +120,177 @@ function refreshStatsUI() {
   pointsDOM.textContent = stats.points;
   completionDOM.textContent = stats.completion + '%';
   badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
-  debounceRenderGlobalProgressChart();
+  if (currentMode === 'training') debounceRenderGlobalProgressChart();
 }
 
 /* ---------- Feedback Modal ---------- */
-feedbackBtn.addEventListener('click', () => {
-  console.log('Feedback button clicked');
-  feedbackModal.classList.remove('hidden');
-  feedbackText.focus();
-});
+let selectedRating = 0;
+function initializeFeedback() {
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = Number(star.dataset.value);
+      console.log('Star rating selected:', selectedRating);
+      document.querySelectorAll('.star').forEach(s => {
+        s.classList.toggle('selected', Number(s.dataset.value) <= selectedRating);
+      });
+    });
+  });
 
-submitFeedbackBtn.addEventListener('click', () => {
-  const feedback = feedbackText.value.trim();
-  if (feedback) {
-    console.log('Feedback submitted:', feedback); // Placeholder for server-side submission
-    alert('Thank you for your feedback!');
+  feedbackBtn.addEventListener('click', () => {
+    console.log('Feedback button clicked');
+    feedbackModal.classList.remove('hidden');
+    feedbackText.focus();
+  });
+
+  submitFeedbackBtn.addEventListener('click', async () => {
+    const feedback = feedbackText.value.trim();
+    const category = feedbackCategory.value;
+    if (selectedRating && feedback) {
+      const feedbackData = { rating: selectedRating, category, comment: feedback, timestamp: new Date().toISOString() };
+      console.log('Feedback submitted:', feedbackData);
+      stats.points += 10;
+      await saveStats();
+      animatePoints();
+      triggerConfetti(true);
+      alert('Thank you for your feedback! +10 points earned!');
+      feedbackText.value = '';
+      selectedRating = 0;
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+      feedbackModal.classList.add('hidden');
+    } else {
+      alert('Please provide a rating and comment.');
+    }
+  });
+
+  cancelFeedbackBtn.addEventListener('click', () => {
     feedbackText.value = '';
+    selectedRating = 0;
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
     feedbackModal.classList.add('hidden');
+  });
+}
+
+/* ---------- Support Mode ---------- */
+const AFFIRMATIONS = {
+  morning: [
+    "Good morning, {name}! You're ready to conquer the day with confidence!",
+    "Rise and shine, {name}! Your positivity is your shield today!",
+    "Hello, {name}! Start your day strong with a clear mind and secure habits."
+  ],
+  afternoon: [
+    "Good afternoon, {name}! Keep shining, you're doing great!",
+    "Hey {name}, you're halfway through the day—stay strong and safe!",
+    "{name}, your focus this afternoon is inspiring. Keep it up!"
+  ],
+  evening: [
+    "Good evening, {name}! Reflect on your wins today—you're unstoppable!",
+    "Hey {name}, unwind with pride in your progress!",
+    "{name}, evening vibes are perfect for relaxing and staying secure."
+  ],
+  night: [
+    "Good night, {name}! Rest well, knowing you're growing stronger every day.",
+    "{name}, sleep tight and dream of crushing it tomorrow!",
+    "Night, {name}! Your resilience is your superpower."
+  ]
+};
+
+function getTimeOfDay() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  if (hour < 20) return 'evening';
+  return 'night';
+}
+
+function getSeason() {
+  const month = new Date().getMonth();
+  return month >= 2 && month <= 4 ? 'Spring' :
+         month >= 5 && month <= 7 ? 'Winter' :
+         month >= 8 && month <= 10 ? 'Summer' :
+         'Autumn';
+}
+
+function renderSupportContent() {
+  if (!userProfile) {
+    moduleBody.innerHTML = `
+      <div class="support-form">
+        <h2>Welcome to Support Mode! 🛡️</h2>
+        <p>Let's get to know you to provide personalized support.</p>
+        <input type="text" id="userName" placeholder="Your Name" required>
+        <input type="number" id="userAge" placeholder="Your Age" min="18" max="120">
+        <select id="userMaritalStatus">
+          <option value="" disabled selected>Marital Status</option>
+          <option value="Single">Single</option>
+          <option value="Married">Married</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="userGender">
+          <option value="" disabled selected>Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="text" id="userRegion" placeholder="Your Region (e.g., Cape Town)">
+        <button id="submitProfileBtn" class="action-btn">Submit</button>
+      </div>`;
+    document.getElementById('submitProfileBtn').addEventListener('click', () => {
+      const name = document.getElementById('userName').value.trim();
+      const age = document.getElementById('userAge').value;
+      const maritalStatus = document.getElementById('userMaritalStatus').value;
+      const gender = document.getElementById('userGender').value;
+      const region = document.getElementById('userRegion').value.trim();
+      if (name && age && maritalStatus && gender && region) {
+        userProfile = { name, age: Number(age), maritalStatus, gender, region };
+        localStorage.setItem('defendiq_user', JSON.stringify(userProfile));
+        renderSupportMessage();
+      } else {
+        alert('Please fill in all fields.');
+      }
+    });
   } else {
-    alert('Please enter feedback before submitting.');
+    renderSupportMessage();
   }
+}
+
+function renderSupportMessage() {
+  const timeOfDay = getTimeOfDay();
+  const season = getSeason();
+  const affirmations = AFFIRMATIONS[timeOfDay];
+  const affirmation = affirmations[Math.floor(Math.random() * affirmations.length)].replace('{name}', userProfile.name);
+  const regionMessage = userProfile.region ? `Stay strong in ${userProfile.region} this ${season}!` : `Enjoy this ${season} season!`;
+  const securityTip = LEARNING_TIPS[Math.floor(Math.random() * LEARNING_TIPS.length)];
+  moduleBody.innerHTML = `
+    <div class="support-message">
+      <h2>${affirmation}</h2>
+      <p>${regionMessage}</p>
+      <p>Security Tip: ${securityTip}</p>
+      <button id="refreshSupportBtn" class="action-btn">New Message</button>
+    </div>`;
+  document.getElementById('refreshSupportBtn').addEventListener('click', renderSupportMessage);
+}
+
+/* ---------- Mode Handlers ---------- */
+trainingBtn.addEventListener('click', () => {
+  console.log('Training Mode button clicked');
+  currentMode = 'training';
+  landing.classList.add('hidden');
+  app.classList.remove('hidden');
+  quizDropdown.classList.remove('hidden');
+  statsArea.classList.remove('hidden');
+  closeModule();
+  saveState();
 });
 
-cancelFeedbackBtn.addEventListener('click', () => {
-  feedbackText.value = '';
-  feedbackModal.classList.add('hidden');
+supportBtn.addEventListener('click', () => {
+  console.log('Support Mode button clicked');
+  currentMode = 'support';
+  landing.classList.add('hidden');
+  app.classList.remove('hidden');
+  quizDropdown.classList.add('hidden');
+  statsArea.classList.add('hidden');
+  document.querySelector('.module-title').textContent = 'Support Mode';
+  renderSupportContent();
+  saveState();
 });
 
 /* ---------- State Persistence for Refresh ---------- */
@@ -146,38 +302,51 @@ let current = {
 };
 
 function saveState() {
-  localStorage.setItem('defendiq_state', JSON.stringify(current));
+  localStorage.setItem('defendiq_state', JSON.stringify({ current, currentMode }));
 }
 
 async function restoreState() {
   const savedState = JSON.parse(localStorage.getItem('defendiq_state') || '{}');
-  if (savedState.key && MODULES[savedState.key]) {
-    current = savedState;
+  if (savedState.currentMode) {
+    currentMode = savedState.currentMode;
+    current = savedState.current || { key: null, idx: 0, mode: 'selection', certificate: null };
     landing.classList.add('hidden');
     app.classList.remove('hidden');
-    moduleSelect.value = current.key;
-    document.querySelector('.module-title').textContent = MODULES[current.key].title;
-    if (current.mode === 'selection') {
-      renderModuleSelection();
-    } else if (current.mode === 'material') {
-      renderLearningMaterial();
-    } else if (current.mode === 'quiz') {
-      renderQuestion();
-    } else if (current.mode === 'certificate' && current.certificate) {
-      showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+    if (currentMode === 'training') {
+      quizDropdown.classList.remove('hidden');
+      statsArea.classList.remove('hidden');
+      if (current.key && MODULES[current.key]) {
+        moduleSelect.value = current.key;
+        document.querySelector('.module-title').textContent = MODULES[current.key].title;
+        if (current.mode === 'selection') {
+          renderModuleSelection();
+        } else if (current.mode === 'material') {
+          renderLearningMaterial();
+        } else if (current.mode === 'quiz') {
+          renderQuestion();
+        } else if (current.mode === 'certificate' && current.certificate) {
+          showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+        }
+      } else {
+        closeModule();
+      }
+    } else if (currentMode === 'support') {
+      quizDropdown.classList.add('hidden');
+      statsArea.classList.add('hidden');
+      document.querySelector('.module-title').textContent = 'Support Mode';
+      renderSupportContent();
     }
   } else {
-    // Fallback to safe state if MODULES not loaded or state invalid
     current = { key: null, idx: 0, mode: 'selection', certificate: null };
+    currentMode = 'landing';
     saveState();
-    closeModule();
   }
 }
 
 /* ---------- Load Questions from JSON with Retry ---------- */
 async function loadQuestions(attempt = 1, maxAttempts = 3) {
   try {
-    if (Object.keys(MODULES).length) return; // Cache questions
+    if (Object.keys(MODULES).length) return;
     const response = await fetch('questions.json', { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}, URL: ${response.url}`);
@@ -185,11 +354,13 @@ async function loadQuestions(attempt = 1, maxAttempts = 3) {
     const text = await response.text();
     try {
       MODULES = JSON.parse(text);
+      const options = Object.keys(MODULES).map(key => `<option value="${key}">${MODULES[key].title}</option>`).join('');
+      moduleSelect.innerHTML = `<option value="" disabled selected>Select a module</option>${options}<option value="exit">Exit</option>`;
     } catch (parseErr) {
       throw new Error(`Invalid JSON in questions.json: ${parseErr.message}`);
     }
     await restoreState();
-    debounceRenderGlobalProgressChart();
+    if (currentMode === 'training') debounceRenderGlobalProgressChart();
     startLearningTips();
   } catch (err) {
     console.error(`Attempt ${attempt} failed to load questions.json:`, err.message);
@@ -200,7 +371,6 @@ async function loadQuestions(attempt = 1, maxAttempts = 3) {
     console.error('All attempts to load questions.json failed. Check file path, JSON validity, or network.');
     console.error('Expected file: https://mashifmj-prog.github.io/DefendIQ/questions.json');
     alert('Error loading questions. Please check your connection or try again later.');
-    // Fallback UI
     MODULES = {};
     current = { key: null, idx: 0, mode: 'selection', certificate: null };
     saveState();
@@ -211,6 +381,7 @@ async function loadQuestions(attempt = 1, maxAttempts = 3) {
 }
 loadQuestions();
 loadStats();
+initializeFeedback();
 
 /* ---------- Learning Tips (Optimized) ---------- */
 const LEARNING_TIPS = [
@@ -245,9 +416,9 @@ function debounceRenderGlobalProgressChart() {
 }
 
 function renderGlobalProgressChart() {
-  if (!Object.keys(MODULES).length) return;
+  if (!Object.keys(MODULES).length || currentMode !== 'training') return;
   const ctx = document.getElementById('globalProgressChart').getContext('2d');
-  if (chartInstance) chartInstance.destroy(); // Prevent multiple chart instances
+  if (chartInstance) chartInstance.destroy();
   const data = Object.keys(MODULES).map(key => {
     const prog = keyProgressCache[key] || { answered: [] };
     return prog.answered.length / MODULES[key].questions.length * 100;
@@ -274,38 +445,36 @@ function renderGlobalProgressChart() {
       }]
     },
     options: {
-      animation: false, // Reduce animation overhead
+      animation: false,
       scales: { y: { beginAtZero: true, max: 100 } },
       plugins: { legend: { display: false }, title: { display: true, text: 'Your Overall Progress', color: '#ffffff' } }
     }
   });
 }
 
-/* ---------- Landing -> App ---------- */
-startBtn.addEventListener('click', () => {
-  landing.classList.add('hidden');
-  app.classList.remove('hidden');
-  saveState();
-});
-
 /* ---------- Home Button ---------- */
 homeBtn.addEventListener('click', () => {
   app.classList.add('hidden');
   landing.classList.remove('hidden');
+  currentMode = 'landing';
   current = { key: null, idx: 0, mode: 'selection', certificate: null };
   saveState();
 });
 
 /* ---------- Refresh Button ---------- */
 refreshBtn.addEventListener('click', () => {
-  if (current.mode === 'selection') {
-    renderModuleSelection();
-  } else if (current.mode === 'material') {
-    renderLearningMaterial();
-  } else if (current.mode === 'quiz') {
-    renderQuestion();
-  } else if (current.mode === 'certificate' && current.certificate) {
-    showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+  if (currentMode === 'training') {
+    if (current.mode === 'selection') {
+      renderModuleSelection();
+    } else if (current.mode === 'material') {
+      renderLearningMaterial();
+    } else if (current.mode === 'quiz') {
+      renderQuestion();
+    } else if (current.mode === 'certificate' && current.certificate) {
+      showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+    }
+  } else if (currentMode === 'support') {
+    renderSupportContent();
   }
 });
 
@@ -327,8 +496,12 @@ moduleSelect.addEventListener('change', () => {
 
 /* Close module button */
 closeModuleBtn.addEventListener('click', () => {
-  moduleSelect.selectedIndex = 0;
-  closeModule();
+  if (currentMode === 'training') {
+    moduleSelect.selectedIndex = 0;
+    closeModule();
+  } else {
+    renderSupportContent();
+  }
 });
 
 /* ---------- Open Module ---------- */
@@ -340,7 +513,7 @@ function openModule(key) {
   saveState();
   renderModuleSelection();
   const title = MODULES[key] ? MODULES[key].title : key;
-  document.querySelector('.module-title')?.replaceWith(createModuleTitleElem(title));
+  document.querySelector('.module-title').textContent = title;
 }
 
 /* Helper to create a title element */
@@ -525,7 +698,7 @@ async function onOptionClicked(ev) {
   const qObj = mod.questions[current.idx];
   const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
 
-  if (prog.answered.includes(current.idx)) return; // Prevent re-answering
+  if (prog.answered.includes(current.idx)) return;
 
   moduleBody.querySelectorAll('.opt-btn').forEach(ob => {
     ob.disabled = true;
@@ -563,7 +736,7 @@ async function onOptionClicked(ev) {
 function triggerConfetti(isCorrect) {
   if (isCorrect) {
     confetti({
-      particleCount: 100, // Reduced particles
+      particleCount: 100,
       spread: 70,
       origin: { y: 0.5 },
       colors: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff'],
@@ -572,7 +745,7 @@ function triggerConfetti(isCorrect) {
       drift: 0.2,
       disableForReducedMotion: true
     });
-    setTimeout(() => confetti.reset(), 1000); // Clear canvas
+    setTimeout(() => confetti.reset(), 1000);
   } else {
     confetti({
       particleCount: 30,
@@ -656,11 +829,9 @@ function closeModule() {
     <div class="learning-tips" id="learningTips"></div>
     <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
     <div class="affirmation" id="globalAffirmation"></div>`;
-  const t = document.querySelector('.module-title');
-  if (t) t.textContent = 'Select a module to begin';
+  document.querySelector('.module-title').textContent = 'Select a module to begin';
   startLearningTips();
   debounceRenderGlobalProgressChart();
-  saveStats();
 }
 
 /* ---------- Certificate Rendering & Actions ---------- */
@@ -676,8 +847,8 @@ function showCertificate(moduleName, timestamp = new Date().toISOString(), hash 
       <div class="certificate-card" id="certificateCard">
         <div class="cert-inner">
           <h1 class="cert-title">Certificate of Appreciation</h1>
-          <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">Name Surname</div>
-          <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span class="module-name">${escapeHtml(moduleName)}</span> training module.</p>
+          <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">${userProfile ? userProfile.name : 'Name Surname'}</div>
+          <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span class="module-name">${sanitize(moduleName)}</span> training module.</p>
           <div class="cert-meta">
             <div>Date: <span id="certDate">${new Date(timestamp).toLocaleDateString()}</span></div>
             <div>Certificate ID: <span id="certHash">${hash}</span></div>
@@ -773,15 +944,5 @@ function generateHash(input) {
   return Math.abs(hash).toString(36).padStart(8, '0');
 }
 
-/* ---------- Escape HTML Helper ---------- */
-function escapeHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-/* ---------- Placeholder for Leaderboard ---------- */
-function updateLeaderboard() {
-  console.log('Leaderboard update placeholder. Points:', stats.points);
-}
-
 /* ---------- Initial Render State ---------- */
-closeModule();
+restoreState();
