@@ -168,7 +168,12 @@ const CANVAS_OPTIONS = [
   { value: 'blue-sky', label: 'Blue Sky' },
   { value: 'cyber-grid', label: 'Cyber Grid' },
   { value: 'calm-ocean', label: 'Calm Ocean' },
-  { value: 'starry-night', label: 'Starry Night' }
+  { value: 'starry-night', label: 'Starry Night' },
+  { value: 'forest', label: 'Forest' },
+  { value: 'sunset', label: 'Sunset' },
+  { value: 'abstract-cyber', label: 'Abstract Cyber' },
+  { value: 'mountain-view', label: 'Mountain View' },
+  { value: 'urban-city', label: 'Urban City' }
 ];
 
 function getTimeOfDay() {
@@ -469,6 +474,62 @@ function drawCanvas(canvasType) {
         ctx.fill();
       }
       break;
+    case 'forest':
+      ctx.fillStyle = 'var(--canvas-forest)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add trees
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(100, canvas.height - 100, 20, 100);
+      ctx.fillStyle = '#228B22';
+      ctx.beginPath();
+      ctx.arc(110, canvas.height - 100, 40, 0, 2 * Math.PI);
+      ctx.fill();
+      break;
+    case 'sunset':
+      ctx.fillStyle = 'var(--canvas-sunset)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add sun
+      ctx.fillStyle = '#FF4500';
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height - 50, 50, 0, 2 * Math.PI);
+      ctx.fill();
+      break;
+    case 'abstract-cyber':
+      ctx.fillStyle = 'var(--canvas-abstract-cyber)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add lines
+      ctx.strokeStyle = '#FF00FF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(canvas.width, 0);
+      ctx.lineTo(0, canvas.height);
+      ctx.stroke();
+      break;
+    case 'mountain-view':
+      ctx.fillStyle = 'var(--canvas-mountain-view)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add mountains
+      ctx.fillStyle = '#A9A9A9';
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height);
+      ctx.lineTo(canvas.width / 2, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    case 'urban-city':
+      ctx.fillStyle = 'var(--canvas-urban-city)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add buildings
+      ctx.fillStyle = '#808080';
+      ctx.fillRect(50, canvas.height - 150, 50, 150);
+      ctx.fillRect(120, canvas.height - 200, 50, 200);
+      ctx.fillRect(190, canvas.height - 100, 50, 100);
+      break;
   }
 }
 
@@ -741,7 +802,7 @@ async function renderModuleSelection() {
   current.mode = 'selection';
   saveState();
   const mod = MODULES[current.key];
-  const prog = keyProgressCache[current.key] || { answered: [] };
+  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
   const completion = (prog.answered.length / mod.questions.length) * 100;
 
   moduleBody.innerHTML = `
@@ -883,268 +944,4 @@ async function renderQuestion() {
   } else {
     next.addEventListener('click', () => {
       if (current.idx < mod.questions.length - 1) {
-        current.idx++;
-        saveState();
-        slideTransition('right');
-        renderQuestion();
-      }
-    });
-  }
-}
-
-/* ---------- Sanitize Helper ---------- */
-function sanitize(s) {
-  return String(s).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-/* ---------- Option Click Handler ---------- */
-async function onOptionClicked(ev) {
-  const btn = ev.currentTarget;
-  const chosenIndex = Number(btn.dataset.i);
-  const mod = MODULES[current.key];
-  const qObj = mod.questions[current.idx];
-  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
-
-  if (prog.answered.includes(current.idx)) return;
-
-  moduleBody.querySelectorAll('.opt-btn').forEach(ob => {
-    ob.disabled = true;
-    const idx = Number(ob.dataset.i);
-    if (mod.questions[current.idx].opts[idx] === qObj.opts[qObj.a]) {
-      ob.classList.add('correct');
-    }
-    if (idx === chosenIndex && qObj.a !== idx) ob.classList.add('incorrect');
-  });
-
-  if (chosenIndex === qObj.a) {
-    stats.points += 10;
-    stats.streak += 1;
-    prog.correct.push(current.idx);
-    flashNextButton();
-    triggerConfetti(true);
-  } else {
-    stats.streak = 0;
-    triggerConfetti(false);
-  }
-
-  prog.answered.push(current.idx);
-  keyProgressCache[current.key] = prog;
-  await saveModuleProgress(keyProgressCache);
-
-  const nextBtn = moduleBody.querySelector('.next-btn');
-  if (nextBtn) nextBtn.disabled = false;
-
-  await updateModuleCompletionStats();
-  await saveStats();
-  animatePoints();
-}
-
-/* ---------- Optimized Confetti Animation ---------- */
-function triggerConfetti(isCorrect) {
-  const confetti = new JSConfetti();
-  if (isCorrect) {
-    confetti.addConfetti({
-      confettiNumber: 100,
-      confettiColors: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff'],
-      confettiRadius: 5,
-      confettiSpeed: 5
-    });
-    setTimeout(() => confetti.clearCanvas(), 1000);
-  } else {
-    confetti.addConfetti({
-      confettiNumber: 30,
-      confettiColors: ['#c62828'],
-      confettiRadius: 3,
-      confettiSpeed: 3
-    });
-    setTimeout(() => confetti.clearCanvas(), 1000);
-  }
-}
-
-/* ---------- Update Module Completion ---------- */
-async function updateModuleCompletionStats() {
-  const totalModules = Object.keys(MODULES).length;
-  stats.completion = Math.round((stats.badges.length / totalModules) * 100);
-  await saveStats();
-  debounceRenderGlobalProgressChart();
-}
-
-/* ---------- Flash Next Button Effect ---------- */
-function flashNextButton() {
-  const nextBtn = moduleBody.querySelector('.next-btn');
-  if (!nextBtn) return;
-  nextBtn.animate([
-    { transform: 'scale(1)', boxShadow: '0 0 8px rgba(255,204,0,0.5)' },
-    { transform: 'scale(1.06)', boxShadow: '0 0 24px rgba(255,204,0,0.95)' }
-  ], { duration: 450, iterations: 1 });
-}
-
-/* ---------- Points Increment Animation ---------- */
-function animatePoints() {
-  const start = Number(pointsDOM.textContent);
-  const end = stats.points;
-  const duration = 500;
-  const startTime = performance.now();
-
-  function update() {
-    const now = performance.now();
-    const progress = Math.min((now - startTime) / duration, 1);
-    const currentPoints = Math.round(start + (end - start) * progress);
-    pointsDOM.textContent = currentPoints;
-    if (progress < 1) requestAnimationFrame(update);
-  }
-  requestAnimationFrame(update);
-}
-
-/* ---------- Slide Transition ---------- */
-function slideTransition(dir = 'right') {
-  moduleBody.style.transition = 'transform .28s ease, opacity .28s ease';
-  moduleBody.style.opacity = '0';
-  moduleBody.style.transform = dir === 'right' ? 'translateX(12px)' : 'translateX(-12px)';
-  setTimeout(() => {
-    moduleBody.style.opacity = '1';
-    moduleBody.style.transform = 'translateX(0)';
-  }, 260);
-}
-
-/* ---------- Finish Module ---------- */
-async function finishModule() {
-  if (!stats.badges.includes(MODULES[current.key].title)) {
-    stats.badges.push(MODULES[current.key].title);
-    triggerConfetti(true);
-  }
-  stats.points += 50;
-  stats.streak += 1;
-  await updateModuleCompletionStats();
-  await saveStats();
-  animatePoints();
-  showCertificate(MODULES[current.key].title);
-}
-
-/* ---------- Close Module ---------- */
-function closeModule() {
-  current = { key: null, idx: 0, mode: 'selection', certificate: null };
-  saveState();
-  moduleSelect.selectedIndex = 0;
-  moduleBody.innerHTML = `
-    <div class="learning-tips" id="learningTips"></div>
-    <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
-    <div class="affirmation" id="globalAffirmation"></div>`;
-  document.querySelector('.module-title').textContent = 'Select a module to begin';
-  startLearningTips();
-  debounceRenderGlobalProgressChart();
-}
-
-/* ---------- Certificate Rendering & Actions ---------- */
-function showCertificate(moduleName, timestamp = new Date().toISOString(), hash = generateHash(moduleName + timestamp)) {
-  current.mode = 'certificate';
-  current.certificate = { moduleName, timestamp, hash };
-  saveState();
-  const verifyUrl = `https://api.defendiq.com/verify?hash=${hash}`;
-  const qrCodeId = 'qrcode-' + hash;
-
-  moduleBody.innerHTML = `
-    <div class="certificate-wrapper">
-      <div class="certificate-card" id="certificateCard">
-        <div class="cert-inner">
-          <h1 class="cert-title">Certificate of Appreciation</h1>
-          <div contenteditable="true" id="certName" class="cert-name" aria-label="Recipient name">${userProfile ? userProfile.name : 'Name Surname'}</div>
-          <p class="cert-body">This certificate is presented to the recipient in recognition of successful completion of the <span class="module-name">${sanitize(moduleName)}</span> training module.</p>
-          <div class="cert-meta">
-            <div>Date: <span id="certDate">${new Date(timestamp).toLocaleDateString()}</span></div>
-            <div>Certificate ID: <span id="certHash">${hash}</span></div>
-          </div>
-          <div class="cert-signature">Signature: Jonas Mashifane, Cybersecurity Lead</div>
-          <div id="${qrCodeId}" class="cert-qr"></div>
-          <div class="cert-logo">DefendIQ</div>
-        </div>
-      </div>
-      <div class="cert-actions">
-        <button id="printCert">Print</button>
-        <button id="downloadPNG">Download PNG</button>
-        <button id="downloadPDF">Download PDF</button>
-        <button id="shareCert">Share</button>
-        <button id="closeCert">Close Certificate</button>
-      </div>
-    </div>`;
-
-  QRCode.toCanvas(document.getElementById(qrCodeId), verifyUrl, { width: 100, scale: 8 }, (err) => {
-    if (err) console.error('QR Code generation failed:', err);
-  });
-
-  document.getElementById('printCert').addEventListener('click', () => window.print());
-  document.getElementById('closeCert').addEventListener('click', () => closeModule());
-  document.getElementById('downloadPNG').addEventListener('click', async () => await downloadCertificatePNG());
-  document.getElementById('downloadPDF').addEventListener('click', async () => await downloadCertificatePDF());
-  document.getElementById('shareCert').addEventListener('click', async () => await shareCertificate(verifyUrl, moduleName, hash));
-}
-
-/* ---------- Certificate Export Helpers ---------- */
-async function downloadCertificatePNG() {
-  const node = document.getElementById('certificateCard');
-  if (!node) return alert('Certificate not ready');
-  const canvas = await html2canvas(node, { scale: 4 });
-  const url = canvas.toDataURL('image/png');
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'DefendIQ_Certificate.png';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
-
-async function downloadCertificatePDF() {
-  const node = document.getElementById('certificateCard');
-  if (!node) return alert('Certificate not ready');
-  const canvas = await html2canvas(node, { scale: 4 });
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'landscape' });
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-  pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight - 10);
-  pdf.save('DefendIQ_Certificate.pdf');
-}
-
-async function shareCertificate(verifyUrl, moduleName, hash) {
-  const node = document.getElementById('certificateCard');
-  if (!node) return alert('Certificate not ready');
-  const canvas = await html2canvas(node, { scale: 2 });
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-  const file = new File([blob], 'DefendIQ_Certificate.png', { type: 'image/png' });
-
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: 'DefendIQ Certificate',
-        text: `I completed the ${moduleName} module on DefendIQ. Verify here: ${verifyUrl}\nCertificate ID: ${hash}`
-      });
-    } catch (err) {
-      console.warn('Share canceled or failed:', err);
-    }
-  } else {
-    try {
-      await navigator.clipboard.writeText(verifyUrl);
-      alert('Sharing not supported. Verification link copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy link:', err);
-      alert('Sharing not supported. Please copy the link manually: ' + verifyUrl);
-    }
-  }
-}
-
-/* ---------- Hash Generation for Certificate ---------- */
-function generateHash(input) {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36).padStart(8, '0');
-}
-
-/* ---------- Initial Render State ---------- */
-restoreState();
-```
+        current
