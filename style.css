@@ -30,9 +30,15 @@
   color: var(--text-white);
 }
 
+#loadingIndicator {
+  color: var(--text-white);
+  margin-top: 20px;
+  font-size: 16px;
+}
+
 .support-mode {
   position: relative;
-  padding-bottom: 60px; /* Space for chat input */
+  padding-bottom: 80px; /* More space for chat input */
 }
 
 .support-chat-history {
