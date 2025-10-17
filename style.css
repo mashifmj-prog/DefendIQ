@@ -1,12 +1,12 @@
 :root {
-  --landing-bg: #666666; /* Lighter background for better readability */
+  --landing-bg: #666666;
   --nav-bg: #3c3c3c;
   --stats-bg: #888888;
   --module-bg: #555555;
   --accent: #00bfff;
   --next-color: #ffcc00;
   --text-white: #ffffff;
-  --muted: #e6e6e6; /* Brighter muted text for contrast */
+  --muted: #e6e6e6;
   --canvas-blue-sky: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
   --canvas-cyber-grid: #000000;
   --canvas-calm-ocean: linear-gradient(180deg, #00BFFF 0%, #1E90FF 100%);
@@ -16,6 +16,11 @@
   --canvas-abstract-cyber: #4B0082;
   --canvas-mountain-view: linear-gradient(180deg, #708090 0%, #A9A9A9 100%);
   --canvas-urban-city: linear-gradient(180deg, #A9A9A9 0%, #808080 100%);
+  --canvas-aurora-borealis: linear-gradient(180deg, #00FF7F 0%, #483D8B 100%);
+  --canvas-desert-dunes: linear-gradient(180deg, #EDC9AF 0%, #F4A460 100%);
+  --canvas-neon-circuit: #1C2526;
+  --canvas-galaxy-swirl: linear-gradient(180deg, #2F2F4F 0%, #4B0082 100%);
+  --canvas-tropical-island: linear-gradient(180deg, #20B2AA 0%, #FFD700 100%);
 }
 
 /* Reset */
@@ -38,7 +43,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   left: 15px; 
   font-size: 80px; 
   line-height: 1; 
-  z-index: 1000; 
+  z-index: 10; 
   color: var(--text-white); 
   background: rgba(211, 211, 211, 0.7);
   padding: 10px; 
@@ -52,21 +57,21 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   color: var(--text-white);
 }
 .landing-box { 
-  background: rgba(255,255,255,0.1); /* Slightly more opaque for contrast */
-  padding: 48px 56px; 
+  background: rgba(255,255,255,0.1); 
+  padding: 40px 48px; 
   border-radius: 12px; 
   text-align: center; 
   backdrop-filter: blur(4px); 
-  margin-top: 80px;
-  z-index: 10;
+  margin-top: 100px;
+  z-index: 20;
 }
 .landing-box h1 { font-size: 34px; margin-bottom: 12px; }
 .animated-text { 
   color: var(--muted); 
-  margin-bottom: 22px; 
+  margin-bottom: 20px; 
   font-size: 18px; 
   font-weight: 600; 
-  text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Shadow for readability */
+  text-shadow: 0 0 5px rgba(0,0,0,0.5); 
 }
 .button-group {
   display: flex;
@@ -74,14 +79,15 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   justify-content: center;
 }
 .start-btn { 
-  background: rgba(255,255,255,0.9); /* Slightly transparent for blend */
+  background: rgba(255,255,255,0.9); 
   color: black; 
   border: 0; 
   padding: 12px 22px; 
   border-radius: 8px; 
   font-weight: 600; 
   cursor: pointer; 
-  z-index: 20;
+  z-index: 30; 
+  position: relative;
 }
 .start-btn:hover { background: #ffffff; }
 .start-btn:active { transform: scale(.99); }
@@ -276,4 +282,3 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   .support-form, .support-message { padding: 15px; }
   .support-chat-history { max-height: 200px; }
 }
-```
