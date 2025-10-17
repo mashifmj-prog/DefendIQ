@@ -144,7 +144,10 @@ function renderSupportMode() {
   updateAffirmation();
   startSupportTips();
   const sendButton = document.getElementById('sendSupport');
-  if (sendButton) sendButton.addEventListener('click', handleSupportInput); // Ensure event listener is attached
+  if (sendButton) {
+    console.log('Attaching event listener to Send button'); // Debug log
+    sendButton.addEventListener('click', handleSupportInput);
+  }
 }
 
 function updateAffirmation() {
