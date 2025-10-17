@@ -22,6 +22,14 @@
         <button id="supportBtn" class="start-btn">Support Mode</button>
       </div>
     </div>
+    <div id="signupOverlay" class="overlay hidden">
+      <div class="signup-box">
+        <h2>Sign Up</h2>
+        <input type="text" id="username" placeholder="Enter your username" required>
+        <button id="signupBtn" class="start-btn">Submit</button>
+        <button id="closeSignupBtn" class="close-btn">Close</button>
+      </div>
+    </div>
   </section>
   <section id="app" class="hidden">
     <div class="nav-top">
@@ -47,13 +55,12 @@
           <button id="closeModuleBtn" class="close-btn">Close</button>
         </div>
       </div>
-      <div class="module-body" id="moduleBody">
-        <div class="learning-tips" id="learningTips"></div>
-        <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
-        <div class="affirmation" id="globalAffirmation"></div>
-      </div>
+      <div class="module-body" id="moduleBody"></div>
     </div>
   </section>
+  <script src="state.js"></script>
+  <script src="api.js"></script>
+  <script src="ui.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
