@@ -1,12 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM loaded, initializing...');
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+
   restoreState();
   loadQuestions().then(() => {
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
     console.log('Questions loaded, checking mode...');
     if (currentMode === 'training') enterTrainingMode();
     else if (currentMode === 'support') enterSupportMode();
     else if (!userProfile) showSignupOverlay();
-  }).catch(error => console.error('Load failed:', error));
+  }).catch(error => {
+    console.error('Load failed:', error);
+    if (loadingIndicator) loadingIndicator.textContent = 'Loading failed. Check console.';
+  });
 
   // Landing page buttons
   const trainingBtn = document.getElementById('trainingBtn');
@@ -24,18 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const signupBtn = document.getElementById('signupBtn');
   const closeSignupBtn = document.getElementById('closeSignupBtn');
   if (signupBtn) signupBtn.addEventListener('click', () => {
-    const username = document.getElementById('username').value.trim();
+    const username = document.getElementById('username')?.value.trim();
     if (username) {
       saveUserProfile(username);
       if (currentMode === 'training') enterTrainingMode();
       else if (currentMode === 'support') enterSupportMode();
-      else enterSupportMode(); // Default to support if no mode set
+      else enterSupportMode(); // Default to support
     } else {
       alert('Please enter a username.');
     }
   });
   if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => {
-    document.getElementById('signupOverlay').classList.add('hidden');
+    const overlay = document.getElementById('signupOverlay');
+    if (overlay) overlay.classList.add('hidden');
   });
 
   // Navigation
@@ -51,34 +59,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ---------- Navigation Functions ---------- */
 function goHome() {
-  document.getElementById('app').classList.add('hidden');
-  document.getElementById('landing').classList.remove('hidden');
+  const app = document.getElementById('app');
+  const landing = document.getElementById('landing');
+  if (app && landing) {
+    app.classList.add('hidden');
+    landing.classList.remove('hidden');
+  }
   currentMode = 'landing';
   saveState();
   console.log('Returned to home page');
 }
 
 function enterTrainingMode() {
-  currentMode = 'training';
-  document.getElementById('landing').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.querySelector('.quiz-dropdown').classList.remove('hidden');
-  document.querySelector('.stats-area').classList.remove('hidden');
-  renderTrainingDashboard();
-  saveState();
-  console.log('Entered Training Mode');
+  const app = document.getElementById('app');
+  const landing = document.getElementById('landing');
+  if (app && landing) {
+    currentMode = 'training';
+    landing.classList.add('hidden');
+    app.classList.remove('hidden');
+    document.querySelector('.quiz-dropdown')?.classList.remove('hidden');
+    document.querySelector('.stats-area')?.classList.remove('hidden');
+    renderTrainingDashboard();
+    saveState();
+    console.log('Entered Training Mode');
+  }
 }
 
 function enterSupportMode() {
-  currentMode = 'support';
-  document.getElementById('landing').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.querySelector('.quiz-dropdown').classList.add('hidden');
-  document.querySelector('.stats-area').classList.add('hidden');
-  document.querySelector('.module-title').textContent = 'Support Mode';
-  renderSupportMode();
-  saveState();
-  console.log('Entered Support Mode');
+  const app = document.getElementById('app');
+  const landing = document.getElementById('landing');
+  if (app && landing) {
+    currentMode = 'support';
+    landing.classList.add('hidden');
+    app.classList.remove('hidden');
+    document.querySelector('.quiz-dropdown')?.classList.add('hidden');
+    document.querySelector('.stats-area')?.classList.add('hidden');
+    document.querySelector('.module-title')?.textContent = 'Support Mode';
+    renderSupportMode();
+    saveState();
+    console.log('Entered Support Mode');
+  }
 }
 
 function refreshCurrentView() {
