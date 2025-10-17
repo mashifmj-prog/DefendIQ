@@ -6,9 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreState();
 
   // Ensure buttons are clickable
-  const trainingBtn = document.getElementById('trainingBtn');
-  const supportBtn = document.getElementById('supportBtn');
-
   trainingBtn.addEventListener('click', () => {
     console.log('Training Mode button clicked');
     setMode('training');
