@@ -105,6 +105,7 @@ function onOptionClicked(ev) {
   saveModuleProgress(keyProgressCache).then(() => {
     const nextBtn = moduleBody.querySelector('.next-btn');
     if (nextBtn) nextBtn.disabled = false;
+    updateModuleProgress();
     updateModuleCompletionStats().then(saveStats);
     animatePoints();
   });
@@ -117,6 +118,7 @@ function finishModule() {
   }
   stats.points += 50;
   stats.streak += 1;
+  updateModuleProgress();
   updateModuleCompletionStats().then(saveStats).then(() => {
     animatePoints();
     showCertificate(MODULES[current.key].title);
