@@ -149,7 +149,13 @@ function renderSupportMode() {
       const input = document.getElementById('supportInput');
       const output = document.getElementById('supportOutput');
       if (input && output && input.value.trim()) {
-        handleSupportInput();
+        console.log('Button clicked, processing:', input.value);
+        try {
+          handleSupportInput();
+        } catch (error) {
+          console.error('Error in handleSupportInput:', error);
+          output.innerHTML += '<p><strong>AI:</strong> Oops, something went wrong. Try again!</p>';
+        }
       } else {
         console.log('Input or output missing, or input is empty');
       }
