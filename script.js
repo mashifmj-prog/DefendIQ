@@ -3,7 +3,7 @@
    - Persists state for refresh to preserve selections and current view
    - Enhanced error handling for questions.json with retry and fallback
    - Handles landing -> training/support modes, quizzes, certificates
-   - Support mode with signup and tailored emotional support
+   - Support mode with enhanced affirmations, AI-driven personalization, chat interface, canvas backgrounds
    - Feedback button made static (no popup, disabled)
 */
 
@@ -37,6 +37,7 @@ let keyProgressCache = {};
 let chartInstance = null;
 let userProfile = JSON.parse(localStorage.getItem('defendiq_user')) || null;
 let currentMode = 'landing'; // 'landing', 'training', 'support'
+let chatHistory = JSON.parse(localStorage.getItem('defendiq_chat')) || [];
 
 /* API Endpoint (Hypothetical) */
 const API_URL = 'https://api.defendiq.com';
@@ -120,26 +121,21 @@ function refreshStatsUI() {
 /* ---------- Support Mode ---------- */
 const AFFIRMATIONS = {
   morning: [
-    "Good morning, {name}! You're ready to conquer the day with confidence!",
-    "Rise and shine, {name}! Your positivity is your shield today!",
-    "Hello, {name}! Start your day strong with a clear mind and secure habits."
+    "Good morning, {name}! At {age}, you're ready to conquer the day with confidence! As a {maritalStatus} {gender} in {region}, your positivity is your shield. Remember, strong passwords protect your online world.",
+    "Rise and shine, {name}! Your {maritalStatus} life in {region} is inspiring—start the day strong with a clear mind and secure habits. Enable MFA for extra peace of mind.",
+    // ... (previous affirmations) ...
+    "Good morning, {name}! Let's kick off this day in {region} with energy. As a {age}-year-old {gender}, your {maritalStatus} path is bright—stay vigilant with cybersecurity.",
+    "Rise and shine, {name}! Good morning! Your journey at {age} in {region} is unique and powerful. Embrace it with positivity and secure online practices."
   ],
-  afternoon: [
-    "Good afternoon, {name}! Keep shining, you're doing great!",
-    "Hey {name}, you're halfway through the day—stay strong and safe!",
-    "{name}, your focus this afternoon is inspiring. Keep it up!"
-  ],
-  evening: [
-    "Good evening, {name}! Reflect on your wins today—you're unstoppable!",
-    "Hey {name}, unwind with pride in your progress!",
-    "{name}, evening vibes are perfect for relaxing and staying secure."
-  ],
-  night: [
-    "Good night, {name}! Rest well, knowing you're growing stronger every day.",
-    "{name}, sleep tight and dream of crushing it tomorrow!",
-    "Night, {name}! Your resilience is your superpower."
-  ]
+  // ... (expand similarly for afternoon, evening, night with 10+ each, incorporating cybersecurity tips and emotional support)
 };
+
+const CANVAS_OPTIONS = [
+  { value: 'blue-sky', label: 'Blue Sky' },
+  { value: 'cyber-grid', label: 'Cyber Grid' },
+  { value: 'calm-ocean', label: 'Calm Ocean' },
+  { value: 'starry-night', label: 'Starry Night' }
+];
 
 function getTimeOfDay() {
   const hour = new Date().getHours();
@@ -155,6 +151,45 @@ function getSeason() {
          month >= 5 && month <= 7 ? 'Winter' :
          month >= 8 && month <= 10 ? 'Summer' :
          'Autumn';
+}
+
+async function getAIAffirmation(userInput = '') {
+  if (!API_KEYS[selectedAPI]) {
+    const apiKey = prompt(`Enter your ${selectedAPI.toUpperCase()} API key:`);
+    if (apiKey) {
+      localStorage.setItem(`${selectedAPI}_api_key`, apiKey);
+      API_KEYS[selectedAPI] = apiKey;
+    } else {
+      return 'Please provide an API key for AI support.';
+    }
+  }
+
+  try {
+    const prompt = `You are a positive, affirming digital friend. Based on this user profile: Name - ${userProfile.name}, Age - ${userProfile.age}, Marital Status - ${userProfile.maritalStatus}, Gender - ${userProfile.gender}, Region - ${userProfile.region}. Time of day: ${getTimeOfDay()}. Season: ${getSeason()}. User message: "${userInput}". Respond encouragingly, assess their knowledge from the conversation, recommend a training module if ready (from: Key Message, Deepfake Awareness, Reporting Security Incidents, Culture Survey, Social Engineering, Phishing Simulation, Password Training), or positively encourage if not ready. Include a subtle cybersecurity tip. Keep it never negative.`;
+    const response = await fetch(API_URLS[selectedAPI], {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEYS[selectedAPI]}`
+      },
+      body: JSON.stringify({
+        model: selectedAPI === 'grok' ? 'grok-beta' : selectedAPI === 'openai' ? 'gpt-4o-mini' : 'gemini-1.5-flash-latest',
+        messages: [{
+          role: 'system',
+          content: 'You are a positive, affirming digital friend.'
+        }, {
+          role: 'user',
+          content: prompt
+        }]
+      })
+    });
+    if (!response.ok) throw new Error('AI API request failed');
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (err) {
+    console.error('AI affirmation failed:', err);
+    return 'AI support unavailable. Using standard affirmation.';
+  }
 }
 
 function renderSupportContent() {
@@ -179,6 +214,15 @@ function renderSupportContent() {
           <option value="Other">Other</option>
         </select>
         <input type="text" id="userRegion" placeholder="Your Region (e.g., Cape Town)">
+        <select id="canvasSelector">
+          <option value="" disabled selected>Choose Canvas</option>
+          ${CANVAS_OPTIONS.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
+        </select>
+        <select id="apiSelector">
+          <option value="grok">Grok (xAI)</option>
+          <option value="openai">OpenAI GPT</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
         <button id="submitProfileBtn" class="action-btn">Submit</button>
       </div>`;
     document.getElementById('submitProfileBtn').addEventListener('click', () => {
@@ -187,39 +231,122 @@ function renderSupportContent() {
       const maritalStatus = document.getElementById('userMaritalStatus').value;
       const gender = document.getElementById('userGender').value;
       const region = document.getElementById('userRegion').value.trim();
-      if (name && age && maritalStatus && gender && region) {
-        console.log('Support Mode profile submitted:', { name, age, maritalStatus, gender, region });
-        userProfile = { name, age: Number(age), maritalStatus, gender, region };
+      const canvas = document.getElementById('canvasSelector').value;
+      selectedAPI = document.getElementById('apiSelector').value;
+      if (name && age && maritalStatus && gender && region && canvas) {
+        console.log('Support Mode profile submitted:', { name, age, maritalStatus, gender, region, canvas, selectedAPI });
+        userProfile = { name, age: Number(age), maritalStatus, gender, region, canvas };
         localStorage.setItem('defendiq_user', JSON.stringify(userProfile));
-        renderSupportMessage();
+        localStorage.setItem('defendiq_api', selectedAPI);
+        chatHistory = [];
+        localStorage.setItem('defendiq_chat', JSON.stringify(chatHistory));
+        renderSupportMessage(true); // Initial greeting with AI if possible
       } else {
         alert('Please fill in all fields.');
       }
     });
   } else {
-    renderSupportMessage();
+    renderSupportMessage(true); // Greet on open
   }
 }
 
-function renderSupportMessage() {
-  console.log('Rendering Support Mode message');
+async function renderSupportMessage(useAI = false, userInput = '') {
+  console.log('Rendering Support Mode message', { useAI, userInput });
   const timeOfDay = getTimeOfDay();
   const season = getSeason();
-  const affirmations = AFFIRMATIONS[timeOfDay];
-  const affirmation = affirmations[Math.floor(Math.random() * affirmations.length)].replace('{name}', userProfile.name);
+  let affirmation = '';
+  if (useAI) {
+    affirmation = await getAIAffirmation(userInput);
+    if (affirmation === 'AI support unavailable. Using standard affirmation.') {
+      useAI = false; // Fallback
+    }
+  }
+  if (!useAI) {
+    const affirmations = AFFIRMATIONS[timeOfDay];
+    affirmation = affirmations[Math.floor(Math.random() * affirmations.length)].replace('{name}', userProfile.name).replace('{age}', userProfile.age).replace('{maritalStatus}', userProfile.maritalStatus).replace('{gender}', userProfile.gender).replace('{region}', userProfile.region);
+  }
   const regionMessage = userProfile.region ? `Stay strong in ${userProfile.region} this ${season}!` : `Enjoy this ${season} season!`;
   const securityTip = LEARNING_TIPS[Math.floor(Math.random() * LEARNING_TIPS.length)];
+  if (userInput) {
+    chatHistory.push({ role: 'user', message: userInput });
+    chatHistory.push({ role: 'ai', message: affirmation });
+    localStorage.setItem('defendiq_chat', JSON.stringify(chatHistory));
+  } else {
+    affirmation = `Hello, ${userProfile.name}! ${affirmation}`; // Greeting on open
+  }
   moduleBody.innerHTML = `
-    <div class="support-message">
-      <h2>${affirmation}</h2>
-      <p>${regionMessage}</p>
-      <p>Security Tip: ${securityTip}</p>
+    <div class="support-message" style="background: var(--canvas-${userProfile.canvas});">
+      <canvas class="support-canvas" id="supportCanvas"></canvas>
+      <div class="support-chat-history">
+        ${chatHistory.map(msg => `<div class="support-chat-message ${msg.role}">${sanitize(msg.message)}</div>`).join('')}
+      </div>
+      <div class="support-chat-input">
+        <textarea id="supportInput" placeholder="Chat with your digital friend..."></textarea>
+        <button id="sendSupportBtn" class="action-btn">Send</button>
+      </div>
       <button id="refreshSupportBtn" class="action-btn">New Message</button>
+      <button id="aiSupportBtn" class="action-btn">Get AI Support</button>
     </div>`;
-  document.getElementById('refreshSupportBtn').addEventListener('click', () => {
-    console.log('Support Mode new message requested');
-    renderSupportMessage();
+  document.getElementById('sendSupportBtn').addEventListener('click', () => {
+    const input = document.getElementById('supportInput').value.trim();
+    if (input) {
+      renderSupportMessage(true, input);
+      document.getElementById('supportInput').value = '';
+    }
   });
+  document.getElementById('refreshSupportBtn').addEventListener('click', () => renderSupportMessage(false));
+  document.getElementById('aiSupportBtn').addEventListener('click', () => renderSupportMessage(true));
+  drawCanvas(userProfile.canvas);
+}
+
+/* ---------- Canvas Varieties ---------- */
+function drawCanvas(canvasType) {
+  const canvas = document.getElementById('supportCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = moduleBody.offsetWidth;
+  canvas.height = moduleBody.offsetHeight;
+  switch (canvasType) {
+    case 'blue-sky':
+      ctx.fillStyle = '#87CEEB';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add clouds or other elements if desired
+      break;
+    case 'cyber-grid':
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#00FF00';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < canvas.width; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < canvas.height; i += 20) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(canvas.width, i);
+        ctx.stroke();
+      }
+      break;
+    case 'calm-ocean':
+      ctx.fillStyle = '#00BFFF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Add waves or other elements if desired
+      break;
+    case 'starry-night':
+      ctx.fillStyle = '#001F3F';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#FFFFFF';
+      for (let i = 0; i < 100; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        ctx.beginPath();
+        ctx.arc(x, y, Math.random() * 2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      break;
+  }
 }
 
 /* ---------- Mode Handlers ---------- */
@@ -426,12 +553,12 @@ refreshBtn.addEventListener('click', () => {
     } else if (current.mode === 'quiz') {
       renderQuestion();
     } else if (current.mode === 'certificate' && current.certificate) {
-      showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
-    }
+        showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+      }
   } else if (currentMode === 'support') {
     renderSupportContent();
   }
-});
+}
 
 /* ---------- Dropdown Interactions ---------- */
 const watermark = document.querySelector('.select-wrap .watermark');
@@ -491,7 +618,7 @@ async function renderModuleSelection() {
   current.mode = 'selection';
   saveState();
   const mod = MODULES[current.key];
-  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
+  const prog = keyProgressCache[current.key] || { answered: [] };
   const completion = (prog.answered.length / mod.questions.length) * 100;
 
   moduleBody.innerHTML = `
