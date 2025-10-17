@@ -1,17 +1,21 @@
-```css
 :root {
-  --landing-bg: #444444;
+  --landing-bg: #666666; /* Lighter background for better readability */
   --nav-bg: #3c3c3c;
   --stats-bg: #888888;
   --module-bg: #555555;
   --accent: #00bfff;
   --next-color: #ffcc00;
   --text-white: #ffffff;
-  --muted: #dddddd;
+  --muted: #e6e6e6; /* Brighter muted text for contrast */
   --canvas-blue-sky: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
   --canvas-cyber-grid: #000000;
   --canvas-calm-ocean: linear-gradient(180deg, #00BFFF 0%, #1E90FF 100%);
   --canvas-starry-night: #001F3F;
+  --canvas-forest: linear-gradient(180deg, #228B22 0%, #006400 100%);
+  --canvas-sunset: linear-gradient(180deg, #FF4500 0%, #FFD700 100%);
+  --canvas-abstract-cyber: #4B0082;
+  --canvas-mountain-view: linear-gradient(180deg, #708090 0%, #A9A9A9 100%);
+  --canvas-urban-city: linear-gradient(180deg, #A9A9A9 0%, #808080 100%);
 }
 
 /* Reset */
@@ -48,16 +52,38 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   color: var(--text-white);
 }
 .landing-box { 
-  background: rgba(255,255,255,0.03); 
+  background: rgba(255,255,255,0.1); /* Slightly more opaque for contrast */
   padding: 48px 56px; 
   border-radius: 12px; 
   text-align: center; 
   backdrop-filter: blur(4px); 
   margin-top: 80px;
+  z-index: 10;
 }
 .landing-box h1 { font-size: 34px; margin-bottom: 12px; }
-.landing-box p { color: var(--muted); margin-bottom: 22px; font-size: 18px; }
-.start-btn { background: white; color: black; border: 0; padding: 12px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; margin: 10px; }
+.animated-text { 
+  color: var(--muted); 
+  margin-bottom: 22px; 
+  font-size: 18px; 
+  font-weight: 600; 
+  text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Shadow for readability */
+}
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+.start-btn { 
+  background: rgba(255,255,255,0.9); /* Slightly transparent for blend */
+  color: black; 
+  border: 0; 
+  padding: 12px 22px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  z-index: 20;
+}
+.start-btn:hover { background: #ffffff; }
 .start-btn:active { transform: scale(.99); }
 
 /* App wrapper hidden toggles */
@@ -243,7 +269,10 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   .stats-right { flex-wrap: wrap; gap: 10px; }
   .certificate-card { padding: 16px; }
   .logo-top-left { font-size: 64px; top: 25px; left: 10px; padding: 8px; }
-  .landing-box { margin-top: 70px; }
+  .landing-box { margin-top: 70px; padding: 24px; }
+  .animated-text { font-size: 16px; }
+  .button-group { flex-direction: column; gap: 10px; }
+  .start-btn { padding: 10px 18px; }
   .support-form, .support-message { padding: 15px; }
   .support-chat-history { max-height: 200px; }
 }
