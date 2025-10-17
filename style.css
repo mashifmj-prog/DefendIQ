@@ -16,8 +16,9 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
 /* Landing */
 .landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--landing-bg); color: var(--text-white); }
 .landing-box { background: rgba(255,255,255,0.03); padding: 48px 56px; border-radius: 12px; text-align: center; backdrop-filter: blur(4px); }
-.landing-box h1 { font-size: 34px; margin-bottom: 12px; }
-.landing-box p { color: var(--muted); margin-bottom: 22px; }
+.landing-box h1 { font-size: 34px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.landing-box .logo-emoji { font-size: 28px; line-height: 1; }
+.landing-box p { color: var(--muted); margin-bottom: 22px; font-size: 18px; }
 .start-btn { background: white; color: black; border: 0; padding: 12px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 .start-btn:active { transform: scale(.99); }
 
