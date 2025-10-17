@@ -6,22 +6,33 @@ let chartInstance;
 let userProfile = JSON.parse(localStorage.getItem('defendiq_user')) || null;
 
 function saveState() {
-  localStorage.setItem('defendiqState', JSON.stringify({ currentMode, current, keyProgressCache, stats, userProfile }));
-  console.log('State saved');
+  try {
+    localStorage.setItem('defendiqState', JSON.stringify({ currentMode, current, keyProgressCache, stats, userProfile }));
+    console.log('State saved successfully');
+  } catch (e) {
+    console.error('Failed to save state:', e);
+  }
 }
 
 function restoreState() {
-  const state = localStorage.getItem('defendiqState');
-  if (state) {
-    const parsed = JSON.parse(state);
-    currentMode = parsed.currentMode || 'landing';
-    current = parsed.current || { key: null, idx: 0, mode: 'selection', certificate: null };
-    keyProgressCache = parsed.keyProgressCache || {};
-    stats = parsed.stats || { points: 0, streak: 0, completion: 0, badges: [], moduleProgress: {} };
-    userProfile = parsed.userProfile || null;
+  try {
+    const state = localStorage.getItem('defendiqState');
+    if (state) {
+      const parsed = JSON.parse(state);
+      currentMode = parsed.currentMode || 'landing';
+      current = parsed.current || { key: null, idx: 0, mode: 'selection', certificate: null };
+      keyProgressCache = parsed.keyProgressCache || {};
+      stats = parsed.stats || { points: 0, streak: 0, completion: 0, badges: [], moduleProgress: {} };
+      userProfile = parsed.userProfile || null;
+    }
+    saveStats();
+    console.log('State restored, mode:', currentMode, 'user:', userProfile ? userProfile.username : 'none');
+  } catch (e) {
+    console.error('Failed to restore state:', e);
+    currentMode = 'landing';
+    userProfile = null;
+    saveState();
   }
-  saveStats();
-  console.log('State restored, mode:', currentMode, 'user:', userProfile ? userProfile.username : 'none');
 }
 
 function saveStats() {
