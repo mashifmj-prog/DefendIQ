@@ -44,9 +44,10 @@ function saveModuleProgress(progress) {
 }
 
 function handleSupportInput() {
+  console.log('Processing input');
   const input = document.getElementById('supportInput').value.trim().toLowerCase();
   const output = document.getElementById('supportOutput');
-  if (!output) return; // Safety check
+  if (!output) return;
   let response = "Thanks for your message! I'm here to help. Based on your progress, consider these modules.";
 
   const incompleteModules = Object.keys(stats.moduleProgress).filter(key => !stats.moduleProgress[key].completed);
