@@ -4,6 +4,7 @@
    - Enhanced error handling for questions.json with retry and fallback
    - Handles landing -> dashboard with graphs, module selection, quizzes, certificates
    - Uses Web Share API, server-side persistence, random learning tips
+   - Added Support mode with signup and tailored emotional support
 */
 
 const startBtn = document.getElementById('startBtn');
@@ -11,6 +12,7 @@ const landing = document.getElementById('landing');
 const app = document.getElementById('app');
 const homeBtn = document.getElementById('homeBtn');
 const refreshBtn = document.getElementById('refreshBtn');
+const feedbackBtn = document.getElementById('feedbackBtn');
 const moduleSelect = document.getElementById('moduleSelect');
 const moduleBody = document.getElementById('moduleBody');
 const closeModuleBtn = document.getElementById('closeModuleBtn');
@@ -110,6 +112,30 @@ function refreshStatsUI() {
   badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
   debounceRenderGlobalProgressChart();
 }
+
+/* ---------- Feedback Modal ---------- */
+feedbackBtn.addEventListener('click', () => {
+  console.log('Feedback button clicked');
+  feedbackModal.classList.remove('hidden');
+  feedbackText.focus();
+});
+
+submitFeedbackBtn.addEventListener('click', () => {
+  const feedback = feedbackText.value.trim();
+  if (feedback) {
+    console.log('Feedback submitted:', feedback); // Placeholder for server-side submission
+    alert('Thank you for your feedback!');
+    feedbackText.value = '';
+    feedbackModal.classList.add('hidden');
+  } else {
+    alert('Please enter feedback before submitting.');
+  }
+});
+
+cancelFeedbackBtn.addEventListener('click', () => {
+  feedbackText.value = '';
+  feedbackModal.classList.add('hidden');
+});
 
 /* ---------- State Persistence for Refresh ---------- */
 let current = {
@@ -257,7 +283,6 @@ function renderGlobalProgressChart() {
 
 /* ---------- Landing -> App ---------- */
 startBtn.addEventListener('click', () => {
-  console.log('Start Training button clicked'); // Debug log
   landing.classList.add('hidden');
   app.classList.remove('hidden');
   saveState();
