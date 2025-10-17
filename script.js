@@ -2,9 +2,9 @@
    - Optimized for performance with debounced chart rendering, reduced confetti, cached data
    - Persists state for refresh to preserve selections and current view
    - Enhanced error handling for questions.json with retry and fallback
-   - Handles landing -> training/support modes, quizzes, certificates, feedback
+   - Handles landing -> training/support modes, quizzes, certificates
    - Support mode with signup and tailored emotional support
-   - Fixed feedback modal to prevent auto-opening, ensure proper close
+   - Feedback button made static (no popup, disabled)
 */
 
 const trainingBtn = document.getElementById('trainingBtn');
@@ -13,12 +13,6 @@ const landing = document.getElementById('landing');
 const app = document.getElementById('app');
 const homeBtn = document.getElementById('homeBtn');
 const refreshBtn = document.getElementById('refreshBtn');
-const feedbackBtn = document.getElementById('feedbackBtn');
-const feedbackModal = document.getElementById('feedbackModal');
-const feedbackText = document.getElementById('feedbackText');
-const feedbackCategory = document.getElementById('feedbackCategory');
-const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
-const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
 const moduleSelect = document.getElementById('moduleSelect');
 const moduleBody = document.getElementById('moduleBody');
 const closeModuleBtn = document.getElementById('closeModuleBtn');
@@ -123,58 +117,6 @@ function refreshStatsUI() {
   if (currentMode === 'training') debounceRenderGlobalProgressChart();
 }
 
-/* ---------- Feedback Modal ---------- */
-let selectedRating = 0;
-function initializeFeedback() {
-  console.log('Initializing feedback modal');
-  // Ensure modal is hidden on load
-  feedbackModal.classList.add('hidden');
-  
-  document.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', () => {
-      selectedRating = Number(star.dataset.value);
-      console.log('Star rating selected:', selectedRating);
-      document.querySelectorAll('.star').forEach(s => {
-        s.classList.toggle('selected', Number(s.dataset.value) <= selectedRating);
-      });
-    });
-  });
-
-  feedbackBtn.addEventListener('click', () => {
-    console.log('Feedback button clicked');
-    feedbackModal.classList.remove('hidden');
-    feedbackText.focus();
-  });
-
-  submitFeedbackBtn.addEventListener('click', async () => {
-    const feedback = feedbackText.value.trim();
-    const category = feedbackCategory.value;
-    if (selectedRating && feedback) {
-      const feedbackData = { rating: selectedRating, category, comment: feedback, timestamp: new Date().toISOString() };
-      console.log('Feedback submitted:', feedbackData);
-      stats.points += 10;
-      await saveStats();
-      animatePoints();
-      triggerConfetti(true);
-      alert('Thank you for your feedback! +10 points earned!');
-      feedbackText.value = '';
-      selectedRating = 0;
-      document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-      feedbackModal.classList.add('hidden');
-    } else {
-      alert('Please provide a rating and comment.');
-    }
-  });
-
-  cancelFeedbackBtn.addEventListener('click', () => {
-    console.log('Feedback modal canceled');
-    feedbackText.value = '';
-    selectedRating = 0;
-    document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-    feedbackModal.classList.add('hidden');
-  });
-}
-
 /* ---------- Support Mode ---------- */
 const AFFIRMATIONS = {
   morning: [
@@ -216,6 +158,7 @@ function getSeason() {
 }
 
 function renderSupportContent() {
+  console.log('Rendering Support Mode content');
   if (!userProfile) {
     moduleBody.innerHTML = `
       <div class="support-form">
@@ -245,6 +188,7 @@ function renderSupportContent() {
       const gender = document.getElementById('userGender').value;
       const region = document.getElementById('userRegion').value.trim();
       if (name && age && maritalStatus && gender && region) {
+        console.log('Support Mode profile submitted:', { name, age, maritalStatus, gender, region });
         userProfile = { name, age: Number(age), maritalStatus, gender, region };
         localStorage.setItem('defendiq_user', JSON.stringify(userProfile));
         renderSupportMessage();
@@ -258,6 +202,7 @@ function renderSupportContent() {
 }
 
 function renderSupportMessage() {
+  console.log('Rendering Support Mode message');
   const timeOfDay = getTimeOfDay();
   const season = getSeason();
   const affirmations = AFFIRMATIONS[timeOfDay];
@@ -271,7 +216,10 @@ function renderSupportMessage() {
       <p>Security Tip: ${securityTip}</p>
       <button id="refreshSupportBtn" class="action-btn">New Message</button>
     </div>`;
-  document.getElementById('refreshSupportBtn').addEventListener('click', renderSupportMessage);
+  document.getElementById('refreshSupportBtn').addEventListener('click', () => {
+    console.log('Support Mode new message requested');
+    renderSupportMessage();
+  });
 }
 
 /* ---------- Mode Handlers ---------- */
@@ -282,7 +230,6 @@ trainingBtn.addEventListener('click', () => {
   app.classList.remove('hidden');
   quizDropdown.classList.remove('hidden');
   statsArea.classList.remove('hidden');
-  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   closeModule();
   saveState();
 });
@@ -294,7 +241,6 @@ supportBtn.addEventListener('click', () => {
   app.classList.remove('hidden');
   quizDropdown.classList.add('hidden');
   statsArea.classList.add('hidden');
-  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   document.querySelector('.module-title').textContent = 'Support Mode';
   renderSupportContent();
   saveState();
@@ -315,7 +261,6 @@ function saveState() {
 async function restoreState() {
   console.log('Restoring state');
   const savedState = JSON.parse(localStorage.getItem('defendiq_state') || '{}');
-  feedbackModal.classList.add('hidden'); // Force modal hidden on restore
   if (savedState.currentMode) {
     currentMode = savedState.currentMode;
     current = savedState.current || { key: null, idx: 0, mode: 'selection', certificate: null };
@@ -390,7 +335,6 @@ async function loadQuestions(attempt = 1, maxAttempts = 3) {
 }
 loadQuestions();
 loadStats();
-initializeFeedback();
 
 /* ---------- Learning Tips (Optimized) ---------- */
 const LEARNING_TIPS = [
@@ -466,7 +410,6 @@ homeBtn.addEventListener('click', () => {
   console.log('Home button clicked');
   app.classList.add('hidden');
   landing.classList.remove('hidden');
-  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   currentMode = 'landing';
   current = { key: null, idx: 0, mode: 'selection', certificate: null };
   saveState();
@@ -475,7 +418,6 @@ homeBtn.addEventListener('click', () => {
 /* ---------- Refresh Button ---------- */
 refreshBtn.addEventListener('click', () => {
   console.log('Refresh button clicked');
-  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   if (currentMode === 'training') {
     if (current.mode === 'selection') {
       renderModuleSelection();
@@ -511,7 +453,6 @@ moduleSelect.addEventListener('change', () => {
 /* Close module button */
 closeModuleBtn.addEventListener('click', () => {
   console.log('Close module button clicked');
-  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   if (currentMode === 'training') {
     moduleSelect.selectedIndex = 0;
     closeModule();
