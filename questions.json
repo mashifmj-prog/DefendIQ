@@ -1,6 +1,13 @@
 {
   "keymessage": {
     "title": "Key Message",
+    "points": [
+      "Cybersecurity is everyone's responsibility.",
+      "Be vigilant with emails and attachments.",
+      "Verify all requests for sensitive information.",
+      "Use strong passwords and enable MFA.",
+      "Report any suspicious activity immediately."
+    ],
     "questions": [
       { "q": "Why is cybersecurity awareness important in a company?", "opts": ["Reduces risk of breaches", "Slows employees", "Costs more", "Is optional"], "a": 0 },
       { "q": "What should you do when you receive unexpected attachments?", "opts": ["Open immediately", "Scan and verify sender", "Forward to all", "Ignore permanently"], "a": 1 },
@@ -16,6 +23,13 @@
   },
   "deepfake": {
     "title": "Deepfake Awareness",
+    "points": [
+      "Deepfakes are AI-generated fake media.",
+      "Look for unnatural movements in videos.",
+      "Verify all requests from video or audio.",
+      "Report suspected deepfakes immediately.",
+      "Training helps spot deepfake red flags."
+    ],
     "questions": [
       { "q": "What is a deepfake?", "opts": ["AI-generated fake media", "A firewall", "A password type", "A network switch"], "a": 0 },
       { "q": "A red flag for deepfake video is:", "opts": ["Perfect lip sync", "Unnatural facial movement", "Crystal clear audio always", "Very long length"], "a": 1 },
@@ -31,6 +45,13 @@
   },
   "reporting": {
     "title": "Reporting Security Incidents",
+    "points": [
+      "Report incidents immediately to IT/security.",
+      "Include screenshots, timestamps, and details in reports.",
+      "Use official channels for reporting.",
+      "Preserve evidence and avoid tampering.",
+      "Practice reporting to improve response time."
+    ],
     "questions": [
       { "q": "Why report quickly?", "opts": ["Speeds investigation and containment", "Causes panic", "Is not necessary", "Annoys IT"], "a": 0 },
       { "q": "What info helps an incident report?", "opts": ["Screenshots, timestamps, sender details", "Only feelings", "No details", "Random data"], "a": 0 },
@@ -46,6 +67,13 @@
   },
   "culture": {
     "title": "Culture Survey",
+    "points": [
+      "Foster open communication and regular training.",
+      "Encourage reporting of suspicious activity.",
+      "Leadership should model good security practices.",
+      "Recognize employees for vigilance and good behavior.",
+      "Build a culture where security is everyone's responsibility."
+    ],
     "questions": [
       { "q": "What helps a strong security culture?", "opts": ["Open communication and training", "Ignoring policy", "Sharing passwords", "Avoiding reporting"], "a": 0 },
       { "q": "Employees contribute by:", "opts": ["Reporting suspicious activity", "Avoiding training", "Hiding issues", "Sharing credentials"], "a": 0 },
@@ -61,6 +89,13 @@
   },
   "social": {
     "title": "Social Engineering",
+    "points": [
+      "Social engineering manipulates people to reveal secrets.",
+      "Watch for urgency or pressure in requests.",
+      "Verify all requests for credentials or sensitive data.",
+      "Report suspected social engineering attempts.",
+      "Training helps spot and defend against manipulation."
+    ],
     "questions": [
       { "q": "What is social engineering?", "opts": ["Manipulating people to reveal secrets", "A software update", "A firewall rule", "Antivirus"], "a": 0 },
       { "q": "Red flags in phone social engineering:", "opts": ["Sense of urgency, pressure to act, odd caller ID", "Perfect grammar", "Long hold music", "Friendly voice only"], "a": 0 },
@@ -76,6 +111,11 @@
   },
   "phishing": {
     "title": "Phishing Simulation",
+    "points": [
+      "Inspect sender and links before clicking.",
+      "Verify attachments from trusted sources only.",
+      "Report suspicious emails to IT/security."
+    ],
     "questions": [
       { "q": "'Urgent – update your password' from unknown domain. You:", "opts": ["Hover, inspect sender, do not click; report", "Click and type password", "Forward to all", "Reply with credentials"], "a": 0 },
       { "q": "Suspicious attachment from supplier, you:", "opts": ["Verify with sender using known contact, scan file", "Open immediately", "Send to HR only", "Ignore the email permanently"], "a": 0 },
@@ -91,6 +131,11 @@
   },
   "password": {
     "title": "Password Training",
+    "points": [
+      "Create strong, unique passwords for each account.",
+      "Use a password manager to store and generate passwords.",
+      "Enable multi-factor authentication wherever possible."
+    ],
     "questions": [
       { "q": "Strong passwords should be:", "opts": ["Long, unique, with mixed characters", "Your name", "123456", "Repeated across accounts"], "a": 0 },
       { "q": "Using a password manager is:", "opts": ["Recommended for generating and storing strong passwords", "Unsafe", "Illegal", "Only for admins"], "a": 0 },
