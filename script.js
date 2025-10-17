@@ -1,18 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM loaded, initializing...');
+  console.log('DOM loaded, starting initialization...');
   const loadingIndicator = document.getElementById('loadingIndicator');
+  const errorFallback = document.getElementById('errorFallback');
   if (loadingIndicator) loadingIndicator.classList.remove('hidden');
 
   restoreState();
   loadQuestions().then(() => {
     if (loadingIndicator) loadingIndicator.classList.add('hidden');
-    console.log('Questions loaded, checking mode...');
+    console.log('Questions loaded, setting mode...');
     if (currentMode === 'training') enterTrainingMode();
     else if (currentMode === 'support') enterSupportMode();
     else if (!userProfile) showSignupOverlay();
   }).catch(error => {
-    console.error('Load failed:', error);
-    if (loadingIndicator) loadingIndicator.textContent = 'Loading failed. Check console.';
+    console.error('Initialization failed:', error);
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    if (errorFallback) errorFallback.classList.remove('hidden');
   });
 
   // Landing page buttons
@@ -31,12 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const signupBtn = document.getElementById('signupBtn');
   const closeSignupBtn = document.getElementById('closeSignupBtn');
   if (signupBtn) signupBtn.addEventListener('click', () => {
-    const username = document.getElementById('username')?.value.trim();
+    const usernameInput = document.getElementById('username');
+    const username = usernameInput ? usernameInput.value.trim() : '';
     if (username) {
       saveUserProfile(username);
       if (currentMode === 'training') enterTrainingMode();
       else if (currentMode === 'support') enterSupportMode();
-      else enterSupportMode(); // Default to support
+      else enterSupportMode();
     } else {
       alert('Please enter a username.');
     }
@@ -77,8 +80,10 @@ function enterTrainingMode() {
     currentMode = 'training';
     landing.classList.add('hidden');
     app.classList.remove('hidden');
-    document.querySelector('.quiz-dropdown')?.classList.remove('hidden');
-    document.querySelector('.stats-area')?.classList.remove('hidden');
+    const quizDropdown = document.querySelector('.quiz-dropdown');
+    const statsArea = document.querySelector('.stats-area');
+    if (quizDropdown) quizDropdown.classList.remove('hidden');
+    if (statsArea) statsArea.classList.remove('hidden');
     renderTrainingDashboard();
     saveState();
     console.log('Entered Training Mode');
@@ -92,9 +97,12 @@ function enterSupportMode() {
     currentMode = 'support';
     landing.classList.add('hidden');
     app.classList.remove('hidden');
-    document.querySelector('.quiz-dropdown')?.classList.add('hidden');
-    document.querySelector('.stats-area')?.classList.add('hidden');
-    document.querySelector('.module-title')?.textContent = 'Support Mode';
+    const quizDropdown = document.querySelector('.quiz-dropdown');
+    const statsArea = document.querySelector('.stats-area');
+    const moduleTitle = document.querySelector('.module-title');
+    if (quizDropdown) quizDropdown.classList.add('hidden');
+    if (statsArea) statsArea.classList.add('hidden');
+    if (moduleTitle) moduleTitle.textContent = 'Support Mode';
     renderSupportMode();
     saveState();
     console.log('Entered Support Mode');
@@ -106,7 +114,7 @@ function refreshCurrentView() {
     if (current.mode === 'selection') renderModuleSelection();
     else if (current.mode === 'material') renderLearningMaterial();
     else if (current.mode === 'quiz') renderQuestion();
-    else if (current.mode === 'certificate') showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
+    else if (current.mode === 'certificate') showCertificate(current.certificate?.moduleName, current.certificate?.timestamp, current.certificate?.hash);
   } else if (currentMode === 'support') {
     renderSupportMode();
   }
