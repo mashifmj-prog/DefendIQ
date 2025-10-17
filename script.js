@@ -1,8 +1,3 @@
-/* DefendIQ - Main Application Script
-   - Initializes event listeners and state
-   - Manages mode transitions
-*/
-
 document.addEventListener('DOMContentLoaded', () => {
   restoreState();
   loadQuestions();
@@ -12,6 +7,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const supportBtn = document.getElementById('supportBtn');
   if (trainingBtn) trainingBtn.addEventListener('click', () => enterTrainingMode());
   if (supportBtn) supportBtn.addEventListener('click', () => enterSupportMode());
+
+  // Sign-up handling
+  const signupBtn = document.getElementById('signupBtn');
+  const closeSignupBtn = document.getElementById('closeSignupBtn');
+  if (signupBtn) signupBtn.addEventListener('click', () => {
+    const username = document.getElementById('username').value.trim();
+    if (username) {
+      saveUserProfile(username);
+    } else {
+      alert('Please enter a username.');
+    }
+  });
+  if (closeSignupBtn) closeSignupBtn.addEventListener('click', () => {
+    document.getElementById('signupOverlay').classList.add('hidden');
+  });
 
   // Navigation
   const homeBtn = document.getElementById('homeBtn');
@@ -34,6 +44,10 @@ function goHome() {
 }
 
 function enterTrainingMode() {
+  if (!userProfile) {
+    showSignupOverlay();
+    return;
+  }
   currentMode = 'training';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
@@ -45,6 +59,10 @@ function enterTrainingMode() {
 }
 
 function enterSupportMode() {
+  if (!userProfile) {
+    showSignupOverlay();
+    return;
+  }
   currentMode = 'support';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
