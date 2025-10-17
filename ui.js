@@ -13,10 +13,18 @@ function renderTrainingDashboard() {
   }
   current.mode = 'selection';
   saveState();
-  document.querySelector('.module-title').textContent = 'Select a module to begin';
+  document.querySelector('.module-title').textContent = 'Training Dashboard';
   moduleBody.innerHTML = `
     <div class="training-dashboard">
       <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
+      <div class="analytics">
+        <h3>Progress Analytics</h3>
+        <ul>
+          ${Object.keys(stats.moduleProgress).map(key => `
+            <li>${MODULES[key].title}: ${stats.moduleProgress[key].completionPercentage}% complete, ${stats.moduleProgress[key].correctPercentage}% correct</li>
+          `).join('')}
+        </ul>
+      </div>
       <div class="affirmation" id="globalAffirmation"></div>
       <div class="module-selection">
         <p>Select a module from the dropdown above to view materials and quizzes.</p>
@@ -46,6 +54,10 @@ function renderModuleSelection() {
   moduleBody.innerHTML = `
     <div class="module-selection">
       <canvas id="moduleProgressChart" style="max-width: 300px; margin: 20px auto;"></canvas>
+      <div class="analytics">
+        <h4>${mod.title} Analytics</h4>
+        <p>Completion: ${completion}% | Correct: ${prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0}%</p>
+      </div>
       <div class="affirmation" id="moduleAffirmation"></div>
       <button id="learningMaterialBtn" class="action-btn">Learning Material</button>
       <button id="takeQuizBtn" class="action-btn">Take a Quiz</button>
@@ -56,11 +68,10 @@ function renderModuleSelection() {
   chartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Module Progress'],
+      labels: ['Completion', 'Correct'],
       datasets: [{
-        label: 'Completion (%)',
-        data: [completion],
-        backgroundColor: '#8affc1',
+        data: [completion, prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0],
+        backgroundColor: ['#8affc1', '#9fb4ff'],
         borderColor: '#ffffff',
         borderWidth: 1
       }]
