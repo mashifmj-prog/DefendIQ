@@ -14,10 +14,10 @@
 body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-serif; background: #111; }
 
 /* Landing */
-.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--landing-bg); color: var(--text-white); }
+.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--landing-bg); color: var(--text-white); position: relative; }
+.logo-top-left { position: absolute; top: 20px; left: 20px; font-size: 32px; line-height: 1; }
 .landing-box { background: rgba(255,255,255,0.03); padding: 48px 56px; border-radius: 12px; text-align: center; backdrop-filter: blur(4px); }
-.landing-box h1 { font-size: 34px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.landing-box .logo-emoji { font-size: 28px; line-height: 1; }
+.landing-box h1 { font-size: 34px; margin-bottom: 12px; }
 .landing-box p { color: var(--muted); margin-bottom: 22px; font-size: 18px; }
 .start-btn { background: white; color: black; border: 0; padding: 12px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; }
 .start-btn:active { transform: scale(.99); }
@@ -123,12 +123,4 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
 .cert-signature { color: #dbc88e; margin-top: 10px; font-style: italic; }
 .cert-qr { margin-top: 18px; width: 100px; height: 100px; }
 .cert-logo { margin-top: 18px; padding: 12px; border-radius: 50%; border: 2px solid #c59b00; color: #c59b00; font-weight: 900; width: 140px; text-align: center; margin-left: auto; }
-.cert-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-.cert-actions button { padding: 8px 12px; border-radius: 6px; border: 0; cursor: pointer; }
-
-/* Responsive */
-@media (max-width: 720px) {
-  .nav-right { gap: 6px; }
-  .stats-right { flex-wrap: wrap; gap: 10px; }
-  .certificate-card { padding: 16px; }
-}
+.cert-actions { margin-top: 20px; display: flex; gap: 10px; justify
