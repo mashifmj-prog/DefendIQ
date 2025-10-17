@@ -2,82 +2,36 @@
   "keymessage": {
     "title": "Key Message",
     "points": [
-      "Cybersecurity is everyone's responsibility.",
-      "Be vigilant with emails and attachments.",
-      "Verify all requests for sensitive information.",
-      "Use strong passwords and enable MFA.",
-      "Report any suspicious activity immediately."
+      "Understand the importance of cybersecurity awareness.",
+      "Recognize common threats like phishing and malware.",
+      "Learn to protect sensitive information."
     ],
     "questions": [
-      { "q": "Why is cybersecurity awareness important in a company?", "opts": ["Reduces risk of breaches", "Slows employees", "Costs more", "Is optional"], "a": 0 },
-      { "q": "What should you do when you receive unexpected attachments?", "opts": ["Open immediately", "Scan and verify sender", "Forward to all", "Ignore permanently"], "a": 1 },
-      { "q": "Phone requests for credentials should be handled how?", "opts": ["Share immediately", "Verify caller and escalate", "Assume it's HR", "Post online"], "a": 1 },
-      { "q": "What is multi-factor authentication (MFA)?", "opts": ["Single password", "Two or more verification methods", "Antivirus", "Firewall only"], "a": 1 },
-      { "q": "When to change passwords?", "opts": ["Never", "After breach or periodically", "Every hour", "When bored"], "a": 1 },
-      { "q": "What is a safe way to report a suspected incident?", "opts": ["Public social post", "Notify IT/security via official channel", "Delete evidence", "Ignore"], "a": 1 },
-      { "q": "How should sensitive files be sent?", "opts": ["Open email", "Use approved encrypted transfer", "Share on messenger", "Share via USB left on desk"], "a": 1 },
-      { "q": "Which behavior strengthens security culture?", "opts": ["Ignoring policies", "Regular training and reporting", "Using weak passwords", "Sharing logins"], "a": 1 },
-      { "q": "What to do with suspicious links?", "opts": ["Click to see", "Hover to inspect, verify sender", "Forward blindly", "Reply with credentials"], "a": 1 },
-      { "q": "Who is responsible for security?", "opts": ["Only IT", "Every employee", "Only executives", "Only security team"], "a": 1 }
+      {
+        "q": "What is a key aspect of cybersecurity?",
+        "opts": ["Ignoring emails", "Strong passwords", "Sharing passwords", "Using public Wi-Fi"],
+        "a": 1
+      },
+      {
+        "q": "What should you do if you receive a suspicious email?",
+        "opts": ["Click all links", "Reply immediately", "Report to IT", "Forward to friends"],
+        "a": 2
+      }
     ]
   },
   "deepfake": {
     "title": "Deepfake Awareness",
     "points": [
-      "Deepfakes are AI-generated fake media.",
-      "Look for unnatural movements in videos.",
-      "Verify all requests from video or audio.",
-      "Report suspected deepfakes immediately.",
-      "Training helps spot deepfake red flags."
+      "Identify signs of deepfake media.",
+      "Verify sources before trusting content.",
+      "Use tools to detect manipulated media."
     ],
     "questions": [
-      { "q": "What is a deepfake?", "opts": ["AI-generated fake media", "A firewall", "A password type", "A network switch"], "a": 0 },
-      { "q": "A red flag for deepfake video is:", "opts": ["Perfect lip sync", "Unnatural facial movement", "Crystal clear audio always", "Very long length"], "a": 1 },
-      { "q": "Deepfakes can be used for:", "opts": ["Impersonation for fraud", "Improving passwords", "Faster internet", "Reducing spam"], "a": 0 },
-      { "q": "If CEO voice asks urgent money transfer, you should:", "opts": ["Comply immediately", "Verify using known contact method", "Post on social", "Ignore"], "a": 1 },
-      { "q": "A defense against deepfakes is:", "opts": ["Verify identity via multiple channels", "Rely only on email", "Trust all video", "Give full access"], "a": 0 },
-      { "q": "Suspicious deepfake content often has:", "opts": ["Perfect background", "Slight visual glitches or lip-sync issues", "High reliability", "Extra clarity"], "a": 1 },
-      { "q": "How to report suspected deepfake?", "opts": ["Share widely", "Report to security and manager", "Delete device", "Edit and repost"], "a": 1 },
-      { "q": "Deepfakes are produced using:", "opts": ["Neural networks and machine learning", "Manual drawings only", "Antivirus engines", "Routers"], "a": 0 },
-      { "q": "When asked to confirm money transfer in video call:", "opts": ["Transfer at once", "Confirm via official phone number or email", "Assume safe", "Give credentials"], "a": 1 },
-      { "q": "Best prevention is:", "opts": ["Training to spot signs and verification procedures", "Avoiding all calls", "Turning off camera", "Removing backups"], "a": 0 }
+      {
+        "q": "What is a deepfake?",
+        "opts": ["A secure email", "Fake media using AI", "A type of firewall", "A strong password"],
+        "a": 1
+      }
     ]
-  },
-  "reporting": {
-    "title": "Reporting Security Incidents",
-    "points": [
-      "Report incidents immediately to IT/security.",
-      "Include screenshots, timestamps, and details in reports.",
-      "Use official channels for reporting.",
-      "Preserve evidence and avoid tampering.",
-      "Practice reporting to improve response time."
-    ],
-    "questions": [
-      { "q": "Why report quickly?", "opts": ["Speeds investigation and containment", "Causes panic", "Is not necessary", "Annoys IT"], "a": 0 },
-      { "q": "What info helps an incident report?", "opts": ["Screenshots, timestamps, sender details", "Only feelings", "No details", "Random data"], "a": 0 },
-      { "q": "Reporting channels should be:", "opts": ["Unofficial chat only", "Official IT/security channels", "Public forum", "Email to attacker"], "a": 1 },
-      { "q": "If you clicked a malicious link, you should:", "opts": ["Wait and see", "Report immediately and isolate device", "Keep using", "Share with colleagues"], "a": 1 },
-      { "q": "Who do you include in the initial report?", "opts": ["Only yourself", "Your manager and IT/security as required", "Social media", "Only HR"], "a": 1 },
-      { "q": "Incident reporting helps to:", "opts": ["Prevent spread, preserve evidence, improve controls", "Hide breaches", "Make false claims", "Reduce workload"], "a": 0 },
-      { "q": "Do not do after incident:", "opts": ["Turn off machine, disconnect, preserve evidence", "Delete logs or hide evidence", "Follow incident team guidance", "Provide details"], "a": 1 },
-      { "q": "A clear incident report should be:", "opts": ["Concise, factual, timestamped", "Long and emotional", "Vague", "Full of rumors"], "a": 0 },
-      { "q": "Who typically manages incident response?", "opts": ["Security/IT (with management)", "Sales", "Reception", "Marketing"], "a": 0 },
-      { "q": "Practicing reporting procedures helps:", "opts": ["Speed real response", "Confuse team", "Ignore incidents", "Hide information"], "a": 0 }
-    ]
-  },
-  "culture": {
-    "title": "Culture Survey",
-    "points": [
-      "Foster open communication and regular training.",
-      "Encourage reporting of suspicious activity.",
-      "Leadership should model good security practices.",
-      "Recognize employees for vigilance and good behavior.",
-      "Build a culture where security is everyone's responsibility."
-    ],
-    "questions": [
-      { "q": "What helps a strong security culture?", "opts": ["Open communication and training", "Ignoring policy", "Sharing passwords", "Avoiding reporting"], "a": 0 },
-      { "q": "Employees contribute by:", "opts": ["Reporting suspicious activity", "Avoiding training", "Hiding issues", "Sharing credentials"], "a": 0 },
-      { "q": "Frequent training results in:", "opts": ["Better awareness and fewer incidents", "More breaches", "Slower work", "Confusion"], "a": 0 },
-      { "q": "Management role in culture is to:", "opts": ["Model good behavior and support security", "Ignore it", "Assign blame", "Decrease budget"], "a": 0 },
-      { "q": "Trustworthy behavior includes:", "opts": ["Following policies and reporting", "Bypassing procedures", "Hoarding knowledge", "Hiding incidents"], "a": 0 },
-      { "q": "Good feedback loops mean:", "opts": ["Employees get constructive responses when they report", "Reports are ignored", "Only managers are informed", "Public
+  }
+}
