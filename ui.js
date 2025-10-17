@@ -148,11 +148,14 @@ function renderSupportMode() {
   const chatHistory = document.getElementById('chatHistory');
   if (sendButton && supportInput && chatHistory) {
     supportInput.addEventListener('input', (e) => {
-      const typingPreview = document.getElementById('typingPreview') || document.createElement('div');
-      typingPreview.id = 'typingPreview';
-      typingPreview.className = 'support-chat-message user typing';
+      let typingPreview = document.getElementById('typingPreview');
+      if (!typingPreview) {
+        typingPreview = document.createElement('div');
+        typingPreview.id = 'typingPreview';
+        typingPreview.className = 'support-chat-message user typing';
+        chatHistory.appendChild(typingPreview);
+      }
       typingPreview.textContent = e.target.value;
-      chatHistory.appendChild(typingPreview);
       chatHistory.scrollTop = chatHistory.scrollHeight;
     });
     sendButton.addEventListener('click', () => {
@@ -165,8 +168,20 @@ function renderSupportMode() {
         userMessage.textContent = inputValue;
         chatHistory.appendChild(userMessage);
         chatHistory.scrollTop = chatHistory.scrollHeight;
-        handleSupportInput(inputValue, chatHistory);
+        try {
+          console.log('Sending:', inputValue);
+          handleSupportInput(inputValue, chatHistory);
+        } catch (error) {
+          console.error('Send failed:', error);
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'support-chat-message ai';
+          errorMessage.textContent = 'Oops, something went wrong. Try again!';
+          chatHistory.appendChild(errorMessage);
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
         supportInput.value = '';
+      } else {
+        console.log('No input to send');
       }
     });
   }
