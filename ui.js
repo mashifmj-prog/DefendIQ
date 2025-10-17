@@ -137,31 +137,38 @@ function renderSupportMode() {
       <p>I'm here to assist with AI-powered guidance, affirmations, and tips. Ask anything!</p>
       <div class="affirmation" id="supportAffirmation"></div>
       <div class="learning-tip" id="supportTip"></div>
+      <div class="support-chat-history" id="chatHistory"></div>
       <textarea id="supportInput" placeholder="Ask about phishing, get tips, or share your thoughts..."></textarea>
       <button id="sendSupport">Send</button>
-      <div id="supportOutput" class="support-output"></div>
     </div>`;
   updateAffirmation();
   startSupportTips();
   const sendButton = document.getElementById('sendSupport');
-  if (sendButton) {
+  const supportInput = document.getElementById('supportInput');
+  const chatHistory = document.getElementById('chatHistory');
+  if (sendButton && supportInput && chatHistory) {
+    supportInput.addEventListener('input', (e) => {
+      const typingPreview = document.getElementById('typingPreview') || document.createElement('div');
+      typingPreview.id = 'typingPreview';
+      typingPreview.className = 'support-chat-message user typing';
+      typingPreview.textContent = e.target.value;
+      chatHistory.appendChild(typingPreview);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    });
     sendButton.addEventListener('click', () => {
-      const input = document.getElementById('supportInput');
-      const output = document.getElementById('supportOutput');
-      if (input && output && input.value.trim()) {
-        console.log('Button clicked, processing:', input.value);
-        try {
-          handleSupportInput();
-        } catch (error) {
-          console.error('Error in handleSupportInput:', error);
-          output.innerHTML += '<p><strong>AI:</strong> Oops, something went wrong. Try again!</p>';
-        }
-      } else {
-        console.log('Input or output missing, or input is empty');
+      const inputValue = supportInput.value.trim();
+      if (inputValue) {
+        const typingPreview = document.getElementById('typingPreview');
+        if (typingPreview) typingPreview.remove();
+        const userMessage = document.createElement('div');
+        userMessage.className = 'support-chat-message user';
+        userMessage.textContent = inputValue;
+        chatHistory.appendChild(userMessage);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        handleSupportInput(inputValue, chatHistory);
+        supportInput.value = '';
       }
     });
-  } else {
-    console.log('Send button not found');
   }
 }
 
