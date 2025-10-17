@@ -143,7 +143,8 @@ function renderSupportMode() {
     </div>`;
   updateAffirmation();
   startSupportTips();
-  document.getElementById('sendSupport')?.addEventListener('click', handleSupportInput);
+  const sendButton = document.getElementById('sendSupport');
+  if (sendButton) sendButton.addEventListener('click', handleSupportInput); // Ensure event listener is attached
 }
 
 function updateAffirmation() {
