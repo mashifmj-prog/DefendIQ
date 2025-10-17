@@ -43,29 +43,29 @@ function saveModuleProgress(progress) {
   }, 100));
 }
 
-function handleSupportInput() {
-  console.log('Processing input');
-  const input = document.getElementById('supportInput').value.trim().toLowerCase();
-  const output = document.getElementById('supportOutput');
-  if (!output) return;
+function handleSupportInput(inputValue, chatHistory) {
+  console.log('Processing:', inputValue);
+  if (!chatHistory) return;
   let response = "Thanks for your message! I'm here to help. Based on your progress, consider these modules.";
 
   const incompleteModules = Object.keys(stats.moduleProgress).filter(key => !stats.moduleProgress[key].completed);
   const suggestedModule = incompleteModules.length ? MODULES[incompleteModules[0]].title : "all completed modules for review";
 
-  if (input.includes('phishing')) {
+  if (inputValue.includes('phishing')) {
     response = `Great question! Phishing involves fake emails. You’re ${stats.moduleProgress['phishing']?.completionPercentage || 0}% done with 'Phishing Simulation'. Try it or move to '${suggestedModule}' next!`;
-  } else if (input.includes('help') || input.includes('support')) {
+  } else if (inputValue.includes('help') || inputValue.includes('support')) {
     response = `I'm here for you! You’ve completed ${stats.completion}% overall. Try '${suggestedModule}' for your next step. Need tips?`;
-  } else if (input.includes('confident') || input.includes('struggling')) {
+  } else if (inputValue.includes('confident') || inputValue.includes('struggling')) {
     response = `You’re doing great! You’re at ${stats.completion}% completion. Start or revisit '${suggestedModule}' to build confidence.`;
-  } else if (input.includes('progress')) {
+  } else if (inputValue.includes('progress')) {
     response = `Your progress: ${stats.completion}% complete, ${stats.points} points, ${stats.streak}-day streak. Focus on '${suggestedModule}'!`;
   } else {
     response = `Interesting! You’re at ${stats.completion}% completion. Try '${suggestedModule}' or ask about specific topics!`;
   }
 
-  output.innerHTML += `<p><strong>AI:</strong> ${response}</p>`;
-  document.getElementById('supportInput').value = '';
-  updateAffirmation();
+  const aiMessage = document.createElement('div');
+  aiMessage.className = 'support-chat-message ai';
+  aiMessage.textContent = response;
+  chatHistory.appendChild(aiMessage);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
 }
