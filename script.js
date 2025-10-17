@@ -1,6 +1,7 @@
 /* DefendIQ interactive script.js
    - Optimized for performance with debounced chart rendering, reduced confetti, cached data
    - Persists state for refresh to preserve selections and current view
+   - Enhanced error handling for questions.json with retry and fallback
    - Handles landing -> dashboard with graphs, module selection, quizzes, certificates
    - Uses Web Share API, server-side persistence, random learning tips
 */
@@ -104,7 +105,6 @@ async function saveModuleProgress(keyProgress) {
 /* Update UI */
 function refreshStatsUI() {
   streakDOM.textContent = stats.streak;
-  pointsDOM.textContent = stats.streak;
   pointsDOM.textContent = stats.points;
   completionDOM.textContent = stats.completion + '%';
   badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
@@ -140,21 +140,47 @@ async function restoreState() {
     } else if (current.mode === 'certificate' && current.certificate) {
       showCertificate(current.certificate.moduleName, current.certificate.timestamp, current.certificate.hash);
     }
+  } else {
+    // Fallback to safe state if MODULES not loaded or state invalid
+    current = { key: null, idx: 0, mode: 'selection', certificate: null };
+    saveState();
+    closeModule();
   }
 }
 
-/* ---------- Load Questions from JSON ---------- */
-async function loadQuestions() {
+/* ---------- Load Questions from JSON with Retry ---------- */
+async function loadQuestions(attempt = 1, maxAttempts = 3) {
   try {
     if (Object.keys(MODULES).length) return; // Cache questions
-    const response = await fetch('questions.json');
-    MODULES = await response.json();
+    const response = await fetch('questions.json', { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}, URL: ${response.url}`);
+    }
+    const text = await response.text();
+    try {
+      MODULES = JSON.parse(text);
+    } catch (parseErr) {
+      throw new Error(`Invalid JSON in questions.json: ${parseErr.message}`);
+    }
     await restoreState();
     debounceRenderGlobalProgressChart();
     startLearningTips();
   } catch (err) {
-    console.error('Failed to load questions:', err);
-    alert('Error loading questions. Please try again later.');
+    console.error(`Attempt ${attempt} failed to load questions.json:`, err.message);
+    if (attempt < maxAttempts) {
+      console.log(`Retrying... (${attempt + 1}/${maxAttempts})`);
+      return setTimeout(() => loadQuestions(attempt + 1, maxAttempts), 1000);
+    }
+    console.error('All attempts to load questions.json failed. Check file path, JSON validity, or network.');
+    console.error('Expected file: https://mashifmj-prog.github.io/defendiq/questions.json');
+    alert('Error loading questions. Please check your connection or try again later.');
+    // Fallback UI
+    MODULES = {};
+    current = { key: null, idx: 0, mode: 'selection', certificate: null };
+    saveState();
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    closeModule();
   }
 }
 loadQuestions();
@@ -301,6 +327,11 @@ function createModuleTitleElem(title) {
 
 /* ---------- Render Module Selection ---------- */
 async function renderModuleSelection() {
+  if (!Object.keys(MODULES).length) {
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    return;
+  }
   current.mode = 'selection';
   saveState();
   const mod = MODULES[current.key];
@@ -358,6 +389,11 @@ async function renderModuleSelection() {
 
 /* ---------- Render Learning Material ---------- */
 function renderLearningMaterial() {
+  if (!Object.keys(MODULES).length || !MODULES[current.key]) {
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    return;
+  }
   current.mode = 'material';
   saveState();
   const mod = MODULES[current.key];
@@ -378,9 +414,13 @@ function renderLearningMaterial() {
 
 /* ---------- Render Question ---------- */
 async function renderQuestion() {
+  if (!Object.keys(MODULES).length || !MODULES[current.key]) {
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    return;
+  }
   current.mode = 'quiz';
   saveState();
-  if (!current.key) return;
   const mod = MODULES[current.key];
   const qObj = mod.questions[current.idx];
   const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
