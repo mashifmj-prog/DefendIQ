@@ -57,7 +57,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   color: var(--text-white);
 }
 .landing-box { 
-  background: rgba(255,255,255,0.1); 
+  background: rgba(255,255,255,0.1); /* Slightly more opaque for contrast */
   padding: 48px 56px; 
   border-radius: 12px; 
   text-align: center; 
@@ -71,7 +71,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   margin-bottom: 22px; 
   font-size: 18px; 
   font-weight: 600; 
-  text-shadow: 0 0 5px rgba(0,0,0,0.5); 
+  text-shadow: 0 0 5px rgba(0,0,0,0.5); /* Shadow for readability */
 }
 .button-group {
   display: flex;
@@ -274,10 +274,6 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   .stats-right { flex-wrap: wrap; gap: 10px; }
   .certificate-card { padding: 16px; }
   .logo-top-left { font-size: 64px; top: 25px; left: 10px; padding: 8px; }
-  .landing-box { margin-top: 70px; padding: 24px; }
-  .animated-text { font-size: 16px; }
-  .button-group { flex-direction: column; gap: 10px; }
-  .start-btn { padding: 10px 18px; }
+  .landing-box { margin-top: 70px; }
   .support-form, .support-message { padding: 15px; }
-  .support-chat-history { max-height: 200px; }
 }
