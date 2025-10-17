@@ -4,7 +4,7 @@
    - Enhanced error handling for questions.json with retry and fallback
    - Handles landing -> training/support modes, quizzes, certificates, feedback
    - Support mode with signup and tailored emotional support
-   - Enhanced feedback with rating, categories, points, confetti
+   - Fixed feedback modal to prevent auto-opening, ensure proper close
 */
 
 const trainingBtn = document.getElementById('trainingBtn');
@@ -126,6 +126,10 @@ function refreshStatsUI() {
 /* ---------- Feedback Modal ---------- */
 let selectedRating = 0;
 function initializeFeedback() {
+  console.log('Initializing feedback modal');
+  // Ensure modal is hidden on load
+  feedbackModal.classList.add('hidden');
+  
   document.querySelectorAll('.star').forEach(star => {
     star.addEventListener('click', () => {
       selectedRating = Number(star.dataset.value);
@@ -163,6 +167,7 @@ function initializeFeedback() {
   });
 
   cancelFeedbackBtn.addEventListener('click', () => {
+    console.log('Feedback modal canceled');
     feedbackText.value = '';
     selectedRating = 0;
     document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
@@ -277,6 +282,7 @@ trainingBtn.addEventListener('click', () => {
   app.classList.remove('hidden');
   quizDropdown.classList.remove('hidden');
   statsArea.classList.remove('hidden');
+  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   closeModule();
   saveState();
 });
@@ -288,6 +294,7 @@ supportBtn.addEventListener('click', () => {
   app.classList.remove('hidden');
   quizDropdown.classList.add('hidden');
   statsArea.classList.add('hidden');
+  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   document.querySelector('.module-title').textContent = 'Support Mode';
   renderSupportContent();
   saveState();
@@ -306,7 +313,9 @@ function saveState() {
 }
 
 async function restoreState() {
+  console.log('Restoring state');
   const savedState = JSON.parse(localStorage.getItem('defendiq_state') || '{}');
+  feedbackModal.classList.add('hidden'); // Force modal hidden on restore
   if (savedState.currentMode) {
     currentMode = savedState.currentMode;
     current = savedState.current || { key: null, idx: 0, mode: 'selection', certificate: null };
@@ -454,8 +463,10 @@ function renderGlobalProgressChart() {
 
 /* ---------- Home Button ---------- */
 homeBtn.addEventListener('click', () => {
+  console.log('Home button clicked');
   app.classList.add('hidden');
   landing.classList.remove('hidden');
+  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   currentMode = 'landing';
   current = { key: null, idx: 0, mode: 'selection', certificate: null };
   saveState();
@@ -463,6 +474,8 @@ homeBtn.addEventListener('click', () => {
 
 /* ---------- Refresh Button ---------- */
 refreshBtn.addEventListener('click', () => {
+  console.log('Refresh button clicked');
+  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   if (currentMode === 'training') {
     if (current.mode === 'selection') {
       renderModuleSelection();
@@ -484,6 +497,7 @@ moduleSelect.addEventListener('focus', () => watermark.style.opacity = 0.2);
 moduleSelect.addEventListener('blur', () => watermark.style.opacity = 1);
 
 moduleSelect.addEventListener('change', () => {
+  console.log('Module select changed:', moduleSelect.value);
   const v = moduleSelect.value;
   if (!v || v === "") return;
   if (v === 'exit') {
@@ -496,6 +510,8 @@ moduleSelect.addEventListener('change', () => {
 
 /* Close module button */
 closeModuleBtn.addEventListener('click', () => {
+  console.log('Close module button clicked');
+  feedbackModal.classList.add('hidden'); // Ensure modal is hidden
   if (currentMode === 'training') {
     moduleSelect.selectedIndex = 0;
     closeModule();
@@ -734,29 +750,23 @@ async function onOptionClicked(ev) {
 
 /* ---------- Optimized Confetti Animation ---------- */
 function triggerConfetti(isCorrect) {
+  const confetti = new JSConfetti();
   if (isCorrect) {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.5 },
-      colors: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff'],
-      shapes: ['circle', 'square'],
-      scalar: 1.2,
-      drift: 0.2,
-      disableForReducedMotion: true
+    confetti.addConfetti({
+      confettiNumber: 100,
+      confettiColors: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff'],
+      confettiRadius: 5,
+      confettiSpeed: 5
     });
-    setTimeout(() => confetti.reset(), 1000);
+    setTimeout(() => confetti.clearCanvas(), 1000);
   } else {
-    confetti({
-      particleCount: 30,
-      spread: 20,
-      origin: { y: 0.5 },
-      colors: ['#c62828'],
-      shapes: ['circle'],
-      scalar: 0.7,
-      disableForReducedMotion: true
+    confetti.addConfetti({
+      confettiNumber: 30,
+      confettiColors: ['#c62828'],
+      confettiRadius: 3,
+      confettiSpeed: 3
     });
-    setTimeout(() => confetti.reset(), 1000);
+    setTimeout(() => confetti.clearCanvas(), 1000);
   }
 }
 
