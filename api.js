@@ -46,14 +46,22 @@ function saveModuleProgress(progress) {
 function handleSupportInput() {
   const input = document.getElementById('supportInput').value.trim().toLowerCase();
   const output = document.getElementById('supportOutput');
-  let response = "Thanks for your message! I'm here to help.";
+  let response = "Thanks for your message! I'm here to help. Based on your progress, consider these modules.";
+
+  // Incorporate progress analytics into responses
+  const incompleteModules = Object.keys(stats.moduleProgress).filter(key => !stats.moduleProgress[key].completed);
+  const suggestedModule = incompleteModules.length ? MODULES[incompleteModules[0]].title : "all completed modules for review";
 
   if (input.includes('phishing')) {
-    response = "Great question! Phishing involves fake emails. Try the 'Phishing Simulation' module for practice. Tip: Look for spelling errors or odd links.";
+    response = `Great question! Phishing involves fake emails. You’re ${stats.moduleProgress['phishing']?.completionPercentage || 0}% done with 'Phishing Simulation'. Try it or move to '${suggestedModule}' next!`;
   } else if (input.includes('help') || input.includes('support')) {
-    response = "I'm here for you! Let me know what you need—e.g., module tips or encouragement. How about starting with 'Phishing Simulation'?";
+    response = `I'm here for you! You’ve completed ${stats.completion}% overall. Try '${suggestedModule}' for your next step. Need tips?`;
   } else if (input.includes('confident') || input.includes('struggling')) {
-    response = "You're doing great! It’s normal to feel that way. Start with an easy module like 'Phishing Simulation' to build confidence.";
+    response = `You’re doing great! You’re at ${stats.completion}% completion. Start or revisit '${suggestedModule}' to build confidence.`;
+  } else if (input.includes('progress')) {
+    response = `Your progress: ${stats.completion}% complete, ${stats.points} points, ${stats.streak}-day streak. Focus on '${suggestedModule}'!`;
+  } else {
+    response = `Interesting! You’re at ${stats.completion}% completion. Try '${suggestedModule}' or ask about specific topics!`;
   }
 
   output.innerHTML += `<p><strong>AI:</strong> ${response}</p>`;
