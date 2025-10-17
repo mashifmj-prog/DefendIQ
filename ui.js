@@ -1,95 +1,171 @@
-/* UI rendering and utilities */
-const landing = document.getElementById('landing');
-const app = document.getElementById('app');
-const moduleSelect = document.getElementById('moduleSelect');
 const moduleBody = document.getElementById('moduleBody');
-const streakDOM = document.getElementById('streak');
-const pointsDOM = document.getElementById('points');
-const completionDOM = document.getElementById('completion');
-const badgesDOM = document.getElementById('badges');
-const learningTipsDOM = document.getElementById('learningTips');
-const globalAffirmationDOM = document.getElementById('globalAffirmation');
-const quizDropdown = document.querySelector('.quiz-dropdown');
-const statsArea = document.querySelector('.stats-area');
+const moduleSelect = document.createElement('select');
+moduleSelect.className = 'quiz-dropdown hidden';
+const selectWrap = document.createElement('div');
+selectWrap.className = 'select-wrap';
+selectWrap.appendChild(moduleSelect);
+document.querySelector('.module-header').prepend(selectWrap);
 
-function refreshStatsUI() {
-  streakDOM.textContent = stats.streak;
-  pointsDOM.textContent = stats.points;
-  completionDOM.textContent = stats.completion + '%';
-  badgesDOM.innerHTML = stats.badges.length ? stats.badges.map(b => `<span class="badge flash">${b}</span>`).join(' ') : 'None';
-  if (getMode() === 'training') debounceRenderGlobalProgressChart();
+function renderTrainingDashboard() {
+  if (!Object.keys(MODULES).length) {
+    moduleBody.innerHTML = '<p>Loading modules...</p>';
+    return;
+  }
+  current.mode = 'selection';
+  saveState();
+  document.querySelector('.module-title').textContent = 'Select a module to begin';
+  moduleBody.innerHTML = `
+    <div class="training-dashboard">
+      <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
+      <div class="affirmation" id="globalAffirmation"></div>
+      <div class="module-selection">
+        <p>Select a module from the dropdown above to view materials and quizzes.</p>
+      </div>
+    </div>`;
+  moduleSelect.classList.remove('hidden');
+  renderGlobalProgressChart();
+  populateModuleDropdown();
 }
 
-function sanitize(htmlStr) {
-  const div = document.createElement('div');
-  div.textContent = htmlStr;
-  return div.innerHTML;
-}
+function renderModuleSelection() {
+  if (!Object.keys(MODULES).length) {
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    return;
+  }
+  current.mode = 'selection';
+  saveState();
+  const mod = MODULES[current.key];
+  if (!mod) {
+    closeModule();
+    return;
+  }
+  const prog = keyProgressCache[current.key] || { answered: [], correct: [] };
+  const completion = (prog.answered.length / mod.questions.length) * 100;
 
-const LEARNING_TIPS = [
-  "Always verify email senders before clicking links.",
-  "Use strong, unique passwords for every account.",
-  "Enable multi-factor authentication for extra security.",
-  "Report suspicious activity to IT immediately.",
-  "Stay cautious of urgent or unusual requests.",
-  "Regular training boosts your cybersecurity skills."
-];
+  moduleBody.innerHTML = `
+    <div class="module-selection">
+      <canvas id="moduleProgressChart" style="max-width: 300px; margin: 20px auto;"></canvas>
+      <div class="affirmation" id="moduleAffirmation"></div>
+      <button id="learningMaterialBtn" class="action-btn">Learning Material</button>
+      <button id="takeQuizBtn" class="action-btn">Take a Quiz</button>
+    </div>`;
 
-function startLearningTips() {
-  let tipIndex = 0;
-  learningTipsDOM.textContent = LEARNING_TIPS[tipIndex];
-  setInterval(() => {
-    tipIndex = (tipIndex + 1) % LEARNING_TIPS.length;
-    learningTipsDOM.classList.add('fade-out');
-    setTimeout(() => {
-      learningTipsDOM.textContent = LEARNING_TIPS[tipIndex];
-      learningTipsDOM.classList.remove('fade-out');
-    }, 500);
-  }, 5000);
-}
-
-let chartInstance = null;
-let chartRenderTimeout = null;
-function debounceRenderGlobalProgressChart() {
-  if (chartRenderTimeout) clearTimeout(chartRenderTimeout);
-  chartRenderTimeout = setTimeout(() => {
-    renderGlobalProgressChart();
-  }, 100);
-}
-
-function renderGlobalProgressChart() {
-  if (!Object.keys(MODULES).length || getMode() !== 'training') return;
-  const ctx = document.getElementById('globalProgressChart').getContext('2d');
+  const ctx = document.getElementById('moduleProgressChart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
-  const data = Object.keys(MODULES).map(key => {
-    const prog = keyProgressCache[key] || { answered: [] };
-    return prog.answered.length / MODULES[key].questions.length * 100;
-  });
-
-  const affirmations = [
-    stats.completion < 30 ? "You're just starting, but you're on the right path! Keep going!" :
-    stats.completion < 60 ? "Great progress! You're becoming a cybersecurity pro!" :
-    stats.completion < 100 ? "Almost there! Your skills are shining!" :
-    "Congratulations! You're a cybersecurity champion!"
-  ];
-  globalAffirmationDOM.textContent = affirmations[0];
-
   chartInstance = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: Object.keys(MODULES).map(key => MODULES[key].title),
+      labels: ['Module Progress'],
       datasets: [{
-        label: 'Module Completion (%)',
-        data: data,
-        backgroundColor: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff', '#ff7a7a', '#ffd56b', '#8affc1'],
-        borderColor: ['#ffffff'],
+        label: 'Completion (%)',
+        data: [completion],
+        backgroundColor: '#8affc1',
+        borderColor: '#ffffff',
         borderWidth: 1
       }]
     },
     options: {
       animation: false,
       scales: { y: { beginAtZero: true, max: 100 } },
-      plugins: { legend: { display: false }, title: { display: true, text: 'Your Overall Progress', color: '#ffffff' } }
+      plugins: { legend: { display: false }, title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' } }
+    }
+  });
+
+  const affirmations = [
+    completion < 30 ? "You're starting strong! Dive into this module!" :
+    completion < 60 ? "You're making great progress! Keep it up!" :
+    completion < 100 ? "Almost done! You're killing it!" :
+    "Module complete! You're a cybersecurity star!"
+  ];
+  document.getElementById('moduleAffirmation').textContent = affirmations[0];
+
+  document.getElementById('learningMaterialBtn').addEventListener('click', () => {
+    current.mode = 'material';
+    saveState();
+    renderLearningMaterial();
+  });
+  document.getElementById('takeQuizBtn').addEventListener('click', () => {
+    current.mode = 'quiz';
+    saveState();
+    renderQuestion();
+  });
+}
+
+function renderLearningMaterial() {
+  if (!Object.keys(MODULES).length || !MODULES[current.key]) {
+    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
+    return;
+  }
+  current.mode = 'material';
+  saveState();
+  const mod = MODULES[current.key];
+  moduleBody.innerHTML = `
+    <div class="learning-material">
+      <h3>Learning Points for ${mod.title}</h3>
+      <ul>
+        ${mod.points.map(point => `<li>${sanitize(point)}</li>`).join('')}
+      </ul>
+      <button id="backToSelectionBtn" class="action-btn">Back to Module</button>
+    </div>`;
+  document.getElementById('backToSelectionBtn').addEventListener('click', () => {
+    current.mode = 'selection';
+    saveState();
+    renderModuleSelection();
+  });
+}
+
+function renderSupportMode() {
+  const moduleBody = document.getElementById('moduleBody');
+  moduleBody.innerHTML = `
+    <div class="support-mode">
+      <h2>Welcome to Support Mode!</h2>
+      <p>Get AI assistance, affirmations, and learning tips.</p>
+      <textarea id="supportInput" placeholder="Ask a question or type a message..."></textarea>
+      <button id="sendSupport">Send</button>
+      <div id="supportOutput"></div>
+    </div>`;
+  document.getElementById('sendSupport')?.addEventListener('click', () => {
+    const input = document.getElementById('supportInput').value;
+    document.getElementById('supportOutput').textContent = `You said: ${input}`;
+  });
+}
+
+function populateModuleDropdown() {
+  moduleSelect.innerHTML = '<option value="">Select a Module</option>';
+  Object.keys(MODULES).forEach(key => {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = MODULES[key].title;
+    moduleSelect.appendChild(option);
+  });
+  moduleSelect.addEventListener('change', (e) => {
+    current.key = e.target.value;
+    saveState();
+    renderModuleSelection();
+  });
+}
+
+function renderGlobalProgressChart() {
+  const totalModules = Object.keys(MODULES).length;
+  const completedModules = stats.badges.length;
+  const ctx = document.getElementById('globalProgressChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Remaining'],
+      datasets: [{
+        data: [completedModules, totalModules - completedModules],
+        backgroundColor: ['#8affc1', '#666'],
+        borderColor: '#ffffff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      animation: false,
+      plugins: { legend: { position: 'bottom', labels: { color: '#ffffff' } }, title: { display: true, text: 'Global Progress', color: '#ffffff' } }
     }
   });
 }
