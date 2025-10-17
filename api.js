@@ -46,9 +46,9 @@ function saveModuleProgress(progress) {
 function handleSupportInput() {
   const input = document.getElementById('supportInput').value.trim().toLowerCase();
   const output = document.getElementById('supportOutput');
+  if (!output) return; // Safety check
   let response = "Thanks for your message! I'm here to help. Based on your progress, consider these modules.";
 
-  // Incorporate progress analytics into responses
   const incompleteModules = Object.keys(stats.moduleProgress).filter(key => !stats.moduleProgress[key].completed);
   const suggestedModule = incompleteModules.length ? MODULES[incompleteModules[0]].title : "all completed modules for review";
 
