@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🛡️ DefendIQ</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/js-confetti@0.12.0/dist/js-confetti.browser.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@jspdf/jsPDF@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
 </head>
 <body>
@@ -16,16 +16,16 @@
     <div class="logo-top-left" aria-hidden="true">🛡️</div>
     <div class="landing-box">
       <h1>DefendIQ</h1>
-      <p class="animated-text">Defend with Confidence!</p>
+      <p class="animated-text">Defend with Confidence, Grow with Ease!</p>
       <button id="trainingBtn" class="start-btn">Training Mode</button>
       <button id="supportBtn" class="start-btn">Support Mode</button>
     </div>
   </section>
-  <section id="app" class="app hidden">
+  <section id="app" class="hidden">
     <div class="nav-top">
       <div class="brand">DefendIQ</div>
       <div class="nav-right">
-        <button id="feedbackBtn" class="feedback-btn" disabled>Feedback</button>
+        <button id="feedbackBtn" class="feedback-btn">Feedback</button>
         <button id="homeBtn" class="home-btn">Home</button>
         <button id="refreshBtn" class="refresh-btn">Refresh</button>
         <div class="quiz-dropdown hidden">
