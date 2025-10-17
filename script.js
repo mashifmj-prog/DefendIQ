@@ -5,8 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Landing page buttons
   const trainingBtn = document.getElementById('trainingBtn');
   const supportBtn = document.getElementById('supportBtn');
-  if (trainingBtn) trainingBtn.addEventListener('click', () => enterTrainingMode());
-  if (supportBtn) supportBtn.addEventListener('click', () => enterSupportMode());
+  if (trainingBtn) trainingBtn.addEventListener('click', () => {
+    if (!userProfile) showSignupOverlay();
+    else enterTrainingMode();
+  });
+  if (supportBtn) supportBtn.addEventListener('click', () => {
+    if (!userProfile) showSignupOverlay();
+    else enterSupportMode();
+  });
 
   // Sign-up handling
   const signupBtn = document.getElementById('signupBtn');
@@ -15,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = document.getElementById('username').value.trim();
     if (username) {
       saveUserProfile(username);
+      if (currentMode === 'training') enterTrainingMode();
+      else if (currentMode === 'support') enterSupportMode();
     } else {
       alert('Please enter a username.');
     }
@@ -44,10 +52,6 @@ function goHome() {
 }
 
 function enterTrainingMode() {
-  if (!userProfile) {
-    showSignupOverlay();
-    return;
-  }
   currentMode = 'training';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
@@ -59,10 +63,6 @@ function enterTrainingMode() {
 }
 
 function enterSupportMode() {
-  if (!userProfile) {
-    showSignupOverlay();
-    return;
-  }
   currentMode = 'support';
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
