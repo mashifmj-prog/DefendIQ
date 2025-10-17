@@ -17,18 +17,9 @@ function renderTrainingDashboard() {
   moduleBody.innerHTML = `
     <div class="training-dashboard">
       <canvas id="globalProgressChart" style="max-width: 400px; margin: 20px auto;"></canvas>
-      <div class="analytics">
-        <h3>Progress Analytics</h3>
-        <ul>
-          ${Object.keys(stats.moduleProgress).map(key => `
-            <li>${MODULES[key].title}: ${stats.moduleProgress[key].completionPercentage || 0}% complete, ${stats.moduleProgress[key].correctPercentage || 0}% correct</li>
-          `).join('')}
-        </ul>
-      </div>
+      <div class="analytics"><h3>Progress Analytics</h3><ul>${Object.keys(stats.moduleProgress).map(key => `<li>${MODULES[key]?.title || key}: ${stats.moduleProgress[key]?.completionPercentage || 0}% complete, ${stats.moduleProgress[key]?.correctPercentage || 0}% correct</li>`).join('')}</ul></div>
       <div class="affirmation" id="globalAffirmation"></div>
-      <div class="module-selection">
-        <p>Select a module from the dropdown above to view materials and quizzes.</p>
-      </div>
+      <div class="module-selection"><p>Select a module from the dropdown above to view materials and quizzes.</p></div>
     </div>`;
   moduleSelect.classList.remove('hidden');
   renderGlobalProgressChart();
@@ -37,7 +28,7 @@ function renderTrainingDashboard() {
 
 function renderModuleSelection() {
   if (!moduleBody || !Object.keys(MODULES).length) {
-    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    moduleBody.innerHTML = '<p>Unable to load modules. Please refresh.</p><button id="retryBtn" class="action-btn">Retry</button>';
     document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
     return;
   }
@@ -54,10 +45,7 @@ function renderModuleSelection() {
   moduleBody.innerHTML = `
     <div class="module-selection">
       <canvas id="moduleProgressChart" style="max-width: 300px; margin: 20px auto;"></canvas>
-      <div class="analytics">
-        <h4>${mod.title} Analytics</h4>
-        <p>Completion: ${completion}% | Correct: ${prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0}%</p>
-      </div>
+      <div class="analytics"><h4>${mod.title} Analytics</h4><p>Completion: ${completion}% | Correct: ${prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0}%</p></div>
       <div class="affirmation" id="moduleAffirmation"></div>
       <button id="learningMaterialBtn" class="action-btn">Learning Material</button>
       <button id="takeQuizBtn" class="action-btn">Take a Quiz</button>
@@ -68,46 +56,21 @@ function renderModuleSelection() {
   if (ctx) {
     chartInstance = new Chart(ctx, {
       type: 'bar',
-      data: {
-        labels: ['Completion', 'Correct'],
-        datasets: [{
-          data: [completion, prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0],
-          backgroundColor: ['#8affc1', '#9fb4ff'],
-          borderColor: '#ffffff',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        animation: false,
-        scales: { y: { beginAtZero: true, max: 100 } },
-        plugins: { legend: { display: false }, title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' } }
-      }
+      data: { labels: ['Completion', 'Correct'], datasets: [{ data: [completion, prog.answered.length ? Math.round((prog.correct.length / prog.answered.length) * 100) : 0], backgroundColor: ['#8affc1', '#9fb4ff'], borderColor: '#ffffff', borderWidth: 1 }] },
+      options: { animation: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false }, title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' } } }
     });
   }
 
-  const affirmations = [
-    completion < 30 ? "You're starting strong! Dive into this module!" :
-    completion < 60 ? "You're making great progress! Keep it up!" :
-    completion < 100 ? "Almost done! You're killing it!" :
-    "Module complete! You're a cybersecurity star!"
-  ];
+  const affirmations = [completion < 30 ? "You're starting strong!" : completion < 60 ? "Great progress!" : completion < 100 ? "Almost there!" : "Module complete!"];
   document.getElementById('moduleAffirmation')?.textContent = affirmations[0];
 
-  document.getElementById('learningMaterialBtn')?.addEventListener('click', () => {
-    current.mode = 'material';
-    saveState();
-    renderLearningMaterial();
-  });
-  document.getElementById('takeQuizBtn')?.addEventListener('click', () => {
-    current.mode = 'quiz';
-    saveState();
-    renderQuestion();
-  });
+  document.getElementById('learningMaterialBtn')?.addEventListener('click', () => { current.mode = 'material'; saveState(); renderLearningMaterial(); });
+  document.getElementById('takeQuizBtn')?.addEventListener('click', () => { current.mode = 'quiz'; saveState(); renderQuestion(); });
 }
 
 function renderLearningMaterial() {
   if (!moduleBody || !Object.keys(MODULES).length || !MODULES[current.key]) {
-    moduleBody.innerHTML = '<p>Unable to load modules. Please check your connection or refresh the page.</p><button id="retryBtn" class="action-btn">Retry</button>';
+    moduleBody.innerHTML = '<p>Unable to load modules. Please refresh.</p><button id="retryBtn" class="action-btn">Retry</button>';
     document.getElementById('retryBtn')?.addEventListener('click', () => loadQuestions());
     return;
   }
@@ -117,16 +80,10 @@ function renderLearningMaterial() {
   moduleBody.innerHTML = `
     <div class="learning-material">
       <h3>Learning Points for ${mod.title}</h3>
-      <ul>
-        ${mod.points.map(point => `<li>${sanitize(point)}</li>`).join('')}
-      </ul>
+      <ul>${mod.points.map(point => `<li>${sanitize(point)}</li>`).join('')}</ul>
       <button id="backToSelectionBtn" class="action-btn">Back to Module</button>
     </div>`;
-  document.getElementById('backToSelectionBtn')?.addEventListener('click', () => {
-    current.mode = 'selection';
-    saveState();
-    renderModuleSelection();
-  });
+  document.getElementById('backToSelectionBtn')?.addEventListener('click', () => { current.mode = 'selection'; saveState(); renderModuleSelection(); });
 }
 
 function renderSupportMode() {
@@ -138,19 +95,12 @@ function renderSupportMode() {
   moduleBody.innerHTML = `
     <div class="support-mode">
       <h2>${greeting}, ${userName}! (Time: ${currentDate})</h2>
-      <p>I'm here to assist with AI-powered guidance, affirmations, and tips. Ask anything!</p>
+      <p>I'm here to assist with guidance and tips. Ask anything!</p>
       <div class="affirmation" id="supportAffirmation"></div>
-      <div class="learning-tip" id="supportTip"></div>
-      <div class="support-chat-history" id="chatHistory">
-        <div class="support-chat-message ai">Hello! How can I assist you today?</div>
-      </div>
-      <div class="support-chat-input">
-        <textarea id="supportInput" placeholder="Ask about phishing, get tips, or share your thoughts..."></textarea>
-        <button id="sendSupport">Send</button>
-      </div>
+      <div class="support-chat-history" id="chatHistory"><div class="support-chat-message ai">Hello! How can I assist you?</div></div>
+      <div class="support-chat-input"><textarea id="supportInput" placeholder="Ask about phishing or get tips..."></textarea><button id="sendSupport">Send</button></div>
     </div>`;
   updateAffirmation();
-  startSupportTips();
   const sendButton = document.getElementById('sendSupport');
   const supportInput = document.getElementById('supportInput');
   const chatHistory = document.getElementById('chatHistory');
@@ -183,26 +133,19 @@ function renderSupportMode() {
           console.error('Send failed:', error);
           const errorMessage = document.createElement('div');
           errorMessage.className = 'support-chat-message ai';
-          errorMessage.textContent = 'Oops, something went wrong. Try again!';
+          errorMessage.textContent = 'Error occurred. Try again.';
           chatHistory.appendChild(errorMessage);
           chatHistory.scrollTop = chatHistory.scrollHeight;
         }
         supportInput.value = '';
-      } else {
-        console.log('No input to send');
       }
     });
   }
 }
 
 function updateAffirmation() {
-  const affirmations = [
-    "You’ve got this—every step builds your skills!",
-    "Confidence grows with each challenge you tackle.",
-    "Your effort is making the digital world safer!"
-  ];
   const affirmationElement = document.getElementById('supportAffirmation');
-  if (affirmationElement) affirmationElement.textContent = affirmations[Math.floor(Math.random() * affirmations.length)];
+  if (affirmationElement) affirmationElement.textContent = ["Great effort!", "You're on track!", "Keep it up!"][Math.floor(Math.random() * 3)];
 }
 
 function populateModuleDropdown() {
@@ -211,7 +154,7 @@ function populateModuleDropdown() {
   Object.keys(MODULES).forEach(key => {
     const option = document.createElement('option');
     option.value = key;
-    option.textContent = MODULES[key].title;
+    option.textContent = MODULES[key]?.title || key;
     moduleSelect.appendChild(option);
   });
   moduleSelect.addEventListener('change', (e) => {
@@ -229,19 +172,8 @@ function renderGlobalProgressChart() {
   if (ctx) {
     chartInstance = new Chart(ctx, {
       type: 'doughnut',
-      data: {
-        labels: ['Completed', 'Remaining'],
-        datasets: [{
-          data: [completedModules, totalModules - completedModules],
-          backgroundColor: ['#8affc1', '#666'],
-          borderColor: '#ffffff',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        animation: false,
-        plugins: { legend: { position: 'bottom', labels: { color: '#ffffff' } }, title: { display: true, text: 'Global Progress', color: '#ffffff' } }
-      }
+      data: { labels: ['Completed', 'Remaining'], datasets: [{ data: [completedModules, totalModules - completedModules], backgroundColor: ['#8affc1', '#666'], borderColor: '#ffffff', borderWidth: 1 }] },
+      options: { animation: false, plugins: { legend: { position: 'bottom', labels: { color: '#ffffff' } }, title: { display: true, text: 'Global Progress', color: '#ffffff' } } }
     });
   }
 }
