@@ -131,15 +131,20 @@ function renderSupportMode() {
   const moduleBody = document.getElementById('moduleBody');
   const time = new Date().getHours();
   const greeting = time < 12 ? "Good morning!" : time < 17 ? "Good afternoon!" : "Good evening!";
+  const userName = userProfile ? userProfile.username : 'Guest';
   moduleBody.innerHTML = `
     <div class="support-mode">
-      <h2>${greeting} Welcome to Support Mode!</h2>
+      <h2>${greeting}, ${userName}!</h2>
       <p>I'm here to assist with AI-powered guidance, affirmations, and tips. Ask anything!</p>
       <div class="affirmation" id="supportAffirmation"></div>
       <div class="learning-tip" id="supportTip"></div>
-      <div class="support-chat-history" id="chatHistory"></div>
-      <textarea id="supportInput" placeholder="Ask about phishing, get tips, or share your thoughts..."></textarea>
-      <button id="sendSupport">Send</button>
+      <div class="support-chat-history" id="chatHistory">
+        <div class="support-chat-message ai">Hello! How can I assist you today?</div>
+      </div>
+      <div class="support-chat-input">
+        <textarea id="supportInput" placeholder="Ask about phishing, get tips, or share your thoughts..."></textarea>
+        <button id="sendSupport">Send</button>
+      </div>
     </div>`;
   updateAffirmation();
   startSupportTips();
