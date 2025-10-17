@@ -287,8 +287,8 @@ function slideTransition(dir = 'right') {
 function startLearningTips() {
   const tips = [
     "Stay curious—ask questions to deepen your understanding!",
-    "Take breaks to recharge your focus.",
-    "Practice makes perfect—review modules regularly."
+    "Practice spotting phishing emails daily for better skills.",
+    "Take a moment to review a module you’ve completed."
   ];
   let index = 0;
   const tipElement = document.getElementById('learningTips');
@@ -298,7 +298,26 @@ function startLearningTips() {
     void tipElement.offsetWidth; // Trigger reflow
     tipElement.classList.add('fade-out');
     index = (index + 1) % tips.length;
-    setTimeout(showNextTip, 5000);
+    setTimeout(showNextTip, 7000); // Increased to 7 seconds
+  }
+  showNextTip();
+}
+
+function startSupportTips() {
+  const tips = [
+    "Stay curious—ask questions to deepen your understanding!",
+    "Try the Phishing Simulation module for hands-on practice.",
+    "Confidence grows with each question you answer correctly."
+  ];
+  let index = 0;
+  const tipElement = document.getElementById('supportTip');
+  function showNextTip() {
+    tipElement.textContent = tips[index];
+    tipElement.classList.remove('fade-out');
+    void tipElement.offsetWidth;
+    tipElement.classList.add('fade-out');
+    index = (index + 1) % tips.length;
+    setTimeout(showNextTip, 7000);
   }
   showNextTip();
 }
