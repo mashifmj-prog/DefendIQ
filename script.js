@@ -164,28 +164,33 @@ function renderGlobalProgressChart() {
   ];
   globalAffirmationDOM.textContent = affirmations[0];
 
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: Object.keys(MODULES).map(key => MODULES[key].title),
-      datasets: [{
-        label: 'Module Completion (%)',
-        data: data,
-        backgroundColor: ['#ff7a7a', '#ffd56b', '#8affc1', '#9fb4ff', '#ff7a7a', '#ffd56b', '#8affc1'],
-        borderColor: ['#ffffff'],
-        borderWidth: 1
+  ```chartjs
+  {
+    "type": "bar",
+    "data": {
+      "labels": Object.keys(MODULES).map(key => MODULES[key].title),
+      "datasets": [{
+        "label": "Module Completion (%)",
+        "data": data,
+        "backgroundColor": ["#ff7a7a", "#ffd56b", "#8affc1", "#9fb4ff", "#ff7a7a", "#ffd56b", "#8affc1"],
+        "borderColor": ["#ffffff"],
+        "borderWidth": 1
       }]
     },
-    options: {
-      scales: {
-        y: { beginAtZero: true, max: 100 },
+    "options": {
+      "scales": {
+        "y": {
+          "beginAtZero": true,
+          "max": 100
+        }
       },
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Your Overall Progress', color: '#ffffff' }
+      "plugins": {
+        "legend": { "display": false },
+        "title": { "display": true, "text": "Your Overall Progress", "color": "#ffffff" }
       }
     }
-  });
+  }
+  ```
 }
 
 /* ---------- State for Current Module ---------- */
@@ -263,28 +268,33 @@ async function renderModuleSelection() {
     </div>`;
 
   const ctx = document.getElementById('moduleProgressChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Module Progress'],
-      datasets: [{
-        label: 'Completion (%)',
-        data: [completion],
-        backgroundColor: '#8affc1',
-        borderColor: '#ffffff',
-        borderWidth: 1
+  ```chartjs
+  {
+    "type": "bar",
+    "data": {
+      "labels": ["Module Progress"],
+      "datasets": [{
+        "label": "Completion (%)",
+        "data": [completion],
+        "backgroundColor": "#8affc1",
+        "borderColor": "#ffffff",
+        "borderWidth": 1
       }]
     },
-    options: {
-      scales: {
-        y: { beginAtZero: true, max: 100 },
+    "options": {
+      "scales": {
+        "y": {
+          "beginAtZero": true,
+          "max": 100
+        }
       },
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: `${mod.title} Progress`, color: '#ffffff' }
+      "plugins": {
+        "legend": { "display": false },
+        "title": { "display": true, "text": "${mod.title} Progress", "color": "#ffffff" }
       }
     }
-  });
+  }
+  ```
 
   const affirmations = [
     completion < 30 ? "You're starting strong! Dive into this module!" :
@@ -431,7 +441,7 @@ async function onOptionClicked(ev) {
   const nextBtn = moduleBody.querySelector('.next-btn');
   if (nextBtn) nextBtn.disabled = false;
 
-  updateModuleCompletionStats();
+  await updateModuleCompletionStats();
   await saveStats();
   animatePoints();
 }
