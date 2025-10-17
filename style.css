@@ -27,11 +27,11 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   position: absolute; 
   top: 30px; 
   left: 15px; 
-  font-size: 100px; 
+  font-size: 80px; 
   line-height: 1; 
   z-index: 1000; 
   color: var(--text-white); 
-  background: rgba(0, 0, 0, 0.3); 
+  background: rgba(211, 211, 211, 0.7); /* Light gray background */
   padding: 10px; 
   border-radius: 10px; 
   border: 2px solid var(--accent);
@@ -39,7 +39,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
 .logo-top-left::after {
   content: 'DefendIQ Logo'; /* Fallback text if emoji fails */
   display: none; /* Hidden unless emoji fails */
-  font-size: 24px;
+  font-size: 20px; /* Adjusted for smaller logo */
   color: var(--text-white);
 }
 .landing-box { 
@@ -48,7 +48,7 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   border-radius: 12px; 
   text-align: center; 
   backdrop-filter: blur(4px); 
-  margin-top: 100px; /* Increased to prevent overlap with larger logo */
+  margin-top: 80px; /* Adjusted for smaller logo */
 }
 .landing-box h1 { font-size: 34px; margin-bottom: 12px; }
 .landing-box p { color: var(--muted); margin-bottom: 22px; font-size: 18px; }
@@ -164,6 +164,6 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
   .nav-right { gap: 6px; }
   .stats-right { flex-wrap: wrap; gap: 10px; }
   .certificate-card { padding: 16px; }
-  .logo-top-left { font-size: 80px; top: 25px; left: 10px; padding: 8px; }
-  .landing-box { margin-top: 90px; }
+  .logo-top-left { font-size: 64px; top: 25px; left: 10px; padding: 8px; }
+  .landing-box { margin-top: 70px; }
 }
