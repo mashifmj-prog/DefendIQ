@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, initializing...');
   restoreState();
-  loadQuestions();
+  loadQuestions().then(() => {
+    console.log('Questions loaded, checking mode...');
+    if (currentMode === 'training') enterTrainingMode();
+    else if (currentMode === 'support') enterSupportMode();
+    else if (!userProfile) showSignupOverlay();
+  }).catch(error => console.error('Load failed:', error));
 
   // Landing page buttons
   const trainingBtn = document.getElementById('trainingBtn');
@@ -23,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveUserProfile(username);
       if (currentMode === 'training') enterTrainingMode();
       else if (currentMode === 'support') enterSupportMode();
+      else enterSupportMode(); // Default to support if no mode set
     } else {
       alert('Please enter a username.');
     }
