@@ -14,9 +14,42 @@
 body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-serif; background: #111; }
 
 /* Landing */
-.landing { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--landing-bg); color: var(--text-white); position: relative; }
-.logo-top-left { position: absolute; top: 20px; left: 20px; font-size: 32px; line-height: 1; }
-.landing-box { background: rgba(255,255,255,0.03); padding: 48px 56px; border-radius: 12px; text-align: center; backdrop-filter: blur(4px); }
+.landing { 
+  min-height: 100vh; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background: var(--landing-bg); 
+  color: var(--text-white); 
+  position: relative; 
+}
+.logo-top-left { 
+  position: absolute; 
+  top: 30px; 
+  left: 15px; 
+  font-size: 100px; 
+  line-height: 1; 
+  z-index: 1000; 
+  color: var(--text-white); 
+  background: rgba(0, 0, 0, 0.3); 
+  padding: 10px; 
+  border-radius: 10px; 
+  border: 2px solid var(--accent);
+}
+.logo-top-left::after {
+  content: 'DefendIQ Logo'; /* Fallback text if emoji fails */
+  display: none; /* Hidden unless emoji fails */
+  font-size: 24px;
+  color: var(--text-white);
+}
+.landing-box { 
+  background: rgba(255,255,255,0.03); 
+  padding: 48px 56px; 
+  border-radius: 12px; 
+  text-align: center; 
+  backdrop-filter: blur(4px); 
+  margin-top: 100px; /* Increased to prevent overlap with larger logo */
+}
 .landing-box h1 { font-size: 34px; margin-bottom: 12px; }
 .landing-box p { color: var(--muted); margin-bottom: 22px; font-size: 18px; }
 .start-btn { background: white; color: black; border: 0; padding: 12px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; }
@@ -123,4 +156,14 @@ body, html { height: 100%; font-family: Inter, Segoe UI, Helvetica, Arial, sans-
 .cert-signature { color: #dbc88e; margin-top: 10px; font-style: italic; }
 .cert-qr { margin-top: 18px; width: 100px; height: 100px; }
 .cert-logo { margin-top: 18px; padding: 12px; border-radius: 50%; border: 2px solid #c59b00; color: #c59b00; font-weight: 900; width: 140px; text-align: center; margin-left: auto; }
-.cert-actions { margin-top: 20px; display: flex; gap: 10px; justify
+.cert-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+.cert-actions button { padding: 8px 12px; border-radius: 6px; border: 0; cursor: pointer; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .nav-right { gap: 6px; }
+  .stats-right { flex-wrap: wrap; gap: 10px; }
+  .certificate-card { padding: 16px; }
+  .logo-top-left { font-size: 80px; top: 25px; left: 10px; padding: 8px; }
+  .landing-box { margin-top: 90px; }
+}
