@@ -118,18 +118,31 @@ function renderLearningMaterial() {
 
 function renderSupportMode() {
   const moduleBody = document.getElementById('moduleBody');
+  const time = new Date().getHours();
+  const greeting = time < 12 ? "Good morning!" : time < 17 ? "Good afternoon!" : "Good evening!";
   moduleBody.innerHTML = `
     <div class="support-mode">
-      <h2>Welcome to Support Mode!</h2>
-      <p>Get AI assistance, affirmations, and learning tips.</p>
-      <textarea id="supportInput" placeholder="Ask a question or type a message..."></textarea>
+      <h2>${greeting} Welcome to Support Mode!</h2>
+      <p>I'm here to assist with AI-powered guidance, affirmations, and tips. Ask anything!</p>
+      <div class="affirmation" id="supportAffirmation"></div>
+      <div class="learning-tip" id="supportTip"></div>
+      <textarea id="supportInput" placeholder="Ask about phishing, get tips, or share your thoughts..."></textarea>
       <button id="sendSupport">Send</button>
-      <div id="supportOutput"></div>
+      <div id="supportOutput" class="support-output"></div>
     </div>`;
-  document.getElementById('sendSupport')?.addEventListener('click', () => {
-    const input = document.getElementById('supportInput').value;
-    document.getElementById('supportOutput').textContent = `You said: ${input}`;
-  });
+  updateAffirmation();
+  startSupportTips();
+  document.getElementById('sendSupport')?.addEventListener('click', handleSupportInput);
+}
+
+function updateAffirmation() {
+  const affirmations = [
+    "You’ve got this—every step builds your skills!",
+    "Confidence grows with each challenge you tackle.",
+    "Your effort is making the digital world safer!"
+  ];
+  const affirmationElement = document.getElementById('supportAffirmation');
+  if (affirmationElement) affirmationElement.textContent = affirmations[Math.floor(Math.random() * affirmations.length)];
 }
 
 function populateModuleDropdown() {
